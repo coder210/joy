@@ -6,7 +6,11 @@
        （宿主用 mono_set_dirs(lib, lib) 指定目录，依赖程序集只从那里解析，
        放在 exe 旁会导致加载失败）。主仓 CMake 的 post-build 负责这一步。 -->
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <!-- CoreCLR 函数指针表绑定需要 delegate* / UnmanagedCallersOnly（.NET 5+）。 -->
+    <TargetFramework>net8.0</TargetFramework>
+    <!-- 自包含 publish (dotnet publish -r <rid>) 的 restore 需要 RID 清单 -->
+    <RuntimeIdentifiers>win-x64;linux-x64;osx-x64;osx-arm64</RuntimeIdentifiers>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>Joy.Bindings</AssemblyName>
     <RootNamespace>Joy</RootNamespace>
     <LangVersion>latest</LangVersion>
@@ -17,6 +21,8 @@
     <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
   </PropertyGroup>
   <ItemGroup>
+    <!-- CoreCLR 函数指针表基础设施（lookup + string marshal 辅助） -->
+    <Compile Include="scripts/NativeFuncs.cs" />
     <!-- 手写的输入 / 宿主 internal call（绘制类已全部改走生成链路） -->
     <Compile Include="scripts/NativeCalls.cs" />
     <!-- IDL 驱动的 Joy.Api.* 强类型绑定（自动生成，勿手改：api/tools/gen_bindings.js） -->

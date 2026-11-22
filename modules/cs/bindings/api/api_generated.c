@@ -1,13 +1,10 @@
 /* ============================================================
  * 自动生成，勿手改：node api/tools/gen_bindings.js --emit
- * cs 后端薄适配：Mono 值 → joy_value[] → 共享 thunk（不含业务逻辑）。
+ * cs 后端薄适配：CoreCLR 函数指针表 → joy_value[] → 共享 thunk（不含业务逻辑）。
  * joy.idl 里 status:on 的 L0/L1，以及可展开的 L2 试点条目会出现在这里。
  * ============================================================ */
 #include <stdint.h>
 #include <stdio.h>
-#include <mono/metadata/object.h>
-#include <mono/metadata/appdomain.h>
-#include <mono/utils/mono-publib.h>
 #include <joy/joy.h>
 #include <joy/api/runtime/joy_value.h>
 #include <joy/api/runtime/joy_obj.h>
@@ -100,17 +97,14 @@ static uint32_t icall_JpmWaveSeed(uint32_t p0, int32_t p1)
         return (uint32_t)r.as.u32;
 }
 
-static uint64_t icall_SdbmHash(MonoString* p0, int32_t p1)
+static uint64_t icall_SdbmHash(const char* p0, int32_t p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[2];
-        char* s0 = NULL;
-        s0 = p0 ? mono_string_to_utf8(p0) : NULL;
-        args[0] = joy_v_str((const char*)s0);
+        args[0] = joy_v_str((const char*)p0);
         args[1] = joy_v_i32((int32_t)p1);
         r = joy_api_call("joy_core_sdbm_hash", args, 2, &st);
-        if (s0) mono_free(s0);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_sdbm_hash", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -118,17 +112,14 @@ static uint64_t icall_SdbmHash(MonoString* p0, int32_t p1)
         return (uint64_t)r.as.u64;
 }
 
-static uint64_t icall_Fnv1aHash(MonoString* p0, int32_t p1)
+static uint64_t icall_Fnv1aHash(const char* p0, int32_t p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[2];
-        char* s0 = NULL;
-        s0 = p0 ? mono_string_to_utf8(p0) : NULL;
-        args[0] = joy_v_str((const char*)s0);
+        args[0] = joy_v_str((const char*)p0);
         args[1] = joy_v_i32((int32_t)p1);
         r = joy_api_call("joy_core_fnv1a_hash", args, 2, &st);
-        if (s0) mono_free(s0);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_fnv1a_hash", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -136,17 +127,14 @@ static uint64_t icall_Fnv1aHash(MonoString* p0, int32_t p1)
         return (uint64_t)r.as.u64;
 }
 
-static uint64_t icall_JenkinsHash(MonoString* p0, int32_t p1)
+static uint64_t icall_JenkinsHash(const char* p0, int32_t p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[2];
-        char* s0 = NULL;
-        s0 = p0 ? mono_string_to_utf8(p0) : NULL;
-        args[0] = joy_v_str((const char*)s0);
+        args[0] = joy_v_str((const char*)p0);
         args[1] = joy_v_i32((int32_t)p1);
         r = joy_api_call("joy_core_jenkins_hash", args, 2, &st);
-        if (s0) mono_free(s0);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_jenkins_hash", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -154,16 +142,13 @@ static uint64_t icall_JenkinsHash(MonoString* p0, int32_t p1)
         return (uint64_t)r.as.u64;
 }
 
-static uint64_t icall_Murmur3Hash(MonoString* p0)
+static uint64_t icall_Murmur3Hash(const char* p0)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[1];
-        char* s0 = NULL;
-        s0 = p0 ? mono_string_to_utf8(p0) : NULL;
-        args[0] = joy_v_str((const char*)s0);
+        args[0] = joy_v_str((const char*)p0);
         r = joy_api_call("joy_core_murmur3_hash", args, 1, &st);
-        if (s0) mono_free(s0);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_murmur3_hash", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -171,17 +156,14 @@ static uint64_t icall_Murmur3Hash(MonoString* p0)
         return (uint64_t)r.as.u64;
 }
 
-static uint64_t icall_KrHash(MonoString* p0, int32_t p1)
+static uint64_t icall_KrHash(const char* p0, int32_t p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[2];
-        char* s0 = NULL;
-        s0 = p0 ? mono_string_to_utf8(p0) : NULL;
-        args[0] = joy_v_str((const char*)s0);
+        args[0] = joy_v_str((const char*)p0);
         args[1] = joy_v_i32((int32_t)p1);
         r = joy_api_call("joy_core_kr_hash", args, 2, &st);
-        if (s0) mono_free(s0);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_kr_hash", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -305,18 +287,15 @@ static uint64_t icall_GetTicks(void)
         return (uint64_t)r.as.u64;
 }
 
-static uint64_t icall_CreateWindow(MonoString* p0, int32_t p1, int32_t p2)
+static uint64_t icall_CreateWindow(const char* p0, int32_t p1, int32_t p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[3];
-        char* s0 = NULL;
-        s0 = p0 ? mono_string_to_utf8(p0) : NULL;
-        args[0] = joy_v_str((const char*)s0);
+        args[0] = joy_v_str((const char*)p0);
         args[1] = joy_v_i32((int32_t)p1);
         args[2] = joy_v_i32((int32_t)p2);
         r = joy_api_call("joy_core_create_window", args, 3, &st);
-        if (s0) mono_free(s0);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_create_window", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -365,16 +344,13 @@ static int32_t icall_WindowGetFullscreen(uint64_t p0)
         return (int32_t)r.as.b;
 }
 
-static void icall_WindowSetIcon(uint64_t p0, MonoString* p1)
+static void icall_WindowSetIcon(uint64_t p0, const char* p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[2];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         (void)joy_api_call("joy_core_window_set_icon", args, 2, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_window_set_icon", joy_status_name(st), joy_last_error_where());
                 return;
@@ -422,20 +398,14 @@ static void icall_LogTitle(int32_t p0)
         return;
 }
 
-static void icall_EnvSet(uint64_t p0, MonoString* p1, MonoString* p2)
+static void icall_EnvSet(uint64_t p0, const char* p1, const char* p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[3];
-        char* s1 = NULL;
-        char* s2 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
-        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
-        args[2] = joy_v_str((const char*)s2);
+        args[1] = joy_v_str((const char*)p1);
+        args[2] = joy_v_str((const char*)p2);
         (void)joy_api_call("joy_core_env_set", args, 3, &st);
-        if (s1) mono_free(s1);
-        if (s2) mono_free(s2);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_env_set", joy_status_name(st), joy_last_error_where());
                 return;
@@ -606,15 +576,12 @@ static int32_t icall_GameTimerGetTargetFps(uint64_t p0)
         return (int32_t)r.as.i32;
 }
 
-static void icall_SetClipboardText(MonoString* p0)
+static void icall_SetClipboardText(const char* p0)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
-        char* s0 = NULL;
-        s0 = p0 ? mono_string_to_utf8(p0) : NULL;
-        args[0] = joy_v_str((const char*)s0);
+        args[0] = joy_v_str((const char*)p0);
         (void)joy_api_call("joy_core_set_clipboard_text", args, 1, &st);
-        if (s0) mono_free(s0);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_set_clipboard_text", joy_status_name(st), joy_last_error_where());
                 return;
@@ -769,18 +736,15 @@ static int64_t icall_SysUdp(void)
         return (int64_t)r.as.i64;
 }
 
-static int32_t icall_SysBind(int64_t p0, MonoString* p1, int32_t p2)
+static int32_t icall_SysBind(int64_t p0, const char* p1, int32_t p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[3];
-        char* s1 = NULL;
         args[0] = joy_v_i64((int64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_i32((int32_t)p2);
         r = joy_api_call("joy_sys_bind", args, 3, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_sys_bind", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -788,18 +752,15 @@ static int32_t icall_SysBind(int64_t p0, MonoString* p1, int32_t p2)
         return (int32_t)r.as.b;
 }
 
-static int32_t icall_SysConnect(int64_t p0, MonoString* p1, int32_t p2)
+static int32_t icall_SysConnect(int64_t p0, const char* p1, int32_t p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[3];
-        char* s1 = NULL;
         args[0] = joy_v_i64((int64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_i32((int32_t)p2);
         r = joy_api_call("joy_sys_connect", args, 3, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_sys_connect", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -821,18 +782,15 @@ static int32_t icall_SysListen(int64_t p0)
         return (int32_t)r.as.b;
 }
 
-static int32_t icall_SysSend(int64_t p0, MonoString* p1, int32_t p2)
+static int32_t icall_SysSend(int64_t p0, const char* p1, int32_t p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[3];
-        char* s1 = NULL;
         args[0] = joy_v_i64((int64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_i32((int32_t)p2);
         r = joy_api_call("joy_sys_send", args, 3, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_sys_send", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -840,23 +798,17 @@ static int32_t icall_SysSend(int64_t p0, MonoString* p1, int32_t p2)
         return (int32_t)r.as.i32;
 }
 
-static int32_t icall_SysSendto(int64_t p0, MonoString* p1, int32_t p2, MonoString* p3, int32_t p4)
+static int32_t icall_SysSendto(int64_t p0, const char* p1, int32_t p2, const char* p3, int32_t p4)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[5];
-        char* s1 = NULL;
-        char* s3 = NULL;
         args[0] = joy_v_i64((int64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_i32((int32_t)p2);
-        s3 = p3 ? mono_string_to_utf8(p3) : NULL;
-        args[3] = joy_v_str((const char*)s3);
+        args[3] = joy_v_str((const char*)p3);
         args[4] = joy_v_i32((int32_t)p4);
         r = joy_api_call("joy_sys_sendto", args, 5, &st);
-        if (s1) mono_free(s1);
-        if (s3) mono_free(s3);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_sys_sendto", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -927,17 +879,14 @@ static void icall_IocpProcessEvents(uint64_t p0, int32_t p1)
         return;
 }
 
-static uint64_t icall_FontCreate(MonoString* p0, int32_t p1)
+static uint64_t icall_FontCreate(const char* p0, int32_t p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[2];
-        char* s0 = NULL;
-        s0 = p0 ? mono_string_to_utf8(p0) : NULL;
-        args[0] = joy_v_str((const char*)s0);
+        args[0] = joy_v_str((const char*)p0);
         args[1] = joy_v_i32((int32_t)p1);
         r = joy_api_call("joy_r2d_font_create", args, 2, &st);
-        if (s0) mono_free(s0);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_font_create", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -1292,21 +1241,18 @@ static int32_t icall_ShapeDrawLine(uint64_t p0, float p1, float p2, float p3, fl
         return (int32_t)r.as.b;
 }
 
-static int32_t icall_ShapeDrawRectangle(uint64_t p0, MonoString* p1, float p2, float p3, float p4, float p5)
+static int32_t icall_ShapeDrawRectangle(uint64_t p0, const char* p1, float p2, float p3, float p4, float p5)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[6];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
         r = joy_api_call("joy_r2d_shape_draw_rectangle", args, 6, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_shape_draw_rectangle", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -1314,17 +1260,14 @@ static int32_t icall_ShapeDrawRectangle(uint64_t p0, MonoString* p1, float p2, f
         return (int32_t)r.as.b;
 }
 
-static uint64_t icall_ImageCreate(uint64_t p0, MonoString* p1)
+static uint64_t icall_ImageCreate(uint64_t p0, const char* p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[2];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         r = joy_api_call("joy_r2d_image_create", args, 2, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_image_create", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -1387,22 +1330,19 @@ static void icall_ImageSetScaleMode(uint64_t p0, int32_t p1)
         return;
 }
 
-static void icall_TextUpdatex(uint64_t p0, uint64_t p1, MonoString* p2, int32_t p3, uint32_t p4, uint32_t p5, uint32_t p6, uint32_t p7)
+static void icall_TextUpdatex(uint64_t p0, uint64_t p1, const char* p2, int32_t p3, uint32_t p4, uint32_t p5, uint32_t p6, uint32_t p7)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[8];
-        char* s2 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
-        args[2] = joy_v_str((const char*)s2);
+        args[2] = joy_v_str((const char*)p2);
         args[3] = joy_v_i32((int32_t)p3);
         args[4] = joy_v_u32((uint32_t)p4);
         args[5] = joy_v_u32((uint32_t)p5);
         args[6] = joy_v_u32((uint32_t)p6);
         args[7] = joy_v_u32((uint32_t)p7);
         (void)joy_api_call("joy_r2d_text_updatex", args, 8, &st);
-        if (s2) mono_free(s2);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_text_updatex", joy_status_name(st), joy_last_error_where());
                 return;
@@ -1439,15 +1379,13 @@ static void icall_JtextPrint(uint64_t p0, uint64_t p1, float p2, float p3)
         return;
 }
 
-static void icall_JtextPrintx(uint64_t p0, uint64_t p1, MonoString* p2, int32_t p3, uint32_t p4, uint32_t p5, uint32_t p6, uint32_t p7, float p8, float p9)
+static void icall_JtextPrintx(uint64_t p0, uint64_t p1, const char* p2, int32_t p3, uint32_t p4, uint32_t p5, uint32_t p6, uint32_t p7, float p8, float p9)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[10];
-        char* s2 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
-        args[2] = joy_v_str((const char*)s2);
+        args[2] = joy_v_str((const char*)p2);
         args[3] = joy_v_i32((int32_t)p3);
         args[4] = joy_v_u32((uint32_t)p4);
         args[5] = joy_v_u32((uint32_t)p5);
@@ -1456,7 +1394,6 @@ static void icall_JtextPrintx(uint64_t p0, uint64_t p1, MonoString* p2, int32_t 
         args[8] = joy_v_f64((double)p8);
         args[9] = joy_v_f64((double)p9);
         (void)joy_api_call("joy_r2d_text_printx", args, 10, &st);
-        if (s2) mono_free(s2);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_text_printx", joy_status_name(st), joy_last_error_where());
                 return;
@@ -1480,21 +1417,18 @@ static int32_t icall_R2dDrawPointF(uint64_t p0, float p1, float p2)
         return (int32_t)r.as.b;
 }
 
-static int32_t icall_ShapeDrawRectangleF(uint64_t p0, MonoString* p1, float p2, float p3, float p4, float p5)
+static int32_t icall_ShapeDrawRectangleF(uint64_t p0, const char* p1, float p2, float p3, float p4, float p5)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[6];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
         r = joy_api_call("joy_r2d_shape_draw_rectangle_f", args, 6, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_shape_draw_rectangle_f", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -1520,15 +1454,13 @@ static int32_t icall_ShapeDrawLineF(uint64_t p0, float p1, float p2, float p3, f
         return (int32_t)r.as.b;
 }
 
-static void icall_JtextPrintf(uint64_t p0, uint64_t p1, MonoString* p2, int32_t p3, uint32_t p4, uint32_t p5, uint32_t p6, uint32_t p7, float p8, float p9)
+static void icall_JtextPrintf(uint64_t p0, uint64_t p1, const char* p2, int32_t p3, uint32_t p4, uint32_t p5, uint32_t p6, uint32_t p7, float p8, float p9)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[10];
-        char* s2 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
-        args[2] = joy_v_str((const char*)s2);
+        args[2] = joy_v_str((const char*)p2);
         args[3] = joy_v_i32((int32_t)p3);
         args[4] = joy_v_u32((uint32_t)p4);
         args[5] = joy_v_u32((uint32_t)p5);
@@ -1537,7 +1469,6 @@ static void icall_JtextPrintf(uint64_t p0, uint64_t p1, MonoString* p2, int32_t 
         args[8] = joy_v_f64((double)p8);
         args[9] = joy_v_f64((double)p9);
         (void)joy_api_call("joy_r2d_text_printf", args, 10, &st);
-        if (s2) mono_free(s2);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_text_printf", joy_status_name(st), joy_last_error_where());
                 return;
@@ -1545,15 +1476,13 @@ static void icall_JtextPrintf(uint64_t p0, uint64_t p1, MonoString* p2, int32_t 
         return;
 }
 
-static void icall_JtextPrintfScaled(uint64_t p0, uint64_t p1, MonoString* p2, int32_t p3, uint32_t p4, uint32_t p5, uint32_t p6, uint32_t p7, float p8, float p9, float p10)
+static void icall_JtextPrintfScaled(uint64_t p0, uint64_t p1, const char* p2, int32_t p3, uint32_t p4, uint32_t p5, uint32_t p6, uint32_t p7, float p8, float p9, float p10)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[11];
-        char* s2 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
-        args[2] = joy_v_str((const char*)s2);
+        args[2] = joy_v_str((const char*)p2);
         args[3] = joy_v_i32((int32_t)p3);
         args[4] = joy_v_u32((uint32_t)p4);
         args[5] = joy_v_u32((uint32_t)p5);
@@ -1563,7 +1492,6 @@ static void icall_JtextPrintfScaled(uint64_t p0, uint64_t p1, MonoString* p2, in
         args[9] = joy_v_f64((double)p9);
         args[10] = joy_v_f64((double)p10);
         (void)joy_api_call("joy_r2d_text_printf_scaled", args, 11, &st);
-        if (s2) mono_free(s2);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_text_printf_scaled", joy_status_name(st), joy_last_error_where());
                 return;
@@ -1674,21 +1602,18 @@ static void icall_AnimationReset(uint64_t p0)
         return;
 }
 
-static void icall_AnimationAddClip(uint64_t p0, MonoString* p1, float p2, float p3, float p4, float p5, float p6)
+static void icall_AnimationAddClip(uint64_t p0, const char* p1, float p2, float p3, float p4, float p5, float p6)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[7];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
         args[6] = joy_v_f64((double)p6);
         (void)joy_api_call("joy_r2d_animation_add_clip", args, 7, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_animation_add_clip", joy_status_name(st), joy_last_error_where());
                 return;
@@ -2025,18 +1950,15 @@ static void icall_R3dMeshDestroy(uint64_t p0, uint64_t p1)
         return;
 }
 
-static int32_t icall_R3dFontInit(uint64_t p0, MonoString* p1, int32_t p2)
+static int32_t icall_R3dFontInit(uint64_t p0, const char* p1, int32_t p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[3];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_i32((int32_t)p2);
         r = joy_api_call("joy_r3d_font_init", args, 3, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_font_init", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -2060,23 +1982,20 @@ static void icall_R3dFontSetColor(uint64_t p0, uint32_t p1, uint32_t p2, uint32_
         return;
 }
 
-static int32_t icall_R3dFontDraw2d(uint64_t p0, uint64_t p1, MonoString* p2, float p3, float p4, float p5, float p6, float p7)
+static int32_t icall_R3dFontDraw2d(uint64_t p0, uint64_t p1, const char* p2, float p3, float p4, float p5, float p6, float p7)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[8];
-        char* s2 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
-        args[2] = joy_v_str((const char*)s2);
+        args[2] = joy_v_str((const char*)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
         args[6] = joy_v_f64((double)p6);
         args[7] = joy_v_f64((double)p7);
         r = joy_api_call("joy_r3d_font_draw_2d", args, 8, &st);
-        if (s2) mono_free(s2);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_font_draw_2d", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -2084,16 +2003,14 @@ static int32_t icall_R3dFontDraw2d(uint64_t p0, uint64_t p1, MonoString* p2, flo
         return (int32_t)r.as.b;
 }
 
-static int32_t icall_R3dFontDraw2dColor(uint64_t p0, uint64_t p1, MonoString* p2, float p3, float p4, float p5, float p6, float p7, uint32_t p8, uint32_t p9, uint32_t p10)
+static int32_t icall_R3dFontDraw2dColor(uint64_t p0, uint64_t p1, const char* p2, float p3, float p4, float p5, float p6, float p7, uint32_t p8, uint32_t p9, uint32_t p10)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[11];
-        char* s2 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
-        args[2] = joy_v_str((const char*)s2);
+        args[2] = joy_v_str((const char*)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
@@ -2103,7 +2020,6 @@ static int32_t icall_R3dFontDraw2dColor(uint64_t p0, uint64_t p1, MonoString* p2
         args[9] = joy_v_u32((uint32_t)p9);
         args[10] = joy_v_u32((uint32_t)p10);
         r = joy_api_call("joy_r3d_font_draw_2d_color", args, 11, &st);
-        if (s2) mono_free(s2);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_font_draw_2d_color", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -2111,16 +2027,14 @@ static int32_t icall_R3dFontDraw2dColor(uint64_t p0, uint64_t p1, MonoString* p2
         return (int32_t)r.as.b;
 }
 
-static int32_t icall_R3dFontDraw2dOutline(uint64_t p0, uint64_t p1, MonoString* p2, float p3, float p4, float p5, float p6, float p7, uint32_t p8, uint32_t p9, uint32_t p10, uint32_t p11, uint32_t p12, uint32_t p13, float p14)
+static int32_t icall_R3dFontDraw2dOutline(uint64_t p0, uint64_t p1, const char* p2, float p3, float p4, float p5, float p6, float p7, uint32_t p8, uint32_t p9, uint32_t p10, uint32_t p11, uint32_t p12, uint32_t p13, float p14)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[15];
-        char* s2 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
-        args[2] = joy_v_str((const char*)s2);
+        args[2] = joy_v_str((const char*)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
@@ -2134,7 +2048,6 @@ static int32_t icall_R3dFontDraw2dOutline(uint64_t p0, uint64_t p1, MonoString* 
         args[13] = joy_v_u32((uint32_t)p13);
         args[14] = joy_v_f64((double)p14);
         r = joy_api_call("joy_r3d_font_draw_2d_outline", args, 15, &st);
-        if (s2) mono_free(s2);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_font_draw_2d_outline", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -2372,16 +2285,13 @@ static void icall_R3dDrawMesh2d(uint64_t p0, uint64_t p1, float p2, float p3, fl
         return;
 }
 
-static void icall_R3dLabelSetText(uint64_t p0, MonoString* p1)
+static void icall_R3dLabelSetText(uint64_t p0, const char* p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[2];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         (void)joy_api_call("joy_r3d_label_set_text", args, 2, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_label_set_text", joy_status_name(st), joy_last_error_where());
                 return;
@@ -2419,16 +2329,13 @@ static void icall_R3dLabelDestroy(uint64_t p0)
         return;
 }
 
-static void icall_R3dInputSetText(uint64_t p0, MonoString* p1)
+static void icall_R3dInputSetText(uint64_t p0, const char* p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[2];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         (void)joy_api_call("joy_r3d_input_set_text", args, 2, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_input_set_text", joy_status_name(st), joy_last_error_where());
                 return;
@@ -2521,16 +2428,13 @@ static void icall_R3dInputStopTextInput(uint64_t p0, uint64_t p1)
         return;
 }
 
-static void icall_R3dInputInsert(uint64_t p0, MonoString* p1)
+static void icall_R3dInputInsert(uint64_t p0, const char* p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[2];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         (void)joy_api_call("joy_r3d_input_insert", args, 2, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_input_insert", joy_status_name(st), joy_last_error_where());
                 return;
@@ -2688,16 +2592,13 @@ static void icall_R3dComboboxInputDestroy(uint64_t p0)
         return;
 }
 
-static void icall_R3dComboboxInputAddItem(uint64_t p0, MonoString* p1)
+static void icall_R3dComboboxInputAddItem(uint64_t p0, const char* p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[2];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         (void)joy_api_call("joy_r3d_combobox_input_add_item", args, 2, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_combobox_input_add_item", joy_status_name(st), joy_last_error_where());
                 return;
@@ -2718,16 +2619,13 @@ static void icall_R3dComboboxInputClearItems(uint64_t p0)
         return;
 }
 
-static void icall_R3dComboboxInputSetText(uint64_t p0, MonoString* p1)
+static void icall_R3dComboboxInputSetText(uint64_t p0, const char* p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[2];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         (void)joy_api_call("joy_r3d_combobox_input_set_text", args, 2, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_combobox_input_set_text", joy_status_name(st), joy_last_error_where());
                 return;
@@ -3182,17 +3080,14 @@ static void icall_JanimatorDestroy(uint64_t p0)
         return;
 }
 
-static void icall_JanimatorSetFloat(uint64_t p0, MonoString* p1, float p2)
+static void icall_JanimatorSetFloat(uint64_t p0, const char* p1, float p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[3];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_f64((double)p2);
         (void)joy_api_call("joy_scene_animator_set_float", args, 3, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_set_float", joy_status_name(st), joy_last_error_where());
                 return;
@@ -3200,17 +3095,14 @@ static void icall_JanimatorSetFloat(uint64_t p0, MonoString* p1, float p2)
         return;
 }
 
-static void icall_JanimatorSetInt(uint64_t p0, MonoString* p1, int32_t p2)
+static void icall_JanimatorSetInt(uint64_t p0, const char* p1, int32_t p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[3];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_i32((int32_t)p2);
         (void)joy_api_call("joy_scene_animator_set_int", args, 3, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_set_int", joy_status_name(st), joy_last_error_where());
                 return;
@@ -3218,17 +3110,14 @@ static void icall_JanimatorSetInt(uint64_t p0, MonoString* p1, int32_t p2)
         return;
 }
 
-static void icall_JanimatorSetBool(uint64_t p0, MonoString* p1, int32_t p2)
+static void icall_JanimatorSetBool(uint64_t p0, const char* p1, int32_t p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[3];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_bool((int32_t)p2);
         (void)joy_api_call("joy_scene_animator_set_bool", args, 3, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_set_bool", joy_status_name(st), joy_last_error_where());
                 return;
@@ -3236,16 +3125,13 @@ static void icall_JanimatorSetBool(uint64_t p0, MonoString* p1, int32_t p2)
         return;
 }
 
-static void icall_JanimatorSetTrigger(uint64_t p0, MonoString* p1)
+static void icall_JanimatorSetTrigger(uint64_t p0, const char* p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[2];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         (void)joy_api_call("joy_scene_animator_set_trigger", args, 2, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_set_trigger", joy_status_name(st), joy_last_error_where());
                 return;
@@ -3253,17 +3139,14 @@ static void icall_JanimatorSetTrigger(uint64_t p0, MonoString* p1)
         return;
 }
 
-static float icall_JanimatorGetFloat(uint64_t p0, MonoString* p1)
+static float icall_JanimatorGetFloat(uint64_t p0, const char* p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[2];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         r = joy_api_call("joy_scene_animator_get_float", args, 2, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_get_float", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -3271,17 +3154,14 @@ static float icall_JanimatorGetFloat(uint64_t p0, MonoString* p1)
         return (float)r.as.f64;
 }
 
-static int32_t icall_JanimatorGetInt(uint64_t p0, MonoString* p1)
+static int32_t icall_JanimatorGetInt(uint64_t p0, const char* p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[2];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         r = joy_api_call("joy_scene_animator_get_int", args, 2, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_get_int", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -3289,17 +3169,14 @@ static int32_t icall_JanimatorGetInt(uint64_t p0, MonoString* p1)
         return (int32_t)r.as.i32;
 }
 
-static int32_t icall_JanimatorGetBool(uint64_t p0, MonoString* p1)
+static int32_t icall_JanimatorGetBool(uint64_t p0, const char* p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[2];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         r = joy_api_call("joy_scene_animator_get_bool", args, 2, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_get_bool", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -3307,16 +3184,13 @@ static int32_t icall_JanimatorGetBool(uint64_t p0, MonoString* p1)
         return (int32_t)r.as.b;
 }
 
-static void icall_JanimatorAddState(uint64_t p0, MonoString* p1)
+static void icall_JanimatorAddState(uint64_t p0, const char* p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[2];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         (void)joy_api_call("joy_scene_animator_add_state", args, 2, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_add_state", joy_status_name(st), joy_last_error_where());
                 return;
@@ -3324,16 +3198,13 @@ static void icall_JanimatorAddState(uint64_t p0, MonoString* p1)
         return;
 }
 
-static void icall_JanimatorSetDefaultState(uint64_t p0, MonoString* p1)
+static void icall_JanimatorSetDefaultState(uint64_t p0, const char* p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[2];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         (void)joy_api_call("joy_scene_animator_set_default_state", args, 2, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_set_default_state", joy_status_name(st), joy_last_error_where());
                 return;
@@ -3341,25 +3212,19 @@ static void icall_JanimatorSetDefaultState(uint64_t p0, MonoString* p1)
         return;
 }
 
-static void icall_JanimatorStateAddClip(uint64_t p0, MonoString* p1, MonoString* p2, float p3, float p4, float p5, float p6, float p7)
+static void icall_JanimatorStateAddClip(uint64_t p0, const char* p1, const char* p2, float p3, float p4, float p5, float p6, float p7)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[8];
-        char* s1 = NULL;
-        char* s2 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
-        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
-        args[2] = joy_v_str((const char*)s2);
+        args[1] = joy_v_str((const char*)p1);
+        args[2] = joy_v_str((const char*)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
         args[6] = joy_v_f64((double)p6);
         args[7] = joy_v_f64((double)p7);
         (void)joy_api_call("joy_scene_animator_state_add_clip", args, 8, &st);
-        if (s1) mono_free(s1);
-        if (s2) mono_free(s2);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_state_add_clip", joy_status_name(st), joy_last_error_where());
                 return;
@@ -3367,14 +3232,12 @@ static void icall_JanimatorStateAddClip(uint64_t p0, MonoString* p1, MonoString*
         return;
 }
 
-static void icall_JanimatorStateAddColor(uint64_t p0, MonoString* p1, float p2, int32_t p3, int32_t p4, uint32_t p5, uint32_t p6, uint32_t p7, uint32_t p8)
+static void icall_JanimatorStateAddColor(uint64_t p0, const char* p1, float p2, int32_t p3, int32_t p4, uint32_t p5, uint32_t p6, uint32_t p7, uint32_t p8)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[9];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_i32((int32_t)p3);
         args[4] = joy_v_i32((int32_t)p4);
@@ -3383,7 +3246,6 @@ static void icall_JanimatorStateAddColor(uint64_t p0, MonoString* p1, float p2, 
         args[7] = joy_v_u32((uint32_t)p7);
         args[8] = joy_v_u32((uint32_t)p8);
         (void)joy_api_call("joy_scene_animator_state_add_color", args, 9, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_state_add_color", joy_status_name(st), joy_last_error_where());
                 return;
@@ -3391,17 +3253,14 @@ static void icall_JanimatorStateAddColor(uint64_t p0, MonoString* p1, float p2, 
         return;
 }
 
-static void icall_JanimatorStateSetLoop(uint64_t p0, MonoString* p1, int32_t p2)
+static void icall_JanimatorStateSetLoop(uint64_t p0, const char* p1, int32_t p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[3];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_bool((int32_t)p2);
         (void)joy_api_call("joy_scene_animator_state_set_loop", args, 3, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_state_set_loop", joy_status_name(st), joy_last_error_where());
                 return;
@@ -3409,17 +3268,14 @@ static void icall_JanimatorStateSetLoop(uint64_t p0, MonoString* p1, int32_t p2)
         return;
 }
 
-static void icall_JanimatorStateSetSpeed(uint64_t p0, MonoString* p1, float p2)
+static void icall_JanimatorStateSetSpeed(uint64_t p0, const char* p1, float p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[3];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_f64((double)p2);
         (void)joy_api_call("joy_scene_animator_state_set_speed", args, 3, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_state_set_speed", joy_status_name(st), joy_last_error_where());
                 return;
@@ -3427,20 +3283,14 @@ static void icall_JanimatorStateSetSpeed(uint64_t p0, MonoString* p1, float p2)
         return;
 }
 
-static void icall_JanimatorStateSetBlend(uint64_t p0, MonoString* p1, MonoString* p2)
+static void icall_JanimatorStateSetBlend(uint64_t p0, const char* p1, const char* p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[3];
-        char* s1 = NULL;
-        char* s2 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
-        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
-        args[2] = joy_v_str((const char*)s2);
+        args[1] = joy_v_str((const char*)p1);
+        args[2] = joy_v_str((const char*)p2);
         (void)joy_api_call("joy_scene_animator_state_set_blend", args, 3, &st);
-        if (s1) mono_free(s1);
-        if (s2) mono_free(s2);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_state_set_blend", joy_status_name(st), joy_last_error_where());
                 return;
@@ -3448,17 +3298,13 @@ static void icall_JanimatorStateSetBlend(uint64_t p0, MonoString* p1, MonoString
         return;
 }
 
-static void icall_JanimatorStateAddMotion(uint64_t p0, MonoString* p1, MonoString* p2, float p3, float p4, float p5, float p6, float p7, float p8)
+static void icall_JanimatorStateAddMotion(uint64_t p0, const char* p1, const char* p2, float p3, float p4, float p5, float p6, float p7, float p8)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[9];
-        char* s1 = NULL;
-        char* s2 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
-        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
-        args[2] = joy_v_str((const char*)s2);
+        args[1] = joy_v_str((const char*)p1);
+        args[2] = joy_v_str((const char*)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
@@ -3466,8 +3312,6 @@ static void icall_JanimatorStateAddMotion(uint64_t p0, MonoString* p1, MonoStrin
         args[7] = joy_v_f64((double)p7);
         args[8] = joy_v_f64((double)p8);
         (void)joy_api_call("joy_scene_animator_state_add_motion", args, 9, &st);
-        if (s1) mono_free(s1);
-        if (s2) mono_free(s2);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_state_add_motion", joy_status_name(st), joy_last_error_where());
                 return;
@@ -3475,21 +3319,15 @@ static void icall_JanimatorStateAddMotion(uint64_t p0, MonoString* p1, MonoStrin
         return;
 }
 
-static int32_t icall_JanimatorAddTransition(uint64_t p0, MonoString* p1, MonoString* p2)
+static int32_t icall_JanimatorAddTransition(uint64_t p0, const char* p1, const char* p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[3];
-        char* s1 = NULL;
-        char* s2 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
-        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
-        args[2] = joy_v_str((const char*)s2);
+        args[1] = joy_v_str((const char*)p1);
+        args[2] = joy_v_str((const char*)p2);
         r = joy_api_call("joy_scene_animator_add_transition", args, 3, &st);
-        if (s1) mono_free(s1);
-        if (s2) mono_free(s2);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_add_transition", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -3497,17 +3335,14 @@ static int32_t icall_JanimatorAddTransition(uint64_t p0, MonoString* p1, MonoStr
         return (int32_t)r.as.i32;
 }
 
-static int32_t icall_JanimatorAddAnyTransition(uint64_t p0, MonoString* p1)
+static int32_t icall_JanimatorAddAnyTransition(uint64_t p0, const char* p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[2];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         r = joy_api_call("joy_scene_animator_add_any_transition", args, 2, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_add_any_transition", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -3515,19 +3350,16 @@ static int32_t icall_JanimatorAddAnyTransition(uint64_t p0, MonoString* p1)
         return (int32_t)r.as.i32;
 }
 
-static void icall_JanimatorTransitionAddCond(uint64_t p0, int32_t p1, MonoString* p2, int32_t p3, float p4)
+static void icall_JanimatorTransitionAddCond(uint64_t p0, int32_t p1, const char* p2, int32_t p3, float p4)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[5];
-        char* s2 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
-        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
-        args[2] = joy_v_str((const char*)s2);
+        args[2] = joy_v_str((const char*)p2);
         args[3] = joy_v_i32((int32_t)p3);
         args[4] = joy_v_f64((double)p4);
         (void)joy_api_call("joy_scene_animator_transition_add_cond", args, 5, &st);
-        if (s2) mono_free(s2);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_transition_add_cond", joy_status_name(st), joy_last_error_where());
                 return;
@@ -3741,22 +3573,19 @@ static void icall_ButtonSetPressedImage(uint64_t p0, uint64_t p1)
         return;
 }
 
-static void icall_ButtonSetTextx(uint64_t p0, uint64_t p1, MonoString* p2, int32_t p3, uint32_t p4, uint32_t p5, uint32_t p6, uint32_t p7)
+static void icall_ButtonSetTextx(uint64_t p0, uint64_t p1, const char* p2, int32_t p3, uint32_t p4, uint32_t p5, uint32_t p6, uint32_t p7)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[8];
-        char* s2 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
-        args[2] = joy_v_str((const char*)s2);
+        args[2] = joy_v_str((const char*)p2);
         args[3] = joy_v_i32((int32_t)p3);
         args[4] = joy_v_u32((uint32_t)p4);
         args[5] = joy_v_u32((uint32_t)p5);
         args[6] = joy_v_u32((uint32_t)p6);
         args[7] = joy_v_u32((uint32_t)p7);
         (void)joy_api_call("joy_r2d_button_set_textx", args, 8, &st);
-        if (s2) mono_free(s2);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_button_set_textx", joy_status_name(st), joy_last_error_where());
                 return;
@@ -4050,22 +3879,19 @@ static void icall_ComboboxDestroy(uint64_t p0)
         return;
 }
 
-static void icall_ComboboxAddItem(uint64_t p0, uint64_t p1, MonoString* p2, int32_t p3, uint32_t p4, uint32_t p5, uint32_t p6, uint32_t p7)
+static void icall_ComboboxAddItem(uint64_t p0, uint64_t p1, const char* p2, int32_t p3, uint32_t p4, uint32_t p5, uint32_t p6, uint32_t p7)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[8];
-        char* s2 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
-        args[2] = joy_v_str((const char*)s2);
+        args[2] = joy_v_str((const char*)p2);
         args[3] = joy_v_i32((int32_t)p3);
         args[4] = joy_v_u32((uint32_t)p4);
         args[5] = joy_v_u32((uint32_t)p5);
         args[6] = joy_v_u32((uint32_t)p6);
         args[7] = joy_v_u32((uint32_t)p7);
         (void)joy_api_call("joy_r2d_combobox_add_item", args, 8, &st);
-        if (s2) mono_free(s2);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_combobox_add_item", joy_status_name(st), joy_last_error_where());
                 return;
@@ -4187,17 +4013,14 @@ static void icall_ComboboxInputDestroy(uint64_t p0)
         return;
 }
 
-static void icall_ComboboxInputAddItem(uint64_t p0, MonoString* p1, int32_t p2)
+static void icall_ComboboxInputAddItem(uint64_t p0, const char* p1, int32_t p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[3];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_i32((int32_t)p2);
         (void)joy_api_call("joy_r2d_combobox_input_add_item", args, 3, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_combobox_input_add_item", joy_status_name(st), joy_last_error_where());
                 return;
@@ -4218,16 +4041,13 @@ static void icall_ComboboxInputClearItems(uint64_t p0)
         return;
 }
 
-static void icall_ComboboxInputSetText(uint64_t p0, MonoString* p1)
+static void icall_ComboboxInputSetText(uint64_t p0, const char* p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[2];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         (void)joy_api_call("joy_r2d_combobox_input_set_text", args, 2, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_combobox_input_set_text", joy_status_name(st), joy_last_error_where());
                 return;
@@ -4319,16 +4139,13 @@ static void icall_ComboboxInputSetOpen(uint64_t p0, int32_t p1)
         return;
 }
 
-static void icall_DatagridSetheaders(uint64_t p0, MonoString* p1)
+static void icall_DatagridSetheaders(uint64_t p0, const char* p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[2];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         (void)joy_api_call("joy_r2d_datagrid_setheaders", args, 2, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_datagrid_setheaders", joy_status_name(st), joy_last_error_where());
                 return;
@@ -4336,17 +4153,14 @@ static void icall_DatagridSetheaders(uint64_t p0, MonoString* p1)
         return;
 }
 
-static void icall_DatagridSetheader(uint64_t p0, int32_t p1, MonoString* p2)
+static void icall_DatagridSetheader(uint64_t p0, int32_t p1, const char* p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[3];
-        char* s2 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
-        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
-        args[2] = joy_v_str((const char*)s2);
+        args[2] = joy_v_str((const char*)p2);
         (void)joy_api_call("joy_r2d_datagrid_setheader", args, 3, &st);
-        if (s2) mono_free(s2);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_datagrid_setheader", joy_status_name(st), joy_last_error_where());
                 return;
@@ -4354,18 +4168,15 @@ static void icall_DatagridSetheader(uint64_t p0, int32_t p1, MonoString* p2)
         return;
 }
 
-static void icall_DatagridSetcell(uint64_t p0, int32_t p1, int32_t p2, MonoString* p3)
+static void icall_DatagridSetcell(uint64_t p0, int32_t p1, int32_t p2, const char* p3)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[4];
-        char* s3 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
         args[2] = joy_v_i32((int32_t)p2);
-        s3 = p3 ? mono_string_to_utf8(p3) : NULL;
-        args[3] = joy_v_str((const char*)s3);
+        args[3] = joy_v_str((const char*)p3);
         (void)joy_api_call("joy_r2d_datagrid_setcell", args, 4, &st);
-        if (s3) mono_free(s3);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_datagrid_setcell", joy_status_name(st), joy_last_error_where());
                 return;
@@ -4627,20 +4438,14 @@ static void icall_JoystickDestroy(uint64_t p0)
         return;
 }
 
-static void icall_JoystickSetTextures(uint64_t p0, MonoString* p1, MonoString* p2)
+static void icall_JoystickSetTextures(uint64_t p0, const char* p1, const char* p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[3];
-        char* s1 = NULL;
-        char* s2 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
-        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
-        args[2] = joy_v_str((const char*)s2);
+        args[1] = joy_v_str((const char*)p1);
+        args[2] = joy_v_str((const char*)p2);
         (void)joy_api_call("joy_r2d_joystick_set_textures", args, 3, &st);
-        if (s1) mono_free(s1);
-        if (s2) mono_free(s2);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_joystick_set_textures", joy_status_name(st), joy_last_error_where());
                 return;
@@ -4802,16 +4607,13 @@ static void icall_InputboxDestroy(uint64_t p0)
         return;
 }
 
-static void icall_InputboxSetText(uint64_t p0, MonoString* p1)
+static void icall_InputboxSetText(uint64_t p0, const char* p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[2];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         (void)joy_api_call("joy_r2d_inputbox_set_text", args, 2, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_inputbox_set_text", joy_status_name(st), joy_last_error_where());
                 return;
@@ -4903,17 +4705,14 @@ static void icall_InputboxBlur(uint64_t p0)
         return;
 }
 
-static void icall_InputboxInsert(uint64_t p0, MonoString* p1, int32_t p2)
+static void icall_InputboxInsert(uint64_t p0, const char* p1, int32_t p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[3];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_i32((int32_t)p2);
         (void)joy_api_call("joy_r2d_inputbox_insert", args, 3, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_inputbox_insert", joy_status_name(st), joy_last_error_where());
                 return;
@@ -5291,17 +5090,14 @@ static void icall_PopupDestroy(uint64_t p0)
         return;
 }
 
-static void icall_PopupSetTitle(uint64_t p0, MonoString* p1, int32_t p2)
+static void icall_PopupSetTitle(uint64_t p0, const char* p1, int32_t p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[3];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_i32((int32_t)p2);
         (void)joy_api_call("joy_r2d_popup_set_title", args, 3, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_popup_set_title", joy_status_name(st), joy_last_error_where());
                 return;
@@ -5309,17 +5105,14 @@ static void icall_PopupSetTitle(uint64_t p0, MonoString* p1, int32_t p2)
         return;
 }
 
-static void icall_PopupSetContent(uint64_t p0, MonoString* p1, int32_t p2)
+static void icall_PopupSetContent(uint64_t p0, const char* p1, int32_t p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[3];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_i32((int32_t)p2);
         (void)joy_api_call("joy_r2d_popup_set_content", args, 3, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_popup_set_content", joy_status_name(st), joy_last_error_where());
                 return;
@@ -5461,17 +5254,14 @@ static void icall_TooltipDestroy(uint64_t p0)
         return;
 }
 
-static void icall_TooltipSetText(uint64_t p0, MonoString* p1, int32_t p2)
+static void icall_TooltipSetText(uint64_t p0, const char* p1, int32_t p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[3];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_i32((int32_t)p2);
         (void)joy_api_call("joy_r2d_tooltip_set_text", args, 3, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_tooltip_set_text", joy_status_name(st), joy_last_error_where());
                 return;
@@ -5841,23 +5631,20 @@ static void icall_JuiLine(uint64_t p0, float p1, float p2, float p3, float p4, u
         return;
 }
 
-static int32_t icall_JuiText(uint64_t p0, float p1, float p2, MonoString* p3, uint32_t p4, uint32_t p5, uint32_t p6, uint32_t p7)
+static int32_t icall_JuiText(uint64_t p0, float p1, float p2, const char* p3, uint32_t p4, uint32_t p5, uint32_t p6, uint32_t p7)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[8];
-        char* s3 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        s3 = p3 ? mono_string_to_utf8(p3) : NULL;
-        args[3] = joy_v_str((const char*)s3);
+        args[3] = joy_v_str((const char*)p3);
         args[4] = joy_v_u32((uint32_t)p4);
         args[5] = joy_v_u32((uint32_t)p5);
         args[6] = joy_v_u32((uint32_t)p6);
         args[7] = joy_v_u32((uint32_t)p7);
         r = joy_api_call("joy_r2d_text", args, 8, &st);
-        if (s3) mono_free(s3);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_text", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -5865,25 +5652,22 @@ static int32_t icall_JuiText(uint64_t p0, float p1, float p2, MonoString* p3, ui
         return (int32_t)r.as.i32;
 }
 
-static int32_t icall_JuiTextCentered(uint64_t p0, float p1, float p2, float p3, float p4, MonoString* p5, uint32_t p6, uint32_t p7, uint32_t p8, uint32_t p9)
+static int32_t icall_JuiTextCentered(uint64_t p0, float p1, float p2, float p3, float p4, const char* p5, uint32_t p6, uint32_t p7, uint32_t p8, uint32_t p9)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[10];
-        char* s5 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
-        s5 = p5 ? mono_string_to_utf8(p5) : NULL;
-        args[5] = joy_v_str((const char*)s5);
+        args[5] = joy_v_str((const char*)p5);
         args[6] = joy_v_u32((uint32_t)p6);
         args[7] = joy_v_u32((uint32_t)p7);
         args[8] = joy_v_u32((uint32_t)p8);
         args[9] = joy_v_u32((uint32_t)p9);
         r = joy_api_call("joy_r2d_text_centered", args, 10, &st);
-        if (s5) mono_free(s5);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_text_centered", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -5891,20 +5675,17 @@ static int32_t icall_JuiTextCentered(uint64_t p0, float p1, float p2, float p3, 
         return (int32_t)r.as.i32;
 }
 
-static void icall_JuiPanelBegin(uint64_t p0, float p1, float p2, float p3, float p4, MonoString* p5)
+static void icall_JuiPanelBegin(uint64_t p0, float p1, float p2, float p3, float p4, const char* p5)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[6];
-        char* s5 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
-        s5 = p5 ? mono_string_to_utf8(p5) : NULL;
-        args[5] = joy_v_str((const char*)s5);
+        args[5] = joy_v_str((const char*)p5);
         (void)joy_api_call("joy_r2d_panel_begin", args, 6, &st);
-        if (s5) mono_free(s5);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_panel_begin", joy_status_name(st), joy_last_error_where());
                 return;
@@ -6011,22 +5792,19 @@ static void icall_JuiScrollSetOffset(uint64_t p0, int32_t p1, float p2, float p3
         return;
 }
 
-static int32_t icall_JuiButton(uint64_t p0, int32_t p1, float p2, float p3, float p4, float p5, MonoString* p6)
+static int32_t icall_JuiButton(uint64_t p0, int32_t p1, float p2, float p3, float p4, float p5, const char* p6)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[7];
-        char* s6 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
-        s6 = p6 ? mono_string_to_utf8(p6) : NULL;
-        args[6] = joy_v_str((const char*)s6);
+        args[6] = joy_v_str((const char*)p6);
         r = joy_api_call("joy_r2d_button", args, 7, &st);
-        if (s6) mono_free(s6);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_button", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -6119,17 +5897,14 @@ static int32_t icall_JtilemapGetAnimTileid(uint64_t p0, int32_t p1, uint32_t p2)
         return (int32_t)r.as.i32;
 }
 
-static uint64_t icall_JtilemapFindTileLayer(uint64_t p0, MonoString* p1)
+static uint64_t icall_JtilemapFindTileLayer(uint64_t p0, const char* p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[2];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         r = joy_api_call("joy_scene_tilemap_find_tile_layer", args, 2, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_tilemap_find_tile_layer", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -6137,17 +5912,14 @@ static uint64_t icall_JtilemapFindTileLayer(uint64_t p0, MonoString* p1)
         return (uint64_t)r.as.handle;
 }
 
-static uint64_t icall_JtilemapFindObjectLayer(uint64_t p0, MonoString* p1)
+static uint64_t icall_JtilemapFindObjectLayer(uint64_t p0, const char* p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[2];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         r = joy_api_call("joy_scene_tilemap_find_object_layer", args, 2, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_tilemap_find_object_layer", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -6219,21 +5991,18 @@ static void icall_JtilemapRenderSetTilePx(uint64_t p0, float p1)
         return;
 }
 
-static int32_t icall_JtilemapRenderLayer(uint64_t p0, uint64_t p1, MonoString* p2, float p3, float p4, uint32_t p5)
+static int32_t icall_JtilemapRenderLayer(uint64_t p0, uint64_t p1, const char* p2, float p3, float p4, uint32_t p5)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[6];
-        char* s2 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
-        args[2] = joy_v_str((const char*)s2);
+        args[2] = joy_v_str((const char*)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_u32((uint32_t)p5);
         r = joy_api_call("joy_scene_tilemap_render_layer", args, 6, &st);
-        if (s2) mono_free(s2);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_tilemap_render_layer", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -6268,18 +6037,15 @@ static int32_t icall_KcpserverDestroy(uint64_t p0)
         return (int32_t)r.as.i32;
 }
 
-static void icall_KcpserverSend(uint64_t p0, int32_t p1, MonoString* p2, int32_t p3)
+static void icall_KcpserverSend(uint64_t p0, int32_t p1, const char* p2, int32_t p3)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[4];
-        char* s2 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
-        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
-        args[2] = joy_v_str((const char*)s2);
+        args[2] = joy_v_str((const char*)p2);
         args[3] = joy_v_i32((int32_t)p3);
         (void)joy_api_call("joy_net_kcpserver_send", args, 4, &st);
-        if (s2) mono_free(s2);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_kcpserver_send", joy_status_name(st), joy_last_error_where());
                 return;
@@ -6287,17 +6053,14 @@ static void icall_KcpserverSend(uint64_t p0, int32_t p1, MonoString* p2, int32_t
         return;
 }
 
-static void icall_KcpserverBroadcast(uint64_t p0, MonoString* p1, int32_t p2)
+static void icall_KcpserverBroadcast(uint64_t p0, const char* p1, int32_t p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[3];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_i32((int32_t)p2);
         (void)joy_api_call("joy_net_kcpserver_broadcast", args, 3, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_kcpserver_broadcast", joy_status_name(st), joy_last_error_where());
                 return;
@@ -6374,18 +6137,15 @@ static void icall_KcpclientDestroy(uint64_t p0)
         return;
 }
 
-static int32_t icall_KcpclientSend(uint64_t p0, MonoString* p1, int32_t p2)
+static int32_t icall_KcpclientSend(uint64_t p0, const char* p1, int32_t p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[3];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_i32((int32_t)p2);
         r = joy_api_call("joy_net_kcpclient_send", args, 3, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_kcpclient_send", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -6435,18 +6195,15 @@ static int32_t icall_TcpserverDestroy(uint64_t p0)
         return (int32_t)r.as.i32;
 }
 
-static void icall_TcpserverSend(uint64_t p0, int32_t p1, MonoString* p2, int32_t p3)
+static void icall_TcpserverSend(uint64_t p0, int32_t p1, const char* p2, int32_t p3)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[4];
-        char* s2 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
-        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
-        args[2] = joy_v_str((const char*)s2);
+        args[2] = joy_v_str((const char*)p2);
         args[3] = joy_v_i32((int32_t)p3);
         (void)joy_api_call("joy_net_tcpserver_send", args, 4, &st);
-        if (s2) mono_free(s2);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_tcpserver_send", joy_status_name(st), joy_last_error_where());
                 return;
@@ -6454,17 +6211,14 @@ static void icall_TcpserverSend(uint64_t p0, int32_t p1, MonoString* p2, int32_t
         return;
 }
 
-static void icall_TcpserverBroadcast(uint64_t p0, MonoString* p1, int32_t p2)
+static void icall_TcpserverBroadcast(uint64_t p0, const char* p1, int32_t p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[3];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_i32((int32_t)p2);
         (void)joy_api_call("joy_net_tcpserver_broadcast", args, 3, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_tcpserver_broadcast", joy_status_name(st), joy_last_error_where());
                 return;
@@ -6541,18 +6295,15 @@ static void icall_TcpclientDestroy(uint64_t p0)
         return;
 }
 
-static int32_t icall_TcpclientSend(uint64_t p0, MonoString* p1, int32_t p2)
+static int32_t icall_TcpclientSend(uint64_t p0, const char* p1, int32_t p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[3];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_i32((int32_t)p2);
         r = joy_api_call("joy_net_tcpclient_send", args, 3, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_tcpclient_send", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -6602,18 +6353,15 @@ static int32_t icall_WsnetserverDestroy(uint64_t p0)
         return (int32_t)r.as.i32;
 }
 
-static void icall_WsnetserverSend(uint64_t p0, int32_t p1, MonoString* p2, int32_t p3)
+static void icall_WsnetserverSend(uint64_t p0, int32_t p1, const char* p2, int32_t p3)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[4];
-        char* s2 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
-        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
-        args[2] = joy_v_str((const char*)s2);
+        args[2] = joy_v_str((const char*)p2);
         args[3] = joy_v_i32((int32_t)p3);
         (void)joy_api_call("joy_net_wsnetserver_send", args, 4, &st);
-        if (s2) mono_free(s2);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_wsnetserver_send", joy_status_name(st), joy_last_error_where());
                 return;
@@ -6621,17 +6369,14 @@ static void icall_WsnetserverSend(uint64_t p0, int32_t p1, MonoString* p2, int32
         return;
 }
 
-static void icall_WsnetserverBroadcast(uint64_t p0, MonoString* p1, int32_t p2)
+static void icall_WsnetserverBroadcast(uint64_t p0, const char* p1, int32_t p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[3];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_i32((int32_t)p2);
         (void)joy_api_call("joy_net_wsnetserver_broadcast", args, 3, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_wsnetserver_broadcast", joy_status_name(st), joy_last_error_where());
                 return;
@@ -6708,18 +6453,15 @@ static void icall_WsnetclientDestroy(uint64_t p0)
         return;
 }
 
-static int32_t icall_WsnetclientSend(uint64_t p0, MonoString* p1, int32_t p2)
+static int32_t icall_WsnetclientSend(uint64_t p0, const char* p1, int32_t p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[3];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_i32((int32_t)p2);
         r = joy_api_call("joy_net_wsnetclient_send", args, 3, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_wsnetclient_send", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -6768,18 +6510,15 @@ static void icall_NetclientDestroy(uint64_t p0)
         return;
 }
 
-static int32_t icall_NetclientSend(uint64_t p0, MonoString* p1, int32_t p2)
+static int32_t icall_NetclientSend(uint64_t p0, const char* p1, int32_t p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[3];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_i32((int32_t)p2);
         r = joy_api_call("joy_net_netclient_send", args, 3, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_netclient_send", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -6828,18 +6567,15 @@ static void icall_NetserverDestroy(uint64_t p0)
         return;
 }
 
-static void icall_NetserverSend(uint64_t p0, int32_t p1, MonoString* p2, int32_t p3)
+static void icall_NetserverSend(uint64_t p0, int32_t p1, const char* p2, int32_t p3)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[4];
-        char* s2 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
-        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
-        args[2] = joy_v_str((const char*)s2);
+        args[2] = joy_v_str((const char*)p2);
         args[3] = joy_v_i32((int32_t)p3);
         (void)joy_api_call("joy_net_netserver_send", args, 4, &st);
-        if (s2) mono_free(s2);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_netserver_send", joy_status_name(st), joy_last_error_where());
                 return;
@@ -6847,17 +6583,14 @@ static void icall_NetserverSend(uint64_t p0, int32_t p1, MonoString* p2, int32_t
         return;
 }
 
-static void icall_NetserverBroadcast(uint64_t p0, MonoString* p1, int32_t p2)
+static void icall_NetserverBroadcast(uint64_t p0, const char* p1, int32_t p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[3];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_i32((int32_t)p2);
         (void)joy_api_call("joy_net_netserver_broadcast", args, 3, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_netserver_broadcast", joy_status_name(st), joy_last_error_where());
                 return;
@@ -7090,16 +6823,13 @@ static int32_t icall_SceneNodeGetZorder(uint64_t p0)
         return (int32_t)r.as.i32;
 }
 
-static void icall_SceneNodeSetName(uint64_t p0, MonoString* p1)
+static void icall_SceneNodeSetName(uint64_t p0, const char* p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[2];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         (void)joy_api_call("joy_scene_node_set_name", args, 2, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_node_set_name", joy_status_name(st), joy_last_error_where());
                 return;
@@ -7107,16 +6837,13 @@ static void icall_SceneNodeSetName(uint64_t p0, MonoString* p1)
         return;
 }
 
-static void icall_SceneNodeSetTag(uint64_t p0, MonoString* p1)
+static void icall_SceneNodeSetTag(uint64_t p0, const char* p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[2];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         (void)joy_api_call("joy_scene_node_set_tag", args, 2, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_node_set_tag", joy_status_name(st), joy_last_error_where());
                 return;
@@ -7124,17 +6851,14 @@ static void icall_SceneNodeSetTag(uint64_t p0, MonoString* p1)
         return;
 }
 
-static uint64_t icall_SceneFindNodeByName(uint64_t p0, MonoString* p1)
+static uint64_t icall_SceneFindNodeByName(uint64_t p0, const char* p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[2];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         r = joy_api_call("joy_scene_find_node_by_name", args, 2, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_find_node_by_name", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -7142,17 +6866,14 @@ static uint64_t icall_SceneFindNodeByName(uint64_t p0, MonoString* p1)
         return (uint64_t)r.as.handle;
 }
 
-static uint64_t icall_SceneFindNodeByNameDeep(uint64_t p0, MonoString* p1)
+static uint64_t icall_SceneFindNodeByNameDeep(uint64_t p0, const char* p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[2];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         r = joy_api_call("joy_scene_find_node_by_name_deep", args, 2, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_find_node_by_name_deep", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -7635,17 +7356,14 @@ static void icall_JecsProcess(uint64_t p0, float p1)
         return;
 }
 
-static void icall_JecsDefine(uint64_t p0, MonoString* p1, uint64_t p2)
+static void icall_JecsDefine(uint64_t p0, const char* p1, uint64_t p2)
 {
         joy_status_t st = JOY_OK;
         joy_value_t args[3];
-        char* s1 = NULL;
         args[0] = joy_v_handle((uint64_t)p0);
-        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
-        args[1] = joy_v_str((const char*)s1);
+        args[1] = joy_v_str((const char*)p1);
         args[2] = joy_v_u64((uint64_t)p2);
         (void)joy_api_call("joy_scene_ecs_define", args, 3, &st);
-        if (s1) mono_free(s1);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_ecs_define", joy_status_name(st), joy_last_error_where());
                 return;
@@ -7678,17 +7396,14 @@ static void icall_AudioCloseDevice(uint32_t p0)
         return;
 }
 
-static int32_t icall_AudioCreateWav(MonoString* p0, uint32_t p1)
+static int32_t icall_AudioCreateWav(const char* p0, uint32_t p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[2];
-        char* s0 = NULL;
-        s0 = p0 ? mono_string_to_utf8(p0) : NULL;
-        args[0] = joy_v_str((const char*)s0);
+        args[0] = joy_v_str((const char*)p0);
         args[1] = joy_v_u32((uint32_t)p1);
         r = joy_api_call("joy_audio_create_wav", args, 2, &st);
-        if (s0) mono_free(s0);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_audio_create_wav", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -7696,17 +7411,14 @@ static int32_t icall_AudioCreateWav(MonoString* p0, uint32_t p1)
         return (int32_t)r.as.b;
 }
 
-static int32_t icall_AudioCreateMp3(MonoString* p0, uint32_t p1)
+static int32_t icall_AudioCreateMp3(const char* p0, uint32_t p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[2];
-        char* s0 = NULL;
-        s0 = p0 ? mono_string_to_utf8(p0) : NULL;
-        args[0] = joy_v_str((const char*)s0);
+        args[0] = joy_v_str((const char*)p0);
         args[1] = joy_v_u32((uint32_t)p1);
         r = joy_api_call("joy_audio_create_mp3", args, 2, &st);
-        if (s0) mono_free(s0);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_audio_create_mp3", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -7714,17 +7426,14 @@ static int32_t icall_AudioCreateMp3(MonoString* p0, uint32_t p1)
         return (int32_t)r.as.b;
 }
 
-static int32_t icall_AudioCreateFlac(MonoString* p0, uint32_t p1)
+static int32_t icall_AudioCreateFlac(const char* p0, uint32_t p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[2];
-        char* s0 = NULL;
-        s0 = p0 ? mono_string_to_utf8(p0) : NULL;
-        args[0] = joy_v_str((const char*)s0);
+        args[0] = joy_v_str((const char*)p0);
         args[1] = joy_v_u32((uint32_t)p1);
         r = joy_api_call("joy_audio_create_flac", args, 2, &st);
-        if (s0) mono_free(s0);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_audio_create_flac", joy_status_name(st), joy_last_error_where());
                 return 0;
@@ -7732,17 +7441,14 @@ static int32_t icall_AudioCreateFlac(MonoString* p0, uint32_t p1)
         return (int32_t)r.as.b;
 }
 
-static int32_t icall_AudioCreateOgg(MonoString* p0, uint32_t p1)
+static int32_t icall_AudioCreateOgg(const char* p0, uint32_t p1)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
         joy_value_t args[2];
-        char* s0 = NULL;
-        s0 = p0 ? mono_string_to_utf8(p0) : NULL;
-        args[0] = joy_v_str((const char*)s0);
+        args[0] = joy_v_str((const char*)p0);
         args[1] = joy_v_u32((uint32_t)p1);
         r = joy_api_call("joy_audio_create_ogg", args, 2, &st);
-        if (s0) mono_free(s0);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_audio_create_ogg", joy_status_name(st), joy_last_error_where());
                 return 0;

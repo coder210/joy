@@ -53,7 +53,12 @@ if(JOY_MODULE_CS)
     target_sources(joy_module_cs INTERFACE ${_glue})
     target_include_directories(joy_module_cs INTERFACE ${MONO_INCLUDE_DIR})
     target_compile_definitions(joy_module_cs INTERFACE ENABLED_CS_SCRIPT)
-    target_link_libraries(joy_module_cs INTERFACE ${MONO_LIBRARIES})
+    # 迁移后 cs 模块已完全不调用 mono_* API（jcsx.c 动态加载 hostfxr /
+    # dlopen libmonosgen），因此不再静态链接 MONO_LIBRARIES：
+    #  - Windows：部署的是自包含真 CoreCLR 的 coreclr.dll，不是 MonoVM 导入库对应的那份；
+    #  - Linux/macOS：若链接 MonoVM 主库，exe 的 DT_NEEDED 会指向 libmonosgen/libcoreclr.so，
+    #    与自包含部署的 libcoreclr.so 冲突，ldd 报 not found。
+    # MONO_INCLUDE_DIR 仍保留（部分历史胶水可能引用 mono 头文件），仅去掉链接。
 
     if(JOY_SCRIPT_INCLUDE_ROOT)
         source_group(TREE "${JOY_SCRIPT_INCLUDE_ROOT}" FILES ${_glue})

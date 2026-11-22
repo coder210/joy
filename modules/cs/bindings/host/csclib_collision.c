@@ -15,8 +15,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-#include <mono/metadata/object.h>
-#include <mono/utils/mono-publib.h>
 #include "joy_csharp.h"
 #include <joy/joy.h>
 
@@ -46,9 +44,10 @@ static bool w_gjk_box_box(
         return hit;
 }
 
-/* mesh (convex hull from vertex array) vs box; fills normal (mesh->box) and depth. */
+/* mesh (convex hull from vertex array) vs box; fills normal (mesh->box) and depth.
+ * CoreCLR: C# passes fixed long* (Q32 fp) + vertex count; no MonoArray. */
 static bool w_gjk_mesh_box(
-        MonoArray* verts, int vert_count,
+        const int64_t* verts, int vert_count,
         int64_t bx, int64_t by, int64_t bz, int64_t bhx, int64_t bhy, int64_t bhz,
         int64_t dirx, int64_t diry, int64_t dirz,
         int64_t* out_nx, int64_t* out_ny, int64_t* out_nz, int64_t* out_depth)
@@ -56,7 +55,7 @@ static bool w_gjk_mesh_box(
         if (!verts || vert_count <= 0 || vert_count > 64) return false;
 
         joy_vec3f_t vbuf[64];
-        int64_t* src = (int64_t*)(void*)mono_array_addr_with_size(verts, sizeof(int64_t), 0);
+        const int64_t* src = verts;
         for (int i = 0; i < vert_count; ++i) {
                 vbuf[i].x = src[i * 3 + 0];
                 vbuf[i].y = src[i * 3 + 1];

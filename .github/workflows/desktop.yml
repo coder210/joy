@@ -111,6 +111,37 @@ jobs:
           cmake --build build/examples --config Release \
             --target example_csharp 2>&1 | tee build-csharp.log
 
+      # csharp 示例走自包含部署（Godot 导出版做法）：验证运行时齐全、BCL 已裁剪，
+      # 且 smoke 确实通过 hostfxr 命令行模式加载自带 CoreCLR（玩家无需装 .NET）。
+      - name: Verify csharp self-contained runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          out=build/examples/Release
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            fxr=hostfxr.dll; policy=hostpolicy.dll; clr=coreclr.dll
+          elif [ "$RUNNER_OS" = "macOS" ]; then
+            fxr=libhostfxr.dylib; policy=libhostpolicy.dylib; clr=libcoreclr.dylib
+          else
+            fxr=libhostfxr.so; policy=libhostpolicy.so; clr=libcoreclr.so
+          fi
+          for f in "$fxr" "$policy" "$clr" JoyGame.runtimeconfig.json JoyGame.deps.json; do
+            test -e "$out/$f" || { echo "::error::self-contained runtime missing: $f"; exit 1; }
+          done
+          bcl=$(find "$out" -maxdepth 1 -name 'System.*.dll' | wc -l)
+          echo "deployed BCL count: $bcl (whitelist ~29, not full 161)"
+          [ "$bcl" -lt 60 ] || { echo "::error::BCL not pruned (found $bcl)"; exit 1; }
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            exe="$out/example_csharp.exe"
+          else
+            exe="$out/example_csharp"
+          fi
+          ( cd "$out" && SDL_VIDEODRIVER=dummy "./$exe" --smoke 20 ) 2>&1 | tee csharp-selfcontained.log
+          grep -Fq 'command-line mode' csharp-selfcontained.log \
+            || { echo "::error::csharp did not load self-contained CoreCLR"; exit 1; }
+          grep -Fq 'smoke finished' csharp-selfcontained.log \
+            || { echo "::error::csharp self-contained smoke did not finish"; exit 1; }
+
       # 四个冒烟都用 dummy 视频驱动；--timeout 必备（历史上渲染卡死拖死整轮）。
       - name: Smoke tests
         shell: bash

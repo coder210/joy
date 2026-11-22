@@ -59,18 +59,23 @@ static int find_arg(int argc, char* argv[], const char* name)
 static const char* const kClrLibs[] = {
     "System.Private.CoreLib.dll", "netstandard.dll",
     "System.Runtime.dll", "System.Collections.dll",
-    "Joy.Bindings.dll", NULL
+    "Joy.Bindings.dll", "JoyGame.dll", NULL   /* TPA 也需要 JoyGame.dll 本体 */
 };
 
 static bool copy_clr_lib(const char* dir, const char* name)
 {
     char src[512], dst[512];
+    /* BCL/Joy.Bindings 在 assets/lib/；JoyGame.dll 在 assets 根（CMake 部署不同）。 */
     SDL_snprintf(src, sizeof(src), "lib/%s", name);
+    size_t size = 0;
+    void* data = SDL_LoadFile(src, &size);
+    if (!data) {
+        SDL_snprintf(src, sizeof(src), "%s", name);
+        data = SDL_LoadFile(src, &size);
+    }
     /* SDL_GetPrefPath() 在 Android 返回带尾部 '/' 的内部存储路径 */
     SDL_snprintf(dst, sizeof(dst), "%s%s", dir, name);
 
-    size_t size = 0;
-    void* data = SDL_LoadFile(src, &size);
     if (!data) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                      "[cs] read asset %s failed: %s", src, SDL_GetError());
@@ -105,9 +110,9 @@ static bool setup_clr_dirs(void)
             return false;
         }
     }
-    /* MONO_LIB_DIR 是 jcsx.c 自己读的变量；MonoVM 认的是 MONO_PATH，
-     * .NET 8 还要求 mono_set_assemblies_path()（见 jcsx.c）。两条路径
-     * 都指向同一个解包目录，缺一条都可能让 C# APK 启动闪退。 */
+    /* JOY_CLR_LIB_DIR 由 jcsx.c 的 coreclr_initialize 拼 TPA 时读取；
+     * MONO_PATH / MONO_LIB_DIR 保留给上游 joy 代码，都指向同一解包目录。 */
+    setenv("JOY_CLR_LIB_DIR", pref, 1);
     setenv("MONO_PATH", pref, 1);
     setenv("MONO_LIB_DIR", pref, 1);
     SDL_Log("[cs] CLR dirs: %s", pref);
@@ -169,7 +174,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
     /* stderr 在 Android 上不稳定，全部走 SDL_Log → logcat，闪退时能定位到
      * 是 CLR 初始化、程序集加载还是方法查找哪一步失败。 */
-    SDL_Log("[cs] creating MonoVM, assembly=%s", g_assembly);
+    SDL_Log("[cs] creating CoreCLR, assembly=%s", g_assembly);
     g_csx = csx_create();
     if (!g_csx) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
@@ -190,7 +195,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
                      "[host] JoyGame.Host.OnInit/OnFrame not found");
         return SDL_APP_FAILURE;
     }
-    SDL_Log("[cs] MonoVM ready");
+    SDL_Log("[cs] CoreCLR ready");
 
     {
         int w = APP_W;

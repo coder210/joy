@@ -1,9 +1,13 @@
-/* C# -> joy glue: hand-written InternalCalls for r3d L3/L2 APIs (batch 2).
+/* C# -> joy glue: hand-written native bindings for r3d L3/L2 APIs (batch 2).
  *
  * Companion to csclib_r3d.c: texture load, logical-presentation conversion,
  * by-value vec3/color draws, and r3d UI object creation/query/color/state.
  * These are status:off in joy.idl (void* buffers, by-value structs, char*
- * returns) so the generator emits no thunks; we register Mono InternalCalls.
+ * returns) so the generator emits no thunks; we register native bindings.
+ *
+ * CoreCLR 函数指针表绑定：C# 侧把 string 转 UTF-8 的 const char* 传入；
+ * 返回 string 的 API 返回静态缓冲的 const char*，C# 立即 PtrToStringUTF8 拷贝。
+ * 不再用 MonoString / MonoArray / mono_* API。
  *
  * Handles are uint64_t joy_obj handles. Create returns are registered with
  * the matching *_destroy dtor so the C# strong-type wrapper (whose finalizer
@@ -15,9 +19,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-#include <mono/metadata/object.h>
-#include <mono/metadata/appdomain.h>   /* mono_get_root_domain */
-#include <mono/utils/mono-publib.h>
 #include "joy_csharp.h"
 #include <joy/joy.h>
 #include <joy/api/runtime/joy_obj.h>
@@ -30,11 +31,6 @@ static void* deref(uint64_t h, const char* tag)
 static joy_r3d_p deref_r3d(uint64_t h) { return (joy_r3d_p)deref(h, "joy_r3d_p"); }
 static joy_render_mesh_p deref_mesh(uint64_t h) { return (joy_render_mesh_p)deref(h, "joy_render_mesh_p"); }
 
-static char* dup_mono_str(MonoString* s)
-{
-        return s ? mono_string_to_utf8(s) : NULL;
-}
-
 /* ---- dtors for created UI objects ---- */
 static void dtor_button(void* p)         { if (p) joy_r3d_button_destroy((joy_r3d_button_p)p); }
 static void dtor_label(void* p)          { if (p) joy_r3d_label_destroy((joy_r3d_label_p)p); }
@@ -44,24 +40,20 @@ static void dtor_slider(void* p)         { if (p) joy_r3d_slider_destroy((joy_r3
 static void dtor_checkbox(void* p)       { if (p) joy_r3d_checkbox_destroy((joy_r3d_checkbox_p)p); }
 
 /* ---- texture ---- */
-static intptr_t w_create_texture(uint64_t r_h, int w, int h, MonoArray* rgba, bool flip)
+/* CoreCLR：C# fixed byte[] 传指针；长度由 C# 侧 public 包装校验（>= w*h*4）。 */
+static intptr_t w_create_texture(uint64_t r_h, int w, int h, const uint8_t* rgba, bool flip)
 {
         joy_r3d_p r = deref_r3d(r_h);
         if (!r || !rgba) return 0;
-        int need = mono_array_length(rgba);
-        if (need < w * h * 4) return 0;
-        unsigned char* buf = (unsigned char*)mono_array_addr_with_size(rgba, 1, 0);
-        void* tex = joy_r3d_create_texture(r, w, h, buf, flip ? 1 : 0);
+        void* tex = joy_r3d_create_texture(r, w, h, (const unsigned char*)rgba, flip ? 1 : 0);
         return (intptr_t)tex;
 }
 
-static intptr_t w_load_texture_png(uint64_t r_h, MonoString* path, int* out_w, int* out_h)
+static intptr_t w_load_texture_png(uint64_t r_h, const char* path, int* out_w, int* out_h)
 {
         joy_r3d_p r = deref_r3d(r_h);
         if (!r) { if (out_w) *out_w = 0; if (out_h) *out_h = 0; return 0; }
-        char* p = dup_mono_str(path);
-        void* tex = joy_r3d_load_texture_png(r, p, out_w, out_h);
-        if (p) mono_free(p);
+        void* tex = joy_r3d_load_texture_png(r, path ? path : "", out_w, out_h);
         return (intptr_t)tex;
 }
 
@@ -109,38 +101,30 @@ static void w_draw_mesh_tex(uint64_t r_h, uint64_t m_h,
 }
 
 /* ---- UI create ---- */
-static uint64_t w_button_create(float x, float y, float w, float h, MonoString* text)
+static uint64_t w_button_create(float x, float y, float w, float h, const char* text)
 {
-        char* t = dup_mono_str(text);
-        joy_r3d_button_p b = joy_r3d_button_create(x, y, w, h, t ? t : "");
-        if (t) mono_free(t);
+        joy_r3d_button_p b = joy_r3d_button_create(x, y, w, h, text ? text : "");
         if (!b) return 0;
         return joy_obj_register((void*)b, "joy_r3d_button_p", dtor_button, "joy_r3d_button_create");
 }
 static uint64_t w_label_create(float x, float y, float fs,
-                               uint8_t cr, uint8_t cg, uint8_t cb, MonoString* text)
+                               uint8_t cr, uint8_t cg, uint8_t cb, const char* text)
 {
-        char* t = dup_mono_str(text);
-        joy_r3d_label_p l = joy_r3d_label_create(x, y, fs, cr, cg, cb, t ? t : "");
-        if (t) mono_free(t);
+        joy_r3d_label_p l = joy_r3d_label_create(x, y, fs, cr, cg, cb, text ? text : "");
         if (!l) return 0;
         return joy_obj_register((void*)l, "joy_r3d_label_p", dtor_label, "joy_r3d_label_create");
 }
 static uint64_t w_input_create(float x, float y, float w, float h, float fs,
-                               uint8_t cr, uint8_t cg, uint8_t cb, MonoString* text)
+                               uint8_t cr, uint8_t cg, uint8_t cb, const char* text)
 {
-        char* t = dup_mono_str(text);
-        joy_r3d_input_p inp = joy_r3d_input_create(x, y, w, h, fs, cr, cg, cb, t ? t : "");
-        if (t) mono_free(t);
+        joy_r3d_input_p inp = joy_r3d_input_create(x, y, w, h, fs, cr, cg, cb, text ? text : "");
         if (!inp) return 0;
         return joy_obj_register((void*)inp, "joy_r3d_input_p", dtor_input, "joy_r3d_input_create");
 }
 static uint64_t w_combobox_input_create(float x, float y, float w, float h, float fs,
-                                        uint8_t cr, uint8_t cg, uint8_t cb, MonoString* text)
+                                        uint8_t cr, uint8_t cg, uint8_t cb, const char* text)
 {
-        char* t = dup_mono_str(text);
-        joy_r3d_combobox_input_p ci = joy_r3d_combobox_input_create(x, y, w, h, fs, cr, cg, cb, t ? t : "");
-        if (t) mono_free(t);
+        joy_r3d_combobox_input_p ci = joy_r3d_combobox_input_create(x, y, w, h, fs, cr, cg, cb, text ? text : "");
         if (!ci) return 0;
         return joy_obj_register((void*)ci, "joy_r3d_combobox_input_p", dtor_combobox, "joy_r3d_combobox_input_create");
 }
@@ -150,27 +134,29 @@ static uint64_t w_slider_create(float x, float y, float w, float h, float min, f
         if (!s) return 0;
         return joy_obj_register((void*)s, "joy_r3d_slider_p", dtor_slider, "joy_r3d_slider_create");
 }
-static uint64_t w_checkbox_create(float x, float y, float size, MonoString* label)
+static uint64_t w_checkbox_create(float x, float y, float size, const char* label)
 {
-        char* t = dup_mono_str(label);
-        joy_r3d_checkbox_p cb = joy_r3d_checkbox_create(x, y, size, t ? t : "");
-        if (t) mono_free(t);
+        joy_r3d_checkbox_p cb = joy_r3d_checkbox_create(x, y, size, label ? label : "");
         if (!cb) return 0;
         return joy_obj_register((void*)cb, "joy_r3d_checkbox_p", dtor_checkbox, "joy_r3d_checkbox_create");
 }
 
-/* ---- get_text ---- */
-static MonoString* w_input_get_text(uint64_t inp_h)
+/* ---- get_text：返回静态缓冲的 UTF-8，C# 立即 PtrToStringUTF8 拷贝 ---- */
+static const char* w_input_get_text(uint64_t inp_h)
 {
+        static char buf[1024];
         joy_r3d_input_p inp = (joy_r3d_input_p)deref(inp_h, "joy_r3d_input_p");
         const char* txt = inp ? joy_r3d_input_get_text(inp) : NULL;
-        return mono_string_new(mono_get_root_domain(), txt ? txt : "");
+        snprintf(buf, sizeof(buf), "%s", txt ? txt : "");
+        return buf;
 }
-static MonoString* w_combobox_input_get_text(uint64_t ci_h)
+static const char* w_combobox_input_get_text(uint64_t ci_h)
 {
+        static char buf[1024];
         joy_r3d_combobox_input_p ci = (joy_r3d_combobox_input_p)deref(ci_h, "joy_r3d_combobox_input_p");
         const char* txt = ci ? joy_r3d_combobox_input_get_text(ci) : NULL;
-        return mono_string_new(mono_get_root_domain(), txt ? txt : "");
+        snprintf(buf, sizeof(buf), "%s", txt ? txt : "");
+        return buf;
 }
 
 /* ---- slider colors / checkbox state ---- */

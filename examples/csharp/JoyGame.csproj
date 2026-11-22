@@ -1,7 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <!-- Mono 宿主加载：netstandard2.0 是最稳的目标框架 -->
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <!-- CoreCLR 宿主：与 Joy.Bindings 一致用 net8.0 -->
+    <TargetFramework>net8.0</TargetFramework>
+    <!-- 自包含 publish 需要 RID 清单；函数指针表绑定需要 unsafe。 -->
+    <RuntimeIdentifiers>win-x64;linux-x64;osx-x64;osx-arm64</RuntimeIdentifiers>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>JoyGame</AssemblyName>
     <RootNamespace>JoyGame</RootNamespace>
     <LangVersion>latest</LangVersion>

@@ -24,9 +24,10 @@ const MAP = {
   'unsigned long': { cs: 'ulong',  c: 'uint64_t', kind: 'JOY_V_U64',  acc: 'as.u64',  wrap: 'joy_v_u64',  cast: '(uint64_t)' },
   'float':         { cs: 'float',  c: 'float',    kind: 'JOY_V_F64',  acc: 'as.f64',  wrap: 'joy_v_f64',  cast: '(double)' },
   'double':        { cs: 'double', c: 'double',   kind: 'JOY_V_F64',  acc: 'as.f64',  wrap: 'joy_v_f64',  cast: '(double)' },
-  /* const char* 入参：MonoString → UTF-8 → joy_v_str，调用返回后 mono_free。
+  /* const char* 入参：C# 侧已转 UTF-8 → const char* → joy_v_str。
+   * CoreCLR 函数指针表绑定下不再有 MonoString*；C# 负责 Utf8/FreeUtf8。
    * 返回 char* 的 API 不走这里：所有权（谁 free）必须人工标注。 */
-  'char*':         { cs: 'string', c: 'MonoString*', kind: 'JOY_V_STR', acc: 'as.str',
+  'char*':         { cs: 'string', c: 'const char*', kind: 'JOY_V_STR', acc: 'as.str',
                      wrap: 'joy_v_str', cast: '(const char*)', str: true },
 };
 
@@ -44,6 +45,38 @@ function infoOf(t) {
   const m = MAP[t];
   if (!m) throw new Error('cs 适配暂不支持类型：' + t + '（结构体 / 数组需手写）');
   return m;
+}
+
+/* CoreCLR 函数指针表：把参数类型映射成 delegate* unmanaged 的精确 C# 参数类型。
+ * 规则与手写绑定保持一致：
+ *   bool  -> byte（C 侧 bool 是 1 字节，C# bool 默认 4 字节，必须显式用 byte）
+ *   string-> byte*（UTF-8，C# 侧 Utf8/FreeUtf8）
+ *   句柄  -> ulong
+ *   其余 blittable 数值原样。
+ * 注意 float/double：C 侧 wrap 用 joy_v_f64，但函数形参签名仍是 float/double，
+ * 故这里按 infoOf(...).c 走（'float'/'double'），不是 kind。 */
+function nativeParamType(t) {
+  const ti = infoOf(t);
+  if (ti.str) return 'byte*';
+  if (ti.handle) return 'ulong';
+  if (t === 'bool') return 'byte';
+  switch (ti.c) {
+    case 'int32_t':  return 'int';
+    case 'uint32_t': return 'uint';
+    case 'int64_t':  return 'long';
+    case 'uint64_t': return 'ulong';
+    case 'float':    return 'float';
+    case 'double':   return 'double';
+    default: throw new Error('nativeParamType 无法映射：' + t + ' (c=' + ti.c + ')');
+  }
+}
+
+/* 生成某条 API 的 delegate* unmanaged[Cdecl] 类型串。
+ * e.params 必须是已展开（paramsOf）的参数列表。 */
+function fnPtrType(e) {
+  const ps = e.params.map(p => nativeParamType(p.ctype));
+  const ret = e.ret === 'void' ? 'void' : nativeParamType(e.ret);
+  return 'delegate* unmanaged[Cdecl]<' + ps.concat([ret]).join(', ') + '>';
 }
 
 /* --enable 用：cs 后端能否为这条 API 生成包装。 */
@@ -71,26 +104,18 @@ function emitIcall(e) {
   const ret = e.ret === 'void' ? null : infoOf(e.ret);
   const mn = methodName(e.name);
   const decl = flat.map((p, i) => infoOf(p.ctype).c + ' p' + i).join(', ');
-  const strs = flat.map((p, i) => (p.ctype === 'char*' ? i : -1)).filter(i => i >= 0);
-
   L.push('static ' + (ret ? ret.c : 'void') + ' icall_' + mn + '(' + (decl || 'void') + ')');
   L.push('{');
   L.push('        joy_status_t st = JOY_OK;');
   if (ret) L.push('        joy_value_t r;');
   if (n) L.push('        joy_value_t args[' + n + '];');
-  for (const i of strs) L.push('        char* s' + i + ' = NULL;');
   flat.forEach((p, i) => {
     const ti = infoOf(p.ctype);
-    if (ti.str) {
-      L.push('        s' + i + ' = p' + i + ' ? mono_string_to_utf8(p' + i + ') : NULL;');
-      L.push('        args[' + i + '] = joy_v_str((const char*)s' + i + ');');
-    } else {
-      L.push('        args[' + i + '] = ' + ti.wrap + '(' + ti.cast + 'p' + i + ');');
-    }
+    // CoreCLR：C# 侧已把 string 转成 UTF-8 的 byte*（const char*），无需 mono_string_to_utf8。
+    L.push('        args[' + i + '] = ' + ti.wrap + '(' + ti.cast + 'p' + i + ');');
   });
   L.push('        ' + (ret ? 'r = ' : '(void)') + 'joy_api_call('
     + q(e.name) + ', ' + (n ? 'args' : 'NULL') + ', ' + n + ', &st);');
-  for (const i of strs) L.push('        if (s' + i + ') mono_free(s' + i + ');');
   L.push('        if (st != JOY_OK) {');
   L.push('                fprintf(stderr, "[joy.api] %s failed: %s at %s\\n", '
     + q(e.name) + ', joy_status_name(st), joy_last_error_where());');
@@ -110,16 +135,12 @@ function buildC(open) {
   const L = [];
   L.push('/* ============================================================');
   L.push(' * 自动生成，勿手改：node api/tools/gen_bindings.js --emit');
-  L.push(' * cs 后端薄适配：Mono 值 → joy_value[] → 共享 thunk（不含业务逻辑）。');
+  L.push(' * cs 后端薄适配：CoreCLR 函数指针表 → joy_value[] → 共享 thunk（不含业务逻辑）。');
   L.push(' * joy.idl 里 status:on 的 L0/L1，以及可展开的 L2 试点条目会出现在这里。');
   L.push(' * ============================================================ */');
   L.push('#include <stdint.h>');
   L.push('#include <stdio.h>');
-  L.push('#include <mono/metadata/object.h>');
-  L.push('#include <mono/metadata/appdomain.h>');
-  /* mono_free 只声明在 mono/utils/mono-publib.h（details/mono-publib-functions.h），
-   * object.h 不传递它；缺这行时 NDK clang 按 C99 隐式函数声明直接报错。 */
-  L.push('#include <mono/utils/mono-publib.h>');
+  /* CoreCLR 函数指针表绑定：string 由 C# 侧转 UTF-8，这里不再 include mono 头。 */
   L.push('#include <joy/joy.h>');
   L.push('#include <joy/api/runtime/joy_value.h>');
   L.push('#include <joy/api/runtime/joy_obj.h>');
@@ -161,22 +182,69 @@ function buildCs(open) {
   L.push('using System;');
   L.push('using System.Runtime.CompilerServices;');
   L.push('');
+  /* 汇总所有 internal call：生成 API + 3 个辅助（Release / Debug*）。
+   * 每项保留展开后的参数列表，供函数指针签名与包装体共用。 */
+  const calls = open.map(e => ({
+    reg: 'Joy.Api.Native::' + methodName(e.name),
+    mn: methodName(e.name),
+    ret: e.ret,
+    params: paramsOf(e),
+  }));
+  calls.push({ reg: 'Joy.Api.Native::Release', mn: 'Release', ret: 'void',
+    params: [{ ctype: 'uint64_t', name: 'handle' }] });
+  calls.push({ reg: 'Joy.Api.Native::DebugLiveCount', mn: 'DebugLiveCount', ret: 'uint32_t', params: [] });
+  calls.push({ reg: 'Joy.Api.Native::DebugDestroyCount', mn: 'DebugDestroyCount', ret: 'uint32_t', params: [] });
+
   L.push('namespace Joy.Api');
   L.push('{');
-  L.push('    internal static class Native');
+  L.push('    internal static unsafe class Native');
   L.push('    {');
-  for (const e of open) {
-    const ret = e.ret === 'void' ? 'void' : infoOf(e.ret).cs;
-    const ps = paramsOf(e).map((p, i) => infoOf(p.ctype).cs + ' ' + (p.name || ('arg' + i))).join(', ');
-    L.push('        [MethodImpl(MethodImplOptions.InternalCall)]');
-    L.push('        internal static extern ' + ret + ' ' + methodName(e.name) + '(' + ps + ');');
+  /* 1) 每条调用一个 delegate* 字段 */
+  for (const c of calls) L.push('        private static ' + fnPtrType(c) + ' s_' + c.mn + ';');
+  L.push('');
+  /* 2) Init()：按注册名查表（由 NativeFuncs.Initialize 统一触发） */
+  L.push('        internal static void Init()');
+  L.push('        {');
+  for (const c of calls) {
+    L.push('            s_' + c.mn + ' = (' + fnPtrType(c) + ')NativeFuncs.Lookup(' + q(c.reg) + ');');
   }
-  L.push('        [MethodImpl(MethodImplOptions.InternalCall)]');
-  L.push('        internal static extern void Release(ulong handle);');
-  L.push('        [MethodImpl(MethodImplOptions.InternalCall)]');
-  L.push('        internal static extern uint DebugLiveCount();');
-  L.push('        [MethodImpl(MethodImplOptions.InternalCall)]');
-  L.push('        internal static extern uint DebugDestroyCount();');
+  L.push('        }');
+  L.push('');
+  /* 3) 包装方法：保持原签名，内部经 delegate* 调用；string 做 Utf8/FreeUtf8，bool 做 byte 转换 */
+  for (const c of calls) {
+    const ret = c.ret === 'void' ? 'void' : infoOf(c.ret).cs;
+    const ps = c.params.map((p, i) => infoOf(p.ctype).cs + ' ' + (p.name || ('arg' + i))).join(', ');
+    L.push('        internal static ' + ret + ' ' + c.mn + '(' + ps + ')');
+    L.push('        {');
+    const strVars = [];
+    c.params.forEach((p, i) => {
+      const t = infoOf(p.ctype);
+      if (t.str) {
+        const vn = '__p' + i;
+        strVars.push(vn);
+        L.push('            byte* ' + vn + ' = NativeFuncs.Utf8(' + (p.name || ('arg' + i)) + ');');
+      }
+    });
+    const args = c.params.map((p, i) => {
+      const nm = p.name || ('arg' + i);
+      if (infoOf(p.ctype).str) return '__p' + i;
+      if (p.ctype === 'bool') return '(byte)(' + nm + ' ? 1 : 0)';
+      return nm;
+    }).join(', ');
+    const call = 's_' + c.mn + '(' + args + ')';
+    let body;
+    if (c.ret === 'void') body = call + ';';
+    else if (c.ret === 'bool') body = 'return ' + call + ' != 0;';
+    else body = 'return ' + call + ';';
+    if (strVars.length) {
+      L.push('            try { ' + body + ' }');
+      L.push('            finally { ' + strVars.map(v => 'NativeFuncs.FreeUtf8(' + v + ');').join(' ') + ' }');
+    } else {
+      L.push('            ' + body);
+    }
+    L.push('        }');
+    L.push('');
+  }
   L.push('    }');
   L.push('');
   L.push('    public static class Diagnostics');

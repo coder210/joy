@@ -4,8 +4,6 @@
  */
 #include <stdio.h>
 #include <stdbool.h>
-#include <mono/metadata/object.h>
-#include <mono/utils/mono-publib.h>  /* mono_free 的声明不由 object.h 传递 */
 #include "joy_csharp.h"
 
 static bool s_quit = false;
@@ -17,17 +15,11 @@ bool csx_host_quit_requested(void) { return s_quit; }
 void csx_host_set_exit_code(int code) { s_exit_code = code; }
 int  csx_host_exit_code(void) { return s_exit_code; }
 
-static void w_log(MonoString* msg)
+/* CoreCLR: C# 侧 Utf8() 传入 const char*，无需 mono_string_to_utf8。 */
+static void w_log(const char* msg)
 {
-        if (!msg) {
-                printf("[cs] (null)\n");
-                fflush(stdout);
-                return;
-        }
-        char* s = mono_string_to_utf8(msg);
-        printf("[cs] %s\n", s);
+        printf("[cs] %s\n", msg ? msg : "(null)");
         fflush(stdout);
-        mono_free(s);
 }
 
 static void w_quit(void) { csx_host_request_quit(); }

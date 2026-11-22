@@ -81,38 +81,58 @@ if(CMAKE_GENERATOR MATCHES "Visual Studio")
     add_dependencies(example_csharp_managed JoyGame)
 endif()
 
-# ---- 托管运行时文件：全部铺进 JOY_EXAMPLE_ASSET_ROOT（无 assets/ 前缀） ----
-# 桌面就是 exe 同目录；Android 是 pack/，打包时原样成为 APK 的 assets 根。
-# coreclr.dll 是原生库，由系统加载器从 exe 旁查找，必须留在根目录（见下方部署函数）。
-# BCL 按 RID 存放在 <平台目录>/libs/：CoreLib 含平台特化的 P/Invoke 面
-# （Windows 走 kernel32、Android 走 liblog），实测两者 91% 字节不同，
-# 跨平台混用会在原生化调用上直接失败，所以不做共享、也不做回退。
+# ---- 托管运行时部署：桌面自包含 / Android MonoVM ----
+# 桌面（Godot 4 导出版做法）：dotnet publish --self-contained 把完整 CoreCLR +
+# BCL（按白名单裁剪）铺到 exe 目录；玩家无需装 .NET，VS 断点照常用。
+# Android：仍用 libmonosgen 的 coreclr_* + 4 个平台 BCL（CoreLib 按 RID 特化）。
 get_filename_component(_clr_bin "${MONO_LIBRARIES}" DIRECTORY)
 set(_clr_libs "${_clr_bin}/libs")
-if(NOT EXISTS "${_clr_libs}/System.Private.CoreLib.dll")
-    message(FATAL_ERROR
-        "缺平台 BCL: ${_clr_libs}/System.Private.CoreLib.dll\n"
-        "把 Microsoft.NETCore.App.Runtime.Mono.<rid> 同版本的 4 个 BCL 放进\n"
-        "${_clr_bin}/libs/ 。CoreLib 按 RID 构建，不能复用其它平台的那份。")
-endif()
 
 set(_out_dir "$<TARGET_FILE_DIR:example_csharp>")
 
+# 资源 + JoyGame.dll 通用部署（两个平台都要）
 add_custom_command(TARGET example_csharp POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${JOY_EXAMPLE_ASSETS}" "${JOY_EXAMPLE_ASSET_ROOT}"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${_cs_out}/JoyGame.dll" "${JOY_EXAMPLE_ASSET_ROOT}/JoyGame.dll"
-    # 先整块同步 BCL，再把绑定程序集塞进 lib/：
-    # 自定义 CLR 只从 MONO_LIB_DIR 解析依赖程序集，宿主已把它指向 lib。
-    COMMAND ${CMAKE_COMMAND} -E remove_directory "${JOY_EXAMPLE_ASSET_ROOT}/lib"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${_clr_libs}" "${JOY_EXAMPLE_ASSET_ROOT}/lib"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${_cs_out}/Joy.Bindings.dll" "${JOY_EXAMPLE_ASSET_ROOT}/lib/Joy.Bindings.dll"
-    COMMENT "Copying C# example runtime (JoyGame.dll + lib/)")
+    COMMENT "Copying C# example assets + JoyGame.dll")
 
-# coreclr.dll 走共享部署函数：另外三个示例同样导入它（joy::all 含 cs 模块）
-joy_examples_deploy_clr(example_csharp)
+if(ANDROID)
+    # Android：4 个 BCL 按 RID 特化，放 lib/；Joy.Bindings.dll 同目录，
+    # 宿主把 MONO_LIB_DIR 指向 lib（见 main.cpp 的 setup_clr_dirs）。
+    if(NOT EXISTS "${_clr_libs}/System.Private.CoreLib.dll")
+        message(FATAL_ERROR
+            "缺平台 BCL: ${_clr_libs}/System.Private.CoreLib.dll\n"
+            "把 Microsoft.NETCore.App.Runtime.Mono.<rid> 同版本的 4 个 BCL 放进\n"
+            "${_clr_bin}/libs/ 。CoreLib 按 RID 构建，不能复用其它平台的那份。")
+    endif()
+    add_custom_command(TARGET example_csharp POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E remove_directory "${JOY_EXAMPLE_ASSET_ROOT}/lib"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory "${_clr_libs}" "${JOY_EXAMPLE_ASSET_ROOT}/lib"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${_cs_out}/Joy.Bindings.dll" "${JOY_EXAMPLE_ASSET_ROOT}/lib/Joy.Bindings.dll"
+        COMMENT "Copying Android MonoVM BCL + Joy.Bindings.dll into lib/")
+    # coreclr.dll / libmonosgen 主库 + libSystem.* shim 由共享函数部署到 APK lib/<abi>
+    joy_examples_deploy_clr(example_csharp)
+else()
+    # 桌面自包含：publish + 裁剪 BCL + JoyGame.dll/pdb 覆盖（单 ALC 实例，保断点）。
+    # Joy.Bindings.dll 随 publish 落在 exe 根目录，与 JoyGame.dll 同目录——
+    # 这是 hostfxr 命令行模式下避免双 ALC 实例的关键（见主工程同样约束）。
+    include(${JOY_ROOT}/cmake/JoySelfContained.cmake)
+    joy_deploy_selfcontained(example_csharp "${_cs_proj}" "${_cs_out}"
+                             "${JOY_EXAMPLE_ASSET_ROOT}" "$<IF:$<CONFIG:Debug>,Debug,Release>")
+    # sc_deploy 最后一步用 _cs_out 的 DLL/PDB 覆盖 publish 版，必须先有 dotnet build 产物
+    add_dependencies(example_csharp_sc_deploy example_csharp_managed)
+    add_dependencies(example_csharp example_csharp_sc_deploy)
+
+    # 自包含 runtimeconfig.json（无 framework 节点）与 exe 同目录。
+    add_custom_command(TARGET example_csharp POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${CMAKE_CURRENT_LIST_DIR}/../csharp/JoyGame.runtimeconfig.json"
+                "${JOY_EXAMPLE_ASSET_ROOT}/JoyGame.runtimeconfig.json"
+        COMMENT "Deploying self-contained JoyGame.runtimeconfig.json")
+endif()
 
 enable_testing()
 if(NOT ANDROID)

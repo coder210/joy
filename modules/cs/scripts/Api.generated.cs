@@ -5,1522 +5,5499 @@ using System.Runtime.CompilerServices;
 
 namespace Joy.Api
 {
-    internal static class Native
+    internal static unsafe class Native
     {
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong LcgRandomCreate(ulong seed);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void LcgRandomDestroy(ulong lcg);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern uint LcgRandomNext(ulong lcg);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void LcgRandomSetState(ulong lcg, ulong state);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JpmConfigAddSpawn(ulong cfg, int cx10, int cz10, int radius10);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern uint JpmWaveSeed(uint base_seed, int wave);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong SdbmHash(string str, int size);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong Fnv1aHash(string str, int size);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong JenkinsHash(string str, int size);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong Murmur3Hash(string str);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong KrHash(string str, int size);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JtimerDestroy(ulong timer);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JtimerTrigger(ulong timer);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JtimerSetInterval(ulong timer, int interval);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JtimerSetActive(ulong timer, bool active);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JtimerReset(ulong timer);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong JtimerGetElapsed(ulong timer);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool InitEnv();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void QuitEnv();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong GetTicks();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong CreateWindow(string title, int w, int h);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void DestroyWindow(ulong win);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void WindowSetFullscreen(ulong win, bool fullscreen);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool WindowGetFullscreen(ulong win);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void WindowSetIcon(ulong win, string png_path);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool PushUserEvent(int type, int code);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool PushQuitEvent();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void LogTitle(int type);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void EnvSet(ulong env, string key, string value);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void EnvDestroy(ulong env);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SimpleFpsDestory(ulong fps);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SimpleFpsUpdate(ulong fps);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int SimpleFpsValue(ulong fps);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void GameTimerInit(ulong clock);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void GameTimerUpdate(ulong clock);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float GameTimerGetDeltaTime(ulong clock);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float GameTimerGetUnscaledDeltaTime(ulong clock);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void GameTimerSetTimeScale(ulong clock, float scale);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float GameTimerGetTimeScale(ulong clock);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void GameTimerSetTargetFps(ulong clock, int fps);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int GameTimerGetTargetFps(ulong clock);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SetClipboardText(string text);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool SysInitNetenv();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool SysReleaseNetenv();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int SysAnyaddr();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool SysClosesocket(long sockfd);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int SysSetSockSndtimeo(long sockfd, int ms);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int SysSetSockRcvtimeo(long sockfd, int ms);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int SysSetSockAccpettimeo(long sockfd, int ms);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int SysSetSockBroadcast(long sockfd);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int SysSetSockReuseaddr(long sockfd);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long SysTcp();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long SysUdp();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool SysBind(long sockfd, string ip, int port);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool SysConnect(long sockfd, string ip, int port);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool SysListen(long sockfd);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int SysSend(long sockfd, string buf, int len);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int SysSendto(long sockfd, string buf, int len, string ip, int port);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long SysCurrentTime();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SysSleep(int ms);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SysInstallCrashHandlers();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void IocpServerDestroy(ulong server);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void IocpProcessEvents(ulong server, int timeout_ms);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong FontCreate(string filename, int fontsize);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void FontDestroy(ulong font);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float FontGetScale(ulong font);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int FontGetSize(ulong font);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int FontGetAscent(ulong font);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong R2dCreate(ulong win);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R2dDestroy(ulong r2d);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool R2dSetColor(ulong r2d, uint r, uint g, uint b, uint a);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R2dBegin(ulong r2d);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R2dEnd(ulong r2d);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool R2dSetLogicalPresentation(ulong r2d, int w, int h);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool R2dSetLogicalPresentationMode(ulong r2d, int w, int h, int mode);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool R2dSetVsync(ulong r2d, int vsync);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool R2dSetScale(ulong r2d, float sx, float sy);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R2dSetColorf(ulong r2d, float r, float g, float b, float a);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool R2dSetBlendMode(ulong r2d, int mode);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool R2dDrawPoint(ulong r2d, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool R2dSetClipRect(ulong r2d, float rect_x, float rect_y, float rect_w, float rect_h);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R2dClearClip(ulong r2d);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool R2dPushClipRect(ulong r2d, float rect_x, float rect_y, float rect_w, float rect_h);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R2dPopClipRect(ulong r2d);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R2dResetClipStack(ulong r2d);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool R2dPointInClip(ulong r2d, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool ShapeDrawLine(ulong r2d, float x1, float y1, float x2, float y2);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool ShapeDrawRectangle(ulong r2d, string mode, float rect_x, float rect_y, float rect_w, float rect_h);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong ImageCreate(ulong r2d, string filename);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ImageDestroy(ulong image);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ImageSetAlpha(ulong image, uint alpha);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ImageSetBlendMode(ulong image, int mode);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ImageSetScaleMode(ulong image, int nearest);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void TextUpdatex(ulong text, ulong font, string str, int len, uint color_r, uint color_g, uint color_b, uint color_a);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void TextDestroy(ulong jtext_tex);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JtextPrint(ulong r2d, ulong jtext_tex, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JtextPrintx(ulong r2d, ulong font, string str, int len, uint color_r, uint color_g, uint color_b, uint color_a, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool R2dDrawPointF(ulong r2d, float fx, float fy);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool ShapeDrawRectangleF(ulong r2d, string mode, float fx, float fy, float fw, float fh);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool ShapeDrawLineF(ulong r2d, float fx1, float fy1, float fx2, float fy2);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JtextPrintf(ulong r2d, ulong font, string str, int len, uint color_r, uint color_g, uint color_b, uint color_a, float fx, float fy);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JtextPrintfScaled(ulong r2d, ulong font, string str, int len, uint color_r, uint color_g, uint color_b, uint color_a, float fx, float fy, float scale);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int TextGetWidth(ulong jtext_tex);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int TextGetHeight(ulong jtext_tex);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JtextCacheClear();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JtextCacheSetLimit(int max_entries);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int JtextCacheGetCount();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JtextCacheSweep(int max_idle_frames);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void AnimationDestroy(ulong animation);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void AnimationReset(ulong animation);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void AnimationAddClip(ulong animation, string image_path, float duration, float src_rect_x, float src_rect_y, float src_rect_w, float src_rect_h);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool AnimationIsFinished(ulong animation);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void AnimationSetPosition(ulong animation, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void AnimationSetScale(ulong animation, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void AnimationSetRotation(ulong animation, float rotation);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void AnimationUpdate(ulong animation, float dt);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dDestroy(ulong r);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool R3dBegin(ulong r);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dEnd(ulong r);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int R3dGetDrawCalls(ulong r);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dSetClearColor(ulong r, uint cr, uint cg, uint cb);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dCameraLookat(ulong r, float eye_x, float eye_y, float eye_z, float target_x, float target_y, float target_z, float up_x, float up_y, float up_z, float fovy);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong R3dMeshCube(ulong r, float w, float h, float d);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong R3dMeshSphere(ulong r, float radius, int slices, int stacks);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong R3dMeshPlane(ulong r, float w, float d, int segs);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong R3dMeshRamp(ulong r, float w, float l, float h);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong R3dMeshQuad(ulong r);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong R3dMeshCubeWire(ulong r, float w, float h, float d);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong R3dMeshSphereWire(ulong r, float radius, int slices, int stacks);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong R3dMeshPlaneWire(ulong r, float w, float d, int segs);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong R3dMeshRampWire(ulong r, float w, float l, float h);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dMeshDestroy(ulong r, ulong m);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool R3dFontInit(ulong r, string ttf_path, int pixel_height);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dFontSetColor(ulong r, uint cr, uint cg, uint cb);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool R3dFontDraw2d(ulong r, ulong m, string text, float pixelX, float pixelY, float fontSize, float winW, float winH);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool R3dFontDraw2dColor(ulong r, ulong m, string text, float pixelX, float pixelY, float fontSize, float winW, float winH, uint cr, uint cg, uint cb);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool R3dFontDraw2dOutline(ulong r, ulong m, string text, float pixelX, float pixelY, float fontSize, float winW, float winH, uint cr, uint cg, uint cb, uint or_, uint og, uint ob, float outline);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dFontCacheSetLimit(ulong r, int max_entries);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int R3dFontCacheGetCount(ulong r);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dFontCacheClear(ulong r);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dFontCacheSweep(ulong r, int max_idle_frames);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dSetLogicalPresentation(ulong r, int w, int h);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dSetLogicalPresentationMode(ulong r, int w, int h, int mode);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dButtonDraw(ulong r, ulong m, ulong btn, float winW, float winH);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dButtonDrawCircle(ulong r, ulong m, ulong btn, float winW, float winH);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool R3dButtonIsHovered(ulong r, ulong btn, float mx, float my);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool R3dButtonIsPressed(ulong r, ulong btn, bool mouse_down, float mx, float my);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dButtonRelease(ulong r, ulong btn, float mx, float my);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dButtonDestroy(ulong btn);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dDrawRect2d(ulong r, ulong m, float x, float y, float w, float h, uint cr, uint cg, uint cb, float winW, float winH);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dDrawMesh2d(ulong r, ulong m, float cx, float cy, float sx, float sy, uint cr, uint cg, uint cb, float winW, float winH);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dLabelSetText(ulong l, string text);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dLabelDraw(ulong r, ulong m, ulong l, float winW, float winH);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dLabelDestroy(ulong l);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dInputSetText(ulong inp, string text);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool R3dInputIsHovered(ulong r, ulong inp, float mx, float my);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dInputFocus(ulong inp);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dInputDefocus(ulong inp);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool R3dInputIsFocused(ulong inp);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dInputStartTextInput(ulong r, ulong inp);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dInputStopTextInput(ulong r, ulong inp);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dInputInsert(ulong inp, string s);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dInputBackspace(ulong inp);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dInputDelete(ulong inp);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dInputCursorLeft(ulong inp);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dInputCursorRight(ulong inp);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dInputCursorHome(ulong inp);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dInputCursorEnd(ulong inp);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dInputClick(ulong r, ulong inp, float mx, float my);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dInputSubmit(ulong inp);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dInputDraw(ulong r, ulong m, ulong inp, float winW, float winH);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dInputDestroy(ulong inp);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dComboboxInputDestroy(ulong ci);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dComboboxInputAddItem(ulong ci, string str);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dComboboxInputClearItems(ulong ci);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dComboboxInputSetText(ulong ci, string str);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int R3dComboboxInputHitItem(ulong ci, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dComboboxInputDraw(ulong r, ulong m, ulong ci, float winW, float winH);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dComboboxInputDrawDropdown(ulong r, ulong m, ulong ci, float winW, float winH);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dSliderDestroy(ulong s);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dSliderSetValue(ulong s, float v);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float R3dSliderGetValue(ulong s);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dSliderDraw(ulong r, ulong m, ulong s, float winW, float winH);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool R3dSliderIsPressed(ulong r, ulong s, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dSliderSetPressed(ulong s, bool v);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dSliderDragMove(ulong r, ulong s, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool R3dSliderIsHovered(ulong r, ulong s, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dSliderSetHovered(ulong s, bool v);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dCheckboxDestroy(ulong cb);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dCheckboxToggle(ulong cb);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool R3dCheckboxIsPressed(ulong r, ulong cb, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dCheckboxSetHovered(ulong cb, bool v);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool R3dCheckboxIsHovered(ulong r, ulong cb, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dCheckboxSetColors(ulong cb, uint box_r, uint box_g, uint box_b, uint box_a, uint check_r, uint check_g, uint check_b, uint check_a, uint hover_r, uint hover_g, uint hover_b, uint hover_a);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dCheckboxDraw(ulong r, ulong m, ulong cb, float winW, float winH);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dDrawGrid(ulong r, int slices, float spacing, float line_width);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dDrawMeshSolid(ulong r, ulong m, float pos_x, float pos_y, float pos_z, float scale_x, float scale_y, float scale_z, uint color_r, uint color_g, uint color_b, uint color_a);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void R3dDrawWire(ulong r, ulong m, float pos_x, float pos_y, float pos_z, float scale_x, float scale_y, float scale_z, uint color_r, uint color_g, uint color_b, uint color_a);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong R3dMeshCubeLit(ulong r, float w, float h, float d);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong R3dMeshSphereLit(ulong r, float radius, int slices, int stacks);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong R3dMeshPlaneLit(ulong r, float w, float d, int segs);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong R3dMeshRampLit(ulong r, float w, float l, float h);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JanimatorDestroy(ulong anim);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JanimatorSetFloat(ulong anim, string name, float v);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JanimatorSetInt(ulong anim, string name, int v);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JanimatorSetBool(ulong anim, string name, bool v);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JanimatorSetTrigger(ulong anim, string name);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JanimatorGetFloat(ulong anim, string name);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int JanimatorGetInt(ulong anim, string name);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool JanimatorGetBool(ulong anim, string name);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JanimatorAddState(ulong anim, string name);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JanimatorSetDefaultState(ulong anim, string name);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JanimatorStateAddClip(ulong anim, string state_name, string image_path, float duration, float src_rect_x, float src_rect_y, float src_rect_w, float src_rect_h);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JanimatorStateAddColor(ulong anim, string state_name, float duration, int w, int h, uint r, uint g, uint b, uint a);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JanimatorStateSetLoop(ulong anim, string state_name, bool loop);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JanimatorStateSetSpeed(ulong anim, string state_name, float speed);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JanimatorStateSetBlend(ulong anim, string state_name, string param_name);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JanimatorStateAddMotion(ulong anim, string state_name, string image_path, float duration, float src_rect_x, float src_rect_y, float src_rect_w, float src_rect_h, float threshold);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int JanimatorAddTransition(ulong anim, string from, string to);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int JanimatorAddAnyTransition(ulong anim, string to);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JanimatorTransitionAddCond(ulong anim, int trans_idx, string param_name, int mode, float threshold);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JanimatorTransitionSetExitTime(ulong anim, int trans_idx, float seconds);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JanimatorUpdate(ulong anim, float dt);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JanimatorDraw(ulong anim, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JanimatorSetFlipH(ulong anim, bool flip);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void LabelDestroy(ulong label);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void LabelDraw(ulong label);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ButtonDestroy(ulong btn);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ButtonSetPosition(ulong btn, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ButtonSetSize(ulong btn, float width, float height);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ButtonSetNormalColor(ulong btn, uint color_r, uint color_g, uint color_b, uint color_a);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ButtonSetHoverColor(ulong btn, uint color_r, uint color_g, uint color_b, uint color_a);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ButtonSetPressedColor(ulong btn, uint color_r, uint color_g, uint color_b, uint color_a);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ButtonSetImage(ulong btn, ulong image);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ButtonSetPressedImage(ulong btn, ulong image);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ButtonSetTextx(ulong btn, ulong fontinfo, string str, int len, uint color_r, uint color_g, uint color_b, uint color_a);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool ButtonIsHovered(ulong btn, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool ButtonIsPressed(ulong btn, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ButtonSetHovered(ulong btn, bool v);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ButtonSetPressed(ulong btn, bool v);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool ButtonGetPressed(ulong btn);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ButtonSetTextOffset(ulong btn, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ButtonDraw(ulong btn);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ScrollviewDestroy(ulong v);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ScrollviewSetViewPx(ulong v, float x, float y, float w, float h);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ScrollviewSetContent(ulong v, float content_w, float content_h);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ScrollviewSetOffset(ulong v, float ox, float oy);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ScrollviewClamp(ulong v);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float ScrollviewGetOffsetX(ulong v);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float ScrollviewGetOffsetY(ulong v);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ScrollviewSetShowBar(ulong v, bool show);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool ScrollviewDragging(ulong v);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool ScrollviewHit(ulong v, float win_x, float win_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ScrollviewBegin(ulong v);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ScrollviewEnd(ulong v);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ComboboxDestroy(ulong combobox);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ComboboxAddItem(ulong combobox, ulong font, string str, int len, uint color_r, uint color_g, uint color_b, uint color_a);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool ComboboxIsPressed(ulong combobox, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool ComboboxIsOpen(ulong combobox);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ComboboxSetOpen(ulong combobox, bool v);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int ComboboxHitItem(ulong combobox, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ComboboxSetSelected(ulong combobox, int index);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int ComboboxGetSelected(ulong combobox);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ComboboxDraw(ulong combobox);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ComboboxInputDestroy(ulong ci);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ComboboxInputAddItem(ulong ci, string str, int len);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ComboboxInputClearItems(ulong ci);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ComboboxInputSetText(ulong ci, string str);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ComboboxInputDraw(ulong ci);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ComboboxInputDrawDropdown(ulong ci);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool ComboboxInputIsOpen(ulong ci);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ComboboxInputSetPopupNode(ulong ci, ulong node);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int ComboboxInputHitItem(ulong ci, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ComboboxInputSetOpen(ulong ci, bool v);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void DatagridSetheaders(ulong grid, string headers);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void DatagridSetheader(ulong grid, int index, string header);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void DatagridSetcell(ulong grid, int row_index, int col_index, string data);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void DatagridDestroy(ulong grid);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void DatagridDraw(ulong grid, ulong r2d);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int DatagridHitRow(ulong grid, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void DatagridScroll(ulong grid, int lines);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void DatagridSetSelectedRow(ulong grid, int row);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void RadioDestroy(ulong radio);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool RadioIsPressed(ulong radio, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void RadioSetHovered(ulong radio, bool v);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void CheckboxDestroy(ulong checkbox);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void CheckboxSetColors(ulong checkbox, uint box_r, uint box_g, uint box_b, uint box_a, uint check_r, uint check_g, uint check_b, uint check_a, uint hover_r, uint hover_g, uint hover_b, uint hover_a);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void CheckboxSetR2d(ulong checkbox, ulong r2d);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void CheckboxSetPosition(ulong checkbox, int x, int y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void CheckboxSetTextColor(ulong checkbox, uint color_r, uint color_g, uint color_b, uint color_a);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void CheckboxToggle(ulong checkbox);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool CheckboxIsPressed(ulong cb, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void CheckboxSetHovered(ulong cb, bool v);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JoystickDestroy(ulong joystick);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JoystickSetTextures(ulong joystick, string base_path, string thumb_path);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JoystickSetVector(ulong joystick, float dx, float dy);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JoystickDraw(ulong joystick);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JoystickReset(ulong joystick);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JoystickSetPosition(ulong joystick, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JoystickSetRadius(ulong joystick, float radius);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool JoystickIsDragging(ulong joystick);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JoystickTouchDown(ulong joystick, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JoystickTouchMove(ulong joystick, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JoystickTouchUp(ulong joystick);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JoystickGetMagnitude(ulong joystick);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void InputboxDestroy(ulong ti);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void InputboxSetText(ulong ti, string text);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void InputboxDraw(ulong ti);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool InputboxIsPressed(ulong ti, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool InputboxIsHovered(ulong ti, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void InputboxFocus(ulong ti);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void InputboxDefocus(ulong ti);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void InputboxBlur(ulong ti);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void InputboxInsert(ulong ti, string s, int len);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void InputboxBackspace(ulong ti);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void InputboxDelete(ulong ti);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void InputboxCursorLeft(ulong ti);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void InputboxCursorRight(ulong ti);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void InputboxCursorHome(ulong ti);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void InputboxCursorEnd(ulong ti);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void InputboxSelectLeft(ulong ti);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void InputboxSelectRight(ulong ti);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void InputboxSelectHome(ulong ti);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void InputboxSelectEnd(ulong ti);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void InputboxSelectAll(ulong ti);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void InputboxPaste(ulong ti);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void InputboxCopy(ulong ti);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void InputboxCut(ulong ti);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool InputboxIsFocused(ulong ti);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SliderDestroy(ulong s);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SliderSetValue(ulong s, float v);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float SliderGetValue(ulong s);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SliderSetRect(ulong s, float x, float y, float w, float h);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SliderSetRange(ulong s, float min, float max);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SliderDraw(ulong s);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool SliderIsPressed(ulong s, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SliderSetPressed(ulong s, bool v);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SliderDragMove(ulong s, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool SliderIsHovered(ulong s, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SliderSetHovered(ulong s, bool v);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void PopupDestroy(ulong p);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void PopupSetTitle(ulong p, string text, int len);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void PopupSetContent(ulong p, string text, int len);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void PopupSetPosition(ulong p, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void PopupSetVisible(ulong p, bool v);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void PopupSetCloseable(ulong p, bool v);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void PopupDraw(ulong p, ulong title_font, ulong content_font);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool PopupIsCloseClicked(ulong p, float mx, float my);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool PopupIsTitleClicked(ulong p, float mx, float my);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void PopupDragMove(ulong p, float mx, float my);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool PopupIsInside(ulong p, float mx, float my);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void TooltipDestroy(ulong t);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void TooltipSetText(ulong t, string text, int len);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void TooltipSetPosition(ulong t, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void TooltipSetVisible(ulong t, bool v);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void TooltipDraw(ulong t, ulong font);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JuiCtxDestroy(ulong ctx);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JuiBegin(ulong ctx);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JuiEnd(ulong ctx);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JuiInputMotion(ulong ctx, float win_x, float win_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JuiInputDown(ulong ctx, int button);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JuiInputUp(ulong ctx, int button);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JuiInputWheel(ulong ctx, float dy);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JuiInputKey(ulong ctx, bool shift, bool ctrl);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool JuiIsDown(ulong ctx);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool JuiIsPressed(ulong ctx);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool JuiIsReleased(ulong ctx);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JuiTakeWheel(ulong ctx);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool JuiIsShift(ulong ctx);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool JuiIsCtrl(ulong ctx);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JuiPushClip(ulong ctx, float rect_x, float rect_y, float rect_w, float rect_h);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JuiPopClip(ulong ctx);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JuiResetClip(ulong ctx);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool JuiHit(ulong ctx, float rect_x, float rect_y, float rect_w, float rect_h);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JuiFillRect(ulong ctx, float r_x, float r_y, float r_w, float r_h, uint c_r, uint c_g, uint c_b, uint c_a);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JuiStrokeRect(ulong ctx, float r_x, float r_y, float r_w, float r_h, uint c_r, uint c_g, uint c_b, uint c_a);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JuiLine(ulong ctx, float x1, float y1, float x2, float y2, uint c_r, uint c_g, uint c_b, uint c_a);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int JuiText(ulong ctx, float x, float y, string s, uint c_r, uint c_g, uint c_b, uint c_a);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int JuiTextCentered(ulong ctx, float r_x, float r_y, float r_w, float r_h, string s, uint c_r, uint c_g, uint c_b, uint c_a);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JuiPanelBegin(ulong ctx, float r_x, float r_y, float r_w, float r_h, string title);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JuiPanelEnd(ulong ctx);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JuiPanelFrame(ulong ctx, float r_x, float r_y, float r_w, float r_h);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JuiScrollBegin(ulong ctx, int id, float view_x, float view_y, float view_w, float view_h, float content_h);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JuiScrollEnd(ulong ctx);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JuiScrollbar(ulong ctx, float view_x, float view_y, float view_w, float view_h, float content_h, float off);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JuiScrollSetOffset(ulong ctx, int id, float off, float content_h, float view_h);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool JuiButton(ulong ctx, int id, float r_x, float r_y, float r_w, float r_h, string text);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JtilemapDestroy(ulong tm);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int JtilemapGetWidth(ulong tm);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int JtilemapGetHeight(ulong tm);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int JtilemapGetTilewidth(ulong tm);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int JtilemapGetTileheight(ulong tm);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int JtilemapGetAnimTileid(ulong tm, int gid, uint time_ms);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong JtilemapFindTileLayer(ulong tm, string name);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong JtilemapFindObjectLayer(ulong tm, string name);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int JtilemapGetTile(ulong layer, int tx, int ty);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JtilemapRenderAll(ulong r, ulong tm, float camera_x, float camera_y, uint time_ms);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JtilemapRenderTiles(ulong r, ulong tm, float camera_x, float camera_y, uint time_ms);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JtilemapRenderSetTilePx(ulong r, float px);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool JtilemapRenderLayer(ulong r, ulong tm, string layer_name, float camera_x, float camera_y, uint time_ms);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JtilemapRenderDestroy(ulong r);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int KcpserverDestroy(ulong ks);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void KcpserverSend(ulong ks, int conv, string data, int len);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void KcpserverBroadcast(ulong ks, string data, int len);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void KcpserverOffline(ulong ks, int conv);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void KcpserverUpdate(ulong ks);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int KcpserverConnectionCount(ulong ks);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool KcpserverPollMessage(ulong ks, ulong msg);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void KcpclientDestroy(ulong kc);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int KcpclientSend(ulong kc, string data, int len);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void KcpclientUpdate(ulong kc);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool KcpclientPollMessage(ulong kc, ulong msg);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int TcpserverDestroy(ulong tcpserver);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void TcpserverSend(ulong tcpserver, int conv, string data, int len);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void TcpserverBroadcast(ulong tcpserver, string data, int len);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void TcpserverOffline(ulong tcpserver, int conv);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void TcpserverUpdate(ulong tcpserver);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int TcpserverConnectionCount(ulong tcpserver);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool TcpserverPollMessage(ulong tcpserver, ulong msg);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void TcpclientDestroy(ulong tcpclient);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int TcpclientSend(ulong tcpclient, string data, int len);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void TcpclientUpdate(ulong tcpclient);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool TcpclientPollMessage(ulong tcpclient, ulong msg);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int WsnetserverDestroy(ulong ws);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void WsnetserverSend(ulong ws, int conv, string data, int len);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void WsnetserverBroadcast(ulong ws, string data, int len);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void WsnetserverOffline(ulong ws, int conv);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void WsnetserverUpdate(ulong ws);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int WsnetserverConnectionCount(ulong ws);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool WsnetserverPollMessage(ulong ws, ulong msg);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void WsnetclientDestroy(ulong wc);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int WsnetclientSend(ulong wc, string data, int len);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void WsnetclientUpdate(ulong wc);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool WsnetclientPollMessage(ulong wc, ulong msg);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void NetclientDestroy(ulong nc);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int NetclientSend(ulong nc, string data, int len);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void NetclientUpdate(ulong nc);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool NetclientPollMessage(ulong nc, ulong msg);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void NetserverDestroy(ulong ns);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void NetserverSend(ulong ns, int conv, string data, int len);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void NetserverBroadcast(ulong ns, string data, int len);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void NetserverOffline(ulong ns, int conv);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void NetserverUpdate(ulong ns);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int NetserverConnectionCount(ulong ns);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool NetserverPollMessage(ulong ns, ulong msg);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void NetmessageFreeData(ulong msg);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SceneNodeDestroy(ulong node);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SceneNodeAddChild(ulong parent, ulong child);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SceneNodeRemoveChild(ulong parent, ulong child);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int SceneNodeGetChildCount(ulong node);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SceneNodeSetPosition(ulong node, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SceneNodeSetWorldPosition(ulong node, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SceneNodeSetRotation(ulong node, float radians);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float SceneNodeGetRotation(ulong node);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SceneNodeSetScale(ulong node, float scale_x, float scale_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SceneNodeSetZorder(ulong node, int zorder);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int SceneNodeGetZorder(ulong node);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SceneNodeSetName(ulong node, string name);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SceneNodeSetTag(ulong node, string tag);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong SceneFindNodeByName(ulong root, string name);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong SceneFindNodeByNameDeep(ulong scene, string name);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SceneNodeUpdate(ulong node, float delta_time);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SceneDestroy(ulong scene);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SceneAddRootNode(ulong scene, ulong root);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SceneRemoveRootNode(ulong scene, ulong root);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int SceneGetRootCount(ulong scene);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong SceneGetRootAt(ulong scene, int index);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SceneUpdate(ulong scene, float delta_time);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SceneSetPopupNode(ulong scene, ulong node);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong SceneGetPopupNode(ulong scene);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SceneManagerDestroy(ulong mgr);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SceneManagerPush(ulong mgr, ulong scene);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SceneManagerReplace(ulong mgr, ulong scene);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SceneManagerPop(ulong mgr);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SceneManagerUpdate(ulong mgr, float delta_time);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong SceneManagerGetCurrent(ulong mgr);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int SceneManagerGetCount(ulong mgr);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JparticleDestroy(ulong p);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JparticleSetPosition(ulong p, float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JparticleEmit(ulong p);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JparticleClear(ulong p);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JparticleUpdate(ulong p, float dt);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JparticleRender(ulong p, ulong r2d);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int JparticleCount(ulong p);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool JparticleIsActive(ulong p);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JlightSysDestroy(ulong sys);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JlightSysResize(ulong sys, int width, int height);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JlightRemove(ulong sys, int id);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JlightClear(ulong sys);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int JlightAddOccluder(ulong sys, float x1, float y1, float x2, float y2);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JlightClearOccluders(ulong sys);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JlightSetAmbient(ulong sys, uint r, uint g, uint b);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JlightRender(ulong sys, ulong r2d);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JecsDestroy(ulong world);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JecsProcess(ulong world, float dt);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JecsDefine(ulong world, string name, ulong size);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern uint AudioOpenDevice();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void AudioCloseDevice(uint device_id);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool AudioCreateWav(string filepath, uint device_id);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool AudioCreateMp3(string filepath, uint device_id);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool AudioCreateFlac(string filepath, uint device_id);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool AudioCreateOgg(string filepath, uint device_id);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void AudioShotPlay(ulong shot);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void AudioShotSetGain(ulong shot, float gain);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void AudioShotDestroy(ulong shot);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void AudioBgmStop(ulong bgm);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void AudioBgmSetGain(ulong bgm, float gain);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void AudioBgmDestroy(ulong bgm);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ImageDrawRect(ulong r2d, ulong image, float x, float y, float w, float h);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JoyInputFeedKey(int scancode, bool down);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JoyInputFeedMouseMove(float x, float y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JoyInputFeedMouseButton(int button, bool down);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JoyInputFeedWheel(float dy);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JoyInputEndFrame();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void JoyInputReset();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool JoyInputIsKeyDown(int scancode);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool JoyInputIsMouseButtonDown(int button);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JoyInputGetMouseX();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JoyInputGetMouseY();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JoyInputGetWheel();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool JoyInputWasKeyPressed(int scancode);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool JoyInputWasKeyReleased(int scancode);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathFpFromFloat(float a);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathFpToFloat(long a);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathFpFromUint(uint a);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathFpFromInt(int a);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathFpFromFraction(uint a);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathFpMinValue();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathFpMaxValue();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathFpAdd(long a, long b);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathFpSub(long a, long b);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathFpZero();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathFpHalf();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathFpOne();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathFpPi();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathFpMax(long a, long b);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathFpMin(long a, long b);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathFpPow2(long x);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int JmathFpSign(long x);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathFpClamp(long a, long low, long high);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathFpLerp(long a, long b, long t);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec2fNegateX(long a_x, long a_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec2fNegateY(long a_x, long a_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec2fDot(long a_x, long a_y, long b_x, long b_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec2fCross(long a_x, long a_y, long b_x, long b_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec2fCross2X(long a_x, long a_y, long s);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec2fCross2Y(long a_x, long a_y, long s);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec2fCross3X(long a_x, long a_y, long s);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec2fCross3Y(long a_x, long a_y, long s);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec2fAddX(long a_x, long a_y, long b_x, long b_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec2fAddY(long a_x, long a_y, long b_x, long b_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec2fSubX(long a_x, long a_y, long b_x, long b_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec2fSubY(long a_x, long a_y, long b_x, long b_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec2fScaleX(long a_x, long a_y, long s);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec2fScaleY(long a_x, long a_y, long s);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec2fAbsX(long a_x, long a_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec2fAbsY(long a_x, long a_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec2fLengthSquared(long a_x, long a_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec2fLength(long a_x, long a_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec2fNormalizeX(long a_x, long a_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec2fNormalizeY(long a_x, long a_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec2fNormalX(long v_x, long v_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec2fNormalY(long v_x, long v_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec2fRotateX(long v_x, long v_y, long angle);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec2fRotateY(long v_x, long v_y, long angle);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec2fLerpX(long a_x, long a_y, long b_x, long b_y, long t);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec2fLerpY(long a_x, long a_y, long b_x, long b_y, long t);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec2fDistance(long a_x, long a_y, long b_x, long b_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fNegateX(long a_x, long a_y, long a_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fNegateY(long a_x, long a_y, long a_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fNegateZ(long a_x, long a_y, long a_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fAddX(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fAddY(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fAddZ(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fSubX(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fSubY(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fSubZ(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fScaleX(long a_x, long a_y, long a_z, long s);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fScaleY(long a_x, long a_y, long a_z, long s);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fScaleZ(long a_x, long a_y, long a_z, long s);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fAbsX(long a_x, long a_y, long a_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fAbsY(long a_x, long a_y, long a_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fAbsZ(long a_x, long a_y, long a_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fDot(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fCrossX(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fCrossY(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fCrossZ(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fSquareLength(long a_x, long a_y, long a_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fLength(long a_x, long a_y, long a_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fNormalizeX(long a_x, long a_y, long a_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fNormalizeY(long a_x, long a_y, long a_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fNormalizeZ(long a_x, long a_y, long a_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fLerpX(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z, long t);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fLerpY(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z, long t);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fLerpZ(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z, long t);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathVec3fDistance(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathMat22fMulVec2fX(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y, long b_x, long b_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathMat22fMulVec2fY(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y, long b_x, long b_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathMat22fRotateCol1X(long angle);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathMat22fRotateCol1Y(long angle);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathMat22fRotateCol2X(long angle);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathMat22fRotateCol2Y(long angle);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathMat22fTransposeCol1X(long m_col1_x, long m_col1_y, long m_col2_x, long m_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathMat22fTransposeCol1Y(long m_col1_x, long m_col1_y, long m_col2_x, long m_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathMat22fTransposeCol2X(long m_col1_x, long m_col1_y, long m_col2_x, long m_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathMat22fTransposeCol2Y(long m_col1_x, long m_col1_y, long m_col2_x, long m_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathMat22fInvertCol1X(long m_col1_x, long m_col1_y, long m_col2_x, long m_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathMat22fInvertCol1Y(long m_col1_x, long m_col1_y, long m_col2_x, long m_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathMat22fInvertCol2X(long m_col1_x, long m_col1_y, long m_col2_x, long m_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathMat22fInvertCol2Y(long m_col1_x, long m_col1_y, long m_col2_x, long m_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathMat22fAddCol1X(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y, long b_col1_x, long b_col1_y, long b_col2_x, long b_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathMat22fAddCol1Y(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y, long b_col1_x, long b_col1_y, long b_col2_x, long b_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathMat22fAddCol2X(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y, long b_col1_x, long b_col1_y, long b_col2_x, long b_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathMat22fAddCol2Y(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y, long b_col1_x, long b_col1_y, long b_col2_x, long b_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathMat22fMulCol1X(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y, long b_col1_x, long b_col1_y, long b_col2_x, long b_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathMat22fMulCol1Y(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y, long b_col1_x, long b_col1_y, long b_col2_x, long b_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathMat22fMulCol2X(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y, long b_col1_x, long b_col1_y, long b_col2_x, long b_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathMat22fMulCol2Y(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y, long b_col1_x, long b_col1_y, long b_col2_x, long b_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathMat22fAbsCol1X(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathMat22fAbsCol1Y(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathMat22fAbsCol2X(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JmathMat22fAbsCol2Y(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathFtFromFloat(float x);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathFtToFloat(float x);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathFtMinValue();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathFtMaxValue();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathFtAdd(float a, float b);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathFtSub(float a, float b);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathFtMul(float a, float b);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathFtDiv(float a, float b);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathFtAbs(float x);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathFtSqrt(float x);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathFtSin(float x);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathFtCos(float x);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathFtAtan2(float y, float x);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathFtZero();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathFtHalf();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathFtOne();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathFtPi();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathFtMax(float a, float b);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathFtMin(float a, float b);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathFtPow2(float x);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int JmathFtSign(float x);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathFtClamp(float a, float low, float high);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathFtLerp(float a, float b, float t);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec2NegateX(float v_x, float v_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec2NegateY(float v_x, float v_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong JmathVec2Negate(float v_x, float v_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec2Dot(float a_x, float a_y, float b_x, float b_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec2Cross(float a_x, float a_y, float b_x, float b_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec2Cross2X(float a_x, float a_y, float s);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec2Cross2Y(float a_x, float a_y, float s);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong JmathVec2Cross2(float a_x, float a_y, float s);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec2Cross3X(float s, float a_x, float a_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec2Cross3Y(float s, float a_x, float a_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong JmathVec2Cross3(float s, float a_x, float a_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec2AddX(float a_x, float a_y, float b_x, float b_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec2AddY(float a_x, float a_y, float b_x, float b_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong JmathVec2Add(float a_x, float a_y, float b_x, float b_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec2SubX(float a_x, float a_y, float b_x, float b_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec2SubY(float a_x, float a_y, float b_x, float b_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong JmathVec2Sub(float a_x, float a_y, float b_x, float b_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec2ScaleX(float a_x, float a_y, float s);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec2ScaleY(float a_x, float a_y, float s);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong JmathVec2Scale(float a_x, float a_y, float s);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec2AbsX(float a_x, float a_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec2AbsY(float a_x, float a_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong JmathVec2Abs(float a_x, float a_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec2LengthSquared(float a_x, float a_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec2Length(float a_x, float a_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec2NormalizeX(float a_x, float a_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec2NormalizeY(float a_x, float a_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong JmathVec2Normalize(float a_x, float a_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec2NormalX(float a_x, float a_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec2NormalY(float a_x, float a_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong JmathVec2Normal(float a_x, float a_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec2RotateX(float a_x, float a_y, float angle);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec2RotateY(float a_x, float a_y, float angle);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong JmathVec2Rotate(float a_x, float a_y, float angle);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec2LerpX(float a_x, float a_y, float b_x, float b_y, float t);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec2LerpY(float a_x, float a_y, float b_x, float b_y, float t);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong JmathVec2Lerp(float a_x, float a_y, float b_x, float b_y, float t);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec2Distance(float a_x, float a_y, float b_x, float b_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3NegateX(float v_x, float v_y, float v_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3NegateY(float v_x, float v_y, float v_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3NegateZ(float v_x, float v_y, float v_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3AddX(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3AddY(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3AddZ(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3SubX(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3SubY(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3SubZ(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3ScaleX(float a_x, float a_y, float a_z, float s);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3ScaleY(float a_x, float a_y, float a_z, float s);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3ScaleZ(float a_x, float a_y, float a_z, float s);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3AbsX(float a_x, float a_y, float a_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3AbsY(float a_x, float a_y, float a_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3AbsZ(float a_x, float a_y, float a_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3Dot(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3CrossX(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3CrossY(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3CrossZ(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3SquareLength(float a_x, float a_y, float a_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3Length(float a_x, float a_y, float a_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3NormalizeX(float a_x, float a_y, float a_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3NormalizeY(float a_x, float a_y, float a_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3NormalizeZ(float a_x, float a_y, float a_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3LerpX(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z, float t);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3LerpY(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z, float t);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3LerpZ(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z, float t);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3Distance(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathMat22MulVec2X(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y, float b_x, float b_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathMat22MulVec2Y(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y, float b_x, float b_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern ulong JmathMat22MulVec2(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y, float b_x, float b_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathMat22RotateCol1X(float angle);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathMat22RotateCol1Y(float angle);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathMat22RotateCol2X(float angle);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathMat22RotateCol2Y(float angle);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathMat22TransposeCol1X(float m_col1_x, float m_col1_y, float m_col2_x, float m_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathMat22TransposeCol1Y(float m_col1_x, float m_col1_y, float m_col2_x, float m_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathMat22TransposeCol2X(float m_col1_x, float m_col1_y, float m_col2_x, float m_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathMat22TransposeCol2Y(float m_col1_x, float m_col1_y, float m_col2_x, float m_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathMat22InvertCol1X(float m_col1_x, float m_col1_y, float m_col2_x, float m_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathMat22InvertCol1Y(float m_col1_x, float m_col1_y, float m_col2_x, float m_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathMat22InvertCol2X(float m_col1_x, float m_col1_y, float m_col2_x, float m_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathMat22InvertCol2Y(float m_col1_x, float m_col1_y, float m_col2_x, float m_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathMat22AddCol1X(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y, float b_col1_x, float b_col1_y, float b_col2_x, float b_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathMat22AddCol1Y(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y, float b_col1_x, float b_col1_y, float b_col2_x, float b_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathMat22AddCol2X(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y, float b_col1_x, float b_col1_y, float b_col2_x, float b_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathMat22AddCol2Y(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y, float b_col1_x, float b_col1_y, float b_col2_x, float b_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathMat22MulCol1X(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y, float b_col1_x, float b_col1_y, float b_col2_x, float b_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathMat22MulCol1Y(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y, float b_col1_x, float b_col1_y, float b_col2_x, float b_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathMat22MulCol2X(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y, float b_col1_x, float b_col1_y, float b_col2_x, float b_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathMat22MulCol2Y(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y, float b_col1_x, float b_col1_y, float b_col2_x, float b_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathMat22AbsCol1X(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathMat22AbsCol1Y(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathMat22AbsCol2X(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathMat22AbsCol2Y(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3DivX(float a_x, float a_y, float a_z, float s);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3DivY(float a_x, float a_y, float a_z, float s);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathVec3DivZ(float a_x, float a_y, float a_z, float s);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float JmathFtRadians(float degrees);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JoyMathFpMul(long a, long b);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JoyMathFpDiv(long a, long b);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JoyMathFpAbs(long x);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JoyMathFpSqrt(long x);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JoyMathFpSin(long x);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JoyMathFpCos(long x);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JoyMathFpRound(long value);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JoyMathFpAtan(long z);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JoyMathFpAtan2(long y, long x);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JoyMathFpExp(long x);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JoyMathFpLn(long x);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern long JoyMathFpPow(long b, long exp);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void Release(ulong handle);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern uint DebugLiveCount();
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern uint DebugDestroyCount();
+        private static delegate* unmanaged[Cdecl]<ulong, ulong> s_LcgRandomCreate;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_LcgRandomDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, uint> s_LcgRandomNext;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, void> s_LcgRandomSetState;
+        private static delegate* unmanaged[Cdecl]<ulong, int, int, int, void> s_JpmConfigAddSpawn;
+        private static delegate* unmanaged[Cdecl]<uint, int, uint> s_JpmWaveSeed;
+        private static delegate* unmanaged[Cdecl]<byte*, int, ulong> s_SdbmHash;
+        private static delegate* unmanaged[Cdecl]<byte*, int, ulong> s_Fnv1aHash;
+        private static delegate* unmanaged[Cdecl]<byte*, int, ulong> s_JenkinsHash;
+        private static delegate* unmanaged[Cdecl]<byte*, ulong> s_Murmur3Hash;
+        private static delegate* unmanaged[Cdecl]<byte*, int, ulong> s_KrHash;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_JtimerDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_JtimerTrigger;
+        private static delegate* unmanaged[Cdecl]<ulong, int, void> s_JtimerSetInterval;
+        private static delegate* unmanaged[Cdecl]<ulong, byte, void> s_JtimerSetActive;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_JtimerReset;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong> s_JtimerGetElapsed;
+        private static delegate* unmanaged[Cdecl]<byte> s_InitEnv;
+        private static delegate* unmanaged[Cdecl]<void> s_QuitEnv;
+        private static delegate* unmanaged[Cdecl]<ulong> s_GetTicks;
+        private static delegate* unmanaged[Cdecl]<byte*, int, int, ulong> s_CreateWindow;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_DestroyWindow;
+        private static delegate* unmanaged[Cdecl]<ulong, byte, void> s_WindowSetFullscreen;
+        private static delegate* unmanaged[Cdecl]<ulong, byte> s_WindowGetFullscreen;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, void> s_WindowSetIcon;
+        private static delegate* unmanaged[Cdecl]<int, int, byte> s_PushUserEvent;
+        private static delegate* unmanaged[Cdecl]<byte> s_PushQuitEvent;
+        private static delegate* unmanaged[Cdecl]<int, void> s_LogTitle;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, byte*, void> s_EnvSet;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_EnvDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_SimpleFpsDestory;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_SimpleFpsUpdate;
+        private static delegate* unmanaged[Cdecl]<ulong, int> s_SimpleFpsValue;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_GameTimerInit;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_GameTimerUpdate;
+        private static delegate* unmanaged[Cdecl]<ulong, float> s_GameTimerGetDeltaTime;
+        private static delegate* unmanaged[Cdecl]<ulong, float> s_GameTimerGetUnscaledDeltaTime;
+        private static delegate* unmanaged[Cdecl]<ulong, float, void> s_GameTimerSetTimeScale;
+        private static delegate* unmanaged[Cdecl]<ulong, float> s_GameTimerGetTimeScale;
+        private static delegate* unmanaged[Cdecl]<ulong, int, void> s_GameTimerSetTargetFps;
+        private static delegate* unmanaged[Cdecl]<ulong, int> s_GameTimerGetTargetFps;
+        private static delegate* unmanaged[Cdecl]<byte*, void> s_SetClipboardText;
+        private static delegate* unmanaged[Cdecl]<byte> s_SysInitNetenv;
+        private static delegate* unmanaged[Cdecl]<byte> s_SysReleaseNetenv;
+        private static delegate* unmanaged[Cdecl]<int> s_SysAnyaddr;
+        private static delegate* unmanaged[Cdecl]<long, byte> s_SysClosesocket;
+        private static delegate* unmanaged[Cdecl]<long, int, int> s_SysSetSockSndtimeo;
+        private static delegate* unmanaged[Cdecl]<long, int, int> s_SysSetSockRcvtimeo;
+        private static delegate* unmanaged[Cdecl]<long, int, int> s_SysSetSockAccpettimeo;
+        private static delegate* unmanaged[Cdecl]<long, int> s_SysSetSockBroadcast;
+        private static delegate* unmanaged[Cdecl]<long, int> s_SysSetSockReuseaddr;
+        private static delegate* unmanaged[Cdecl]<long> s_SysTcp;
+        private static delegate* unmanaged[Cdecl]<long> s_SysUdp;
+        private static delegate* unmanaged[Cdecl]<long, byte*, int, byte> s_SysBind;
+        private static delegate* unmanaged[Cdecl]<long, byte*, int, byte> s_SysConnect;
+        private static delegate* unmanaged[Cdecl]<long, byte> s_SysListen;
+        private static delegate* unmanaged[Cdecl]<long, byte*, int, int> s_SysSend;
+        private static delegate* unmanaged[Cdecl]<long, byte*, int, byte*, int, int> s_SysSendto;
+        private static delegate* unmanaged[Cdecl]<long> s_SysCurrentTime;
+        private static delegate* unmanaged[Cdecl]<int, void> s_SysSleep;
+        private static delegate* unmanaged[Cdecl]<void> s_SysInstallCrashHandlers;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_IocpServerDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, int, void> s_IocpProcessEvents;
+        private static delegate* unmanaged[Cdecl]<byte*, int, ulong> s_FontCreate;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_FontDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, float> s_FontGetScale;
+        private static delegate* unmanaged[Cdecl]<ulong, int> s_FontGetSize;
+        private static delegate* unmanaged[Cdecl]<ulong, int> s_FontGetAscent;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong> s_R2dCreate;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_R2dDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, uint, uint, uint, uint, byte> s_R2dSetColor;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_R2dBegin;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_R2dEnd;
+        private static delegate* unmanaged[Cdecl]<ulong, int, int, byte> s_R2dSetLogicalPresentation;
+        private static delegate* unmanaged[Cdecl]<ulong, int, int, int, byte> s_R2dSetLogicalPresentationMode;
+        private static delegate* unmanaged[Cdecl]<ulong, int, byte> s_R2dSetVsync;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, byte> s_R2dSetScale;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, float, float, void> s_R2dSetColorf;
+        private static delegate* unmanaged[Cdecl]<ulong, int, byte> s_R2dSetBlendMode;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, byte> s_R2dDrawPoint;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, float, float, byte> s_R2dSetClipRect;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_R2dClearClip;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, float, float, byte> s_R2dPushClipRect;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_R2dPopClipRect;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_R2dResetClipStack;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, byte> s_R2dPointInClip;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, float, float, byte> s_ShapeDrawLine;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, float, float, float, float, byte> s_ShapeDrawRectangle;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, ulong> s_ImageCreate;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_ImageDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, uint, void> s_ImageSetAlpha;
+        private static delegate* unmanaged[Cdecl]<ulong, int, void> s_ImageSetBlendMode;
+        private static delegate* unmanaged[Cdecl]<ulong, int, void> s_ImageSetScaleMode;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, byte*, int, uint, uint, uint, uint, void> s_TextUpdatex;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_TextDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, float, float, void> s_JtextPrint;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, byte*, int, uint, uint, uint, uint, float, float, void> s_JtextPrintx;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, byte> s_R2dDrawPointF;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, float, float, float, float, byte> s_ShapeDrawRectangleF;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, float, float, byte> s_ShapeDrawLineF;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, byte*, int, uint, uint, uint, uint, float, float, void> s_JtextPrintf;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, byte*, int, uint, uint, uint, uint, float, float, float, void> s_JtextPrintfScaled;
+        private static delegate* unmanaged[Cdecl]<ulong, int> s_TextGetWidth;
+        private static delegate* unmanaged[Cdecl]<ulong, int> s_TextGetHeight;
+        private static delegate* unmanaged[Cdecl]<void> s_JtextCacheClear;
+        private static delegate* unmanaged[Cdecl]<int, void> s_JtextCacheSetLimit;
+        private static delegate* unmanaged[Cdecl]<int> s_JtextCacheGetCount;
+        private static delegate* unmanaged[Cdecl]<int, void> s_JtextCacheSweep;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_AnimationDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_AnimationReset;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, float, float, float, float, float, void> s_AnimationAddClip;
+        private static delegate* unmanaged[Cdecl]<ulong, byte> s_AnimationIsFinished;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, void> s_AnimationSetPosition;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, void> s_AnimationSetScale;
+        private static delegate* unmanaged[Cdecl]<ulong, float, void> s_AnimationSetRotation;
+        private static delegate* unmanaged[Cdecl]<ulong, float, void> s_AnimationUpdate;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_R3dDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, byte> s_R3dBegin;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_R3dEnd;
+        private static delegate* unmanaged[Cdecl]<ulong, int> s_R3dGetDrawCalls;
+        private static delegate* unmanaged[Cdecl]<ulong, uint, uint, uint, void> s_R3dSetClearColor;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, float, float, float, float, float, float, float, float, void> s_R3dCameraLookat;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, float, ulong> s_R3dMeshCube;
+        private static delegate* unmanaged[Cdecl]<ulong, float, int, int, ulong> s_R3dMeshSphere;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, int, ulong> s_R3dMeshPlane;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, float, ulong> s_R3dMeshRamp;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong> s_R3dMeshQuad;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, float, ulong> s_R3dMeshCubeWire;
+        private static delegate* unmanaged[Cdecl]<ulong, float, int, int, ulong> s_R3dMeshSphereWire;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, int, ulong> s_R3dMeshPlaneWire;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, float, ulong> s_R3dMeshRampWire;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, void> s_R3dMeshDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, int, byte> s_R3dFontInit;
+        private static delegate* unmanaged[Cdecl]<ulong, uint, uint, uint, void> s_R3dFontSetColor;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, byte*, float, float, float, float, float, byte> s_R3dFontDraw2d;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, byte*, float, float, float, float, float, uint, uint, uint, byte> s_R3dFontDraw2dColor;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, byte*, float, float, float, float, float, uint, uint, uint, uint, uint, uint, float, byte> s_R3dFontDraw2dOutline;
+        private static delegate* unmanaged[Cdecl]<ulong, int, void> s_R3dFontCacheSetLimit;
+        private static delegate* unmanaged[Cdecl]<ulong, int> s_R3dFontCacheGetCount;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_R3dFontCacheClear;
+        private static delegate* unmanaged[Cdecl]<ulong, int, void> s_R3dFontCacheSweep;
+        private static delegate* unmanaged[Cdecl]<ulong, int, int, void> s_R3dSetLogicalPresentation;
+        private static delegate* unmanaged[Cdecl]<ulong, int, int, int, void> s_R3dSetLogicalPresentationMode;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, ulong, float, float, void> s_R3dButtonDraw;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, ulong, float, float, void> s_R3dButtonDrawCircle;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, float, float, byte> s_R3dButtonIsHovered;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, byte, float, float, byte> s_R3dButtonIsPressed;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, float, float, void> s_R3dButtonRelease;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_R3dButtonDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, float, float, float, float, uint, uint, uint, float, float, void> s_R3dDrawRect2d;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, float, float, float, float, uint, uint, uint, float, float, void> s_R3dDrawMesh2d;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, void> s_R3dLabelSetText;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, ulong, float, float, void> s_R3dLabelDraw;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_R3dLabelDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, void> s_R3dInputSetText;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, float, float, byte> s_R3dInputIsHovered;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_R3dInputFocus;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_R3dInputDefocus;
+        private static delegate* unmanaged[Cdecl]<ulong, byte> s_R3dInputIsFocused;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, void> s_R3dInputStartTextInput;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, void> s_R3dInputStopTextInput;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, void> s_R3dInputInsert;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_R3dInputBackspace;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_R3dInputDelete;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_R3dInputCursorLeft;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_R3dInputCursorRight;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_R3dInputCursorHome;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_R3dInputCursorEnd;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, float, float, void> s_R3dInputClick;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_R3dInputSubmit;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, ulong, float, float, void> s_R3dInputDraw;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_R3dInputDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_R3dComboboxInputDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, void> s_R3dComboboxInputAddItem;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_R3dComboboxInputClearItems;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, void> s_R3dComboboxInputSetText;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, int> s_R3dComboboxInputHitItem;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, ulong, float, float, void> s_R3dComboboxInputDraw;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, ulong, float, float, void> s_R3dComboboxInputDrawDropdown;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_R3dSliderDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, float, void> s_R3dSliderSetValue;
+        private static delegate* unmanaged[Cdecl]<ulong, float> s_R3dSliderGetValue;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, ulong, float, float, void> s_R3dSliderDraw;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, float, float, byte> s_R3dSliderIsPressed;
+        private static delegate* unmanaged[Cdecl]<ulong, byte, void> s_R3dSliderSetPressed;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, float, float, void> s_R3dSliderDragMove;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, float, float, byte> s_R3dSliderIsHovered;
+        private static delegate* unmanaged[Cdecl]<ulong, byte, void> s_R3dSliderSetHovered;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_R3dCheckboxDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_R3dCheckboxToggle;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, float, float, byte> s_R3dCheckboxIsPressed;
+        private static delegate* unmanaged[Cdecl]<ulong, byte, void> s_R3dCheckboxSetHovered;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, float, float, byte> s_R3dCheckboxIsHovered;
+        private static delegate* unmanaged[Cdecl]<ulong, uint, uint, uint, uint, uint, uint, uint, uint, uint, uint, uint, uint, void> s_R3dCheckboxSetColors;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, ulong, float, float, void> s_R3dCheckboxDraw;
+        private static delegate* unmanaged[Cdecl]<ulong, int, float, float, void> s_R3dDrawGrid;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, float, float, float, float, float, float, uint, uint, uint, uint, void> s_R3dDrawMeshSolid;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, float, float, float, float, float, float, uint, uint, uint, uint, void> s_R3dDrawWire;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, float, ulong> s_R3dMeshCubeLit;
+        private static delegate* unmanaged[Cdecl]<ulong, float, int, int, ulong> s_R3dMeshSphereLit;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, int, ulong> s_R3dMeshPlaneLit;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, float, ulong> s_R3dMeshRampLit;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_JanimatorDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, float, void> s_JanimatorSetFloat;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, int, void> s_JanimatorSetInt;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, byte, void> s_JanimatorSetBool;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, void> s_JanimatorSetTrigger;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, float> s_JanimatorGetFloat;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, int> s_JanimatorGetInt;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, byte> s_JanimatorGetBool;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, void> s_JanimatorAddState;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, void> s_JanimatorSetDefaultState;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, byte*, float, float, float, float, float, void> s_JanimatorStateAddClip;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, float, int, int, uint, uint, uint, uint, void> s_JanimatorStateAddColor;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, byte, void> s_JanimatorStateSetLoop;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, float, void> s_JanimatorStateSetSpeed;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, byte*, void> s_JanimatorStateSetBlend;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, byte*, float, float, float, float, float, float, void> s_JanimatorStateAddMotion;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, byte*, int> s_JanimatorAddTransition;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, int> s_JanimatorAddAnyTransition;
+        private static delegate* unmanaged[Cdecl]<ulong, int, byte*, int, float, void> s_JanimatorTransitionAddCond;
+        private static delegate* unmanaged[Cdecl]<ulong, int, float, void> s_JanimatorTransitionSetExitTime;
+        private static delegate* unmanaged[Cdecl]<ulong, float, void> s_JanimatorUpdate;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, void> s_JanimatorDraw;
+        private static delegate* unmanaged[Cdecl]<ulong, byte, void> s_JanimatorSetFlipH;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_LabelDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_LabelDraw;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_ButtonDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, void> s_ButtonSetPosition;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, void> s_ButtonSetSize;
+        private static delegate* unmanaged[Cdecl]<ulong, uint, uint, uint, uint, void> s_ButtonSetNormalColor;
+        private static delegate* unmanaged[Cdecl]<ulong, uint, uint, uint, uint, void> s_ButtonSetHoverColor;
+        private static delegate* unmanaged[Cdecl]<ulong, uint, uint, uint, uint, void> s_ButtonSetPressedColor;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, void> s_ButtonSetImage;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, void> s_ButtonSetPressedImage;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, byte*, int, uint, uint, uint, uint, void> s_ButtonSetTextx;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, byte> s_ButtonIsHovered;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, byte> s_ButtonIsPressed;
+        private static delegate* unmanaged[Cdecl]<ulong, byte, void> s_ButtonSetHovered;
+        private static delegate* unmanaged[Cdecl]<ulong, byte, void> s_ButtonSetPressed;
+        private static delegate* unmanaged[Cdecl]<ulong, byte> s_ButtonGetPressed;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, void> s_ButtonSetTextOffset;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_ButtonDraw;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_ScrollviewDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, float, float, void> s_ScrollviewSetViewPx;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, void> s_ScrollviewSetContent;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, void> s_ScrollviewSetOffset;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_ScrollviewClamp;
+        private static delegate* unmanaged[Cdecl]<ulong, float> s_ScrollviewGetOffsetX;
+        private static delegate* unmanaged[Cdecl]<ulong, float> s_ScrollviewGetOffsetY;
+        private static delegate* unmanaged[Cdecl]<ulong, byte, void> s_ScrollviewSetShowBar;
+        private static delegate* unmanaged[Cdecl]<ulong, byte> s_ScrollviewDragging;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, byte> s_ScrollviewHit;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_ScrollviewBegin;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_ScrollviewEnd;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_ComboboxDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, byte*, int, uint, uint, uint, uint, void> s_ComboboxAddItem;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, byte> s_ComboboxIsPressed;
+        private static delegate* unmanaged[Cdecl]<ulong, byte> s_ComboboxIsOpen;
+        private static delegate* unmanaged[Cdecl]<ulong, byte, void> s_ComboboxSetOpen;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, int> s_ComboboxHitItem;
+        private static delegate* unmanaged[Cdecl]<ulong, int, void> s_ComboboxSetSelected;
+        private static delegate* unmanaged[Cdecl]<ulong, int> s_ComboboxGetSelected;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_ComboboxDraw;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_ComboboxInputDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, int, void> s_ComboboxInputAddItem;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_ComboboxInputClearItems;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, void> s_ComboboxInputSetText;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_ComboboxInputDraw;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_ComboboxInputDrawDropdown;
+        private static delegate* unmanaged[Cdecl]<ulong, byte> s_ComboboxInputIsOpen;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, void> s_ComboboxInputSetPopupNode;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, int> s_ComboboxInputHitItem;
+        private static delegate* unmanaged[Cdecl]<ulong, byte, void> s_ComboboxInputSetOpen;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, void> s_DatagridSetheaders;
+        private static delegate* unmanaged[Cdecl]<ulong, int, byte*, void> s_DatagridSetheader;
+        private static delegate* unmanaged[Cdecl]<ulong, int, int, byte*, void> s_DatagridSetcell;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_DatagridDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, void> s_DatagridDraw;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, int> s_DatagridHitRow;
+        private static delegate* unmanaged[Cdecl]<ulong, int, void> s_DatagridScroll;
+        private static delegate* unmanaged[Cdecl]<ulong, int, void> s_DatagridSetSelectedRow;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_RadioDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, byte> s_RadioIsPressed;
+        private static delegate* unmanaged[Cdecl]<ulong, byte, void> s_RadioSetHovered;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_CheckboxDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, uint, uint, uint, uint, uint, uint, uint, uint, uint, uint, uint, uint, void> s_CheckboxSetColors;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, void> s_CheckboxSetR2d;
+        private static delegate* unmanaged[Cdecl]<ulong, int, int, void> s_CheckboxSetPosition;
+        private static delegate* unmanaged[Cdecl]<ulong, uint, uint, uint, uint, void> s_CheckboxSetTextColor;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_CheckboxToggle;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, byte> s_CheckboxIsPressed;
+        private static delegate* unmanaged[Cdecl]<ulong, byte, void> s_CheckboxSetHovered;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_JoystickDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, byte*, void> s_JoystickSetTextures;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, void> s_JoystickSetVector;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_JoystickDraw;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_JoystickReset;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, void> s_JoystickSetPosition;
+        private static delegate* unmanaged[Cdecl]<ulong, float, void> s_JoystickSetRadius;
+        private static delegate* unmanaged[Cdecl]<ulong, byte> s_JoystickIsDragging;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, void> s_JoystickTouchDown;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, void> s_JoystickTouchMove;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_JoystickTouchUp;
+        private static delegate* unmanaged[Cdecl]<ulong, float> s_JoystickGetMagnitude;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_InputboxDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, void> s_InputboxSetText;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_InputboxDraw;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, byte> s_InputboxIsPressed;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, byte> s_InputboxIsHovered;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_InputboxFocus;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_InputboxDefocus;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_InputboxBlur;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, int, void> s_InputboxInsert;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_InputboxBackspace;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_InputboxDelete;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_InputboxCursorLeft;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_InputboxCursorRight;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_InputboxCursorHome;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_InputboxCursorEnd;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_InputboxSelectLeft;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_InputboxSelectRight;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_InputboxSelectHome;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_InputboxSelectEnd;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_InputboxSelectAll;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_InputboxPaste;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_InputboxCopy;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_InputboxCut;
+        private static delegate* unmanaged[Cdecl]<ulong, byte> s_InputboxIsFocused;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_SliderDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, float, void> s_SliderSetValue;
+        private static delegate* unmanaged[Cdecl]<ulong, float> s_SliderGetValue;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, float, float, void> s_SliderSetRect;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, void> s_SliderSetRange;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_SliderDraw;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, byte> s_SliderIsPressed;
+        private static delegate* unmanaged[Cdecl]<ulong, byte, void> s_SliderSetPressed;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, void> s_SliderDragMove;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, byte> s_SliderIsHovered;
+        private static delegate* unmanaged[Cdecl]<ulong, byte, void> s_SliderSetHovered;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_PopupDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, int, void> s_PopupSetTitle;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, int, void> s_PopupSetContent;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, void> s_PopupSetPosition;
+        private static delegate* unmanaged[Cdecl]<ulong, byte, void> s_PopupSetVisible;
+        private static delegate* unmanaged[Cdecl]<ulong, byte, void> s_PopupSetCloseable;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, ulong, void> s_PopupDraw;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, byte> s_PopupIsCloseClicked;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, byte> s_PopupIsTitleClicked;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, void> s_PopupDragMove;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, byte> s_PopupIsInside;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_TooltipDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, int, void> s_TooltipSetText;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, void> s_TooltipSetPosition;
+        private static delegate* unmanaged[Cdecl]<ulong, byte, void> s_TooltipSetVisible;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, void> s_TooltipDraw;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_JuiCtxDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_JuiBegin;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_JuiEnd;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, void> s_JuiInputMotion;
+        private static delegate* unmanaged[Cdecl]<ulong, int, void> s_JuiInputDown;
+        private static delegate* unmanaged[Cdecl]<ulong, int, void> s_JuiInputUp;
+        private static delegate* unmanaged[Cdecl]<ulong, float, void> s_JuiInputWheel;
+        private static delegate* unmanaged[Cdecl]<ulong, byte, byte, void> s_JuiInputKey;
+        private static delegate* unmanaged[Cdecl]<ulong, byte> s_JuiIsDown;
+        private static delegate* unmanaged[Cdecl]<ulong, byte> s_JuiIsPressed;
+        private static delegate* unmanaged[Cdecl]<ulong, byte> s_JuiIsReleased;
+        private static delegate* unmanaged[Cdecl]<ulong, float> s_JuiTakeWheel;
+        private static delegate* unmanaged[Cdecl]<ulong, byte> s_JuiIsShift;
+        private static delegate* unmanaged[Cdecl]<ulong, byte> s_JuiIsCtrl;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, float, float, void> s_JuiPushClip;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_JuiPopClip;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_JuiResetClip;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, float, float, byte> s_JuiHit;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, float, float, uint, uint, uint, uint, void> s_JuiFillRect;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, float, float, uint, uint, uint, uint, void> s_JuiStrokeRect;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, float, float, uint, uint, uint, uint, void> s_JuiLine;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, byte*, uint, uint, uint, uint, int> s_JuiText;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, float, float, byte*, uint, uint, uint, uint, int> s_JuiTextCentered;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, float, float, byte*, void> s_JuiPanelBegin;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_JuiPanelEnd;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, float, float, void> s_JuiPanelFrame;
+        private static delegate* unmanaged[Cdecl]<ulong, int, float, float, float, float, float, float> s_JuiScrollBegin;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_JuiScrollEnd;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, float, float, float, float, void> s_JuiScrollbar;
+        private static delegate* unmanaged[Cdecl]<ulong, int, float, float, float, void> s_JuiScrollSetOffset;
+        private static delegate* unmanaged[Cdecl]<ulong, int, float, float, float, float, byte*, byte> s_JuiButton;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_JtilemapDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, int> s_JtilemapGetWidth;
+        private static delegate* unmanaged[Cdecl]<ulong, int> s_JtilemapGetHeight;
+        private static delegate* unmanaged[Cdecl]<ulong, int> s_JtilemapGetTilewidth;
+        private static delegate* unmanaged[Cdecl]<ulong, int> s_JtilemapGetTileheight;
+        private static delegate* unmanaged[Cdecl]<ulong, int, uint, int> s_JtilemapGetAnimTileid;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, ulong> s_JtilemapFindTileLayer;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, ulong> s_JtilemapFindObjectLayer;
+        private static delegate* unmanaged[Cdecl]<ulong, int, int, int> s_JtilemapGetTile;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, float, float, uint, void> s_JtilemapRenderAll;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, float, float, uint, void> s_JtilemapRenderTiles;
+        private static delegate* unmanaged[Cdecl]<ulong, float, void> s_JtilemapRenderSetTilePx;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, byte*, float, float, uint, byte> s_JtilemapRenderLayer;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_JtilemapRenderDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, int> s_KcpserverDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, int, byte*, int, void> s_KcpserverSend;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, int, void> s_KcpserverBroadcast;
+        private static delegate* unmanaged[Cdecl]<ulong, int, void> s_KcpserverOffline;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_KcpserverUpdate;
+        private static delegate* unmanaged[Cdecl]<ulong, int> s_KcpserverConnectionCount;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, byte> s_KcpserverPollMessage;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_KcpclientDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, int, int> s_KcpclientSend;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_KcpclientUpdate;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, byte> s_KcpclientPollMessage;
+        private static delegate* unmanaged[Cdecl]<ulong, int> s_TcpserverDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, int, byte*, int, void> s_TcpserverSend;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, int, void> s_TcpserverBroadcast;
+        private static delegate* unmanaged[Cdecl]<ulong, int, void> s_TcpserverOffline;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_TcpserverUpdate;
+        private static delegate* unmanaged[Cdecl]<ulong, int> s_TcpserverConnectionCount;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, byte> s_TcpserverPollMessage;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_TcpclientDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, int, int> s_TcpclientSend;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_TcpclientUpdate;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, byte> s_TcpclientPollMessage;
+        private static delegate* unmanaged[Cdecl]<ulong, int> s_WsnetserverDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, int, byte*, int, void> s_WsnetserverSend;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, int, void> s_WsnetserverBroadcast;
+        private static delegate* unmanaged[Cdecl]<ulong, int, void> s_WsnetserverOffline;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_WsnetserverUpdate;
+        private static delegate* unmanaged[Cdecl]<ulong, int> s_WsnetserverConnectionCount;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, byte> s_WsnetserverPollMessage;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_WsnetclientDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, int, int> s_WsnetclientSend;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_WsnetclientUpdate;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, byte> s_WsnetclientPollMessage;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_NetclientDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, int, int> s_NetclientSend;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_NetclientUpdate;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, byte> s_NetclientPollMessage;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_NetserverDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, int, byte*, int, void> s_NetserverSend;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, int, void> s_NetserverBroadcast;
+        private static delegate* unmanaged[Cdecl]<ulong, int, void> s_NetserverOffline;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_NetserverUpdate;
+        private static delegate* unmanaged[Cdecl]<ulong, int> s_NetserverConnectionCount;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, byte> s_NetserverPollMessage;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_NetmessageFreeData;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_SceneNodeDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, void> s_SceneNodeAddChild;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, void> s_SceneNodeRemoveChild;
+        private static delegate* unmanaged[Cdecl]<ulong, int> s_SceneNodeGetChildCount;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, void> s_SceneNodeSetPosition;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, void> s_SceneNodeSetWorldPosition;
+        private static delegate* unmanaged[Cdecl]<ulong, float, void> s_SceneNodeSetRotation;
+        private static delegate* unmanaged[Cdecl]<ulong, float> s_SceneNodeGetRotation;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, void> s_SceneNodeSetScale;
+        private static delegate* unmanaged[Cdecl]<ulong, int, void> s_SceneNodeSetZorder;
+        private static delegate* unmanaged[Cdecl]<ulong, int> s_SceneNodeGetZorder;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, void> s_SceneNodeSetName;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, void> s_SceneNodeSetTag;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, ulong> s_SceneFindNodeByName;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, ulong> s_SceneFindNodeByNameDeep;
+        private static delegate* unmanaged[Cdecl]<ulong, float, void> s_SceneNodeUpdate;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_SceneDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, void> s_SceneAddRootNode;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, void> s_SceneRemoveRootNode;
+        private static delegate* unmanaged[Cdecl]<ulong, int> s_SceneGetRootCount;
+        private static delegate* unmanaged[Cdecl]<ulong, int, ulong> s_SceneGetRootAt;
+        private static delegate* unmanaged[Cdecl]<ulong, float, void> s_SceneUpdate;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, void> s_SceneSetPopupNode;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong> s_SceneGetPopupNode;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_SceneManagerDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, void> s_SceneManagerPush;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, void> s_SceneManagerReplace;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_SceneManagerPop;
+        private static delegate* unmanaged[Cdecl]<ulong, float, void> s_SceneManagerUpdate;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong> s_SceneManagerGetCurrent;
+        private static delegate* unmanaged[Cdecl]<ulong, int> s_SceneManagerGetCount;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_JparticleDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, void> s_JparticleSetPosition;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_JparticleEmit;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_JparticleClear;
+        private static delegate* unmanaged[Cdecl]<ulong, float, void> s_JparticleUpdate;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, void> s_JparticleRender;
+        private static delegate* unmanaged[Cdecl]<ulong, int> s_JparticleCount;
+        private static delegate* unmanaged[Cdecl]<ulong, byte> s_JparticleIsActive;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_JlightSysDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, int, int, void> s_JlightSysResize;
+        private static delegate* unmanaged[Cdecl]<ulong, int, void> s_JlightRemove;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_JlightClear;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, float, float, int> s_JlightAddOccluder;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_JlightClearOccluders;
+        private static delegate* unmanaged[Cdecl]<ulong, uint, uint, uint, void> s_JlightSetAmbient;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, void> s_JlightRender;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_JecsDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, float, void> s_JecsProcess;
+        private static delegate* unmanaged[Cdecl]<ulong, byte*, ulong, void> s_JecsDefine;
+        private static delegate* unmanaged[Cdecl]<uint> s_AudioOpenDevice;
+        private static delegate* unmanaged[Cdecl]<uint, void> s_AudioCloseDevice;
+        private static delegate* unmanaged[Cdecl]<byte*, uint, byte> s_AudioCreateWav;
+        private static delegate* unmanaged[Cdecl]<byte*, uint, byte> s_AudioCreateMp3;
+        private static delegate* unmanaged[Cdecl]<byte*, uint, byte> s_AudioCreateFlac;
+        private static delegate* unmanaged[Cdecl]<byte*, uint, byte> s_AudioCreateOgg;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_AudioShotPlay;
+        private static delegate* unmanaged[Cdecl]<ulong, float, void> s_AudioShotSetGain;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_AudioShotDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_AudioBgmStop;
+        private static delegate* unmanaged[Cdecl]<ulong, float, void> s_AudioBgmSetGain;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_AudioBgmDestroy;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, float, float, float, float, void> s_ImageDrawRect;
+        private static delegate* unmanaged[Cdecl]<int, byte, void> s_JoyInputFeedKey;
+        private static delegate* unmanaged[Cdecl]<float, float, void> s_JoyInputFeedMouseMove;
+        private static delegate* unmanaged[Cdecl]<int, byte, void> s_JoyInputFeedMouseButton;
+        private static delegate* unmanaged[Cdecl]<float, void> s_JoyInputFeedWheel;
+        private static delegate* unmanaged[Cdecl]<void> s_JoyInputEndFrame;
+        private static delegate* unmanaged[Cdecl]<void> s_JoyInputReset;
+        private static delegate* unmanaged[Cdecl]<int, byte> s_JoyInputIsKeyDown;
+        private static delegate* unmanaged[Cdecl]<int, byte> s_JoyInputIsMouseButtonDown;
+        private static delegate* unmanaged[Cdecl]<float> s_JoyInputGetMouseX;
+        private static delegate* unmanaged[Cdecl]<float> s_JoyInputGetMouseY;
+        private static delegate* unmanaged[Cdecl]<float> s_JoyInputGetWheel;
+        private static delegate* unmanaged[Cdecl]<int, byte> s_JoyInputWasKeyPressed;
+        private static delegate* unmanaged[Cdecl]<int, byte> s_JoyInputWasKeyReleased;
+        private static delegate* unmanaged[Cdecl]<float, long> s_JmathFpFromFloat;
+        private static delegate* unmanaged[Cdecl]<long, float> s_JmathFpToFloat;
+        private static delegate* unmanaged[Cdecl]<uint, long> s_JmathFpFromUint;
+        private static delegate* unmanaged[Cdecl]<int, long> s_JmathFpFromInt;
+        private static delegate* unmanaged[Cdecl]<uint, long> s_JmathFpFromFraction;
+        private static delegate* unmanaged[Cdecl]<long> s_JmathFpMinValue;
+        private static delegate* unmanaged[Cdecl]<long> s_JmathFpMaxValue;
+        private static delegate* unmanaged[Cdecl]<long, long, long> s_JmathFpAdd;
+        private static delegate* unmanaged[Cdecl]<long, long, long> s_JmathFpSub;
+        private static delegate* unmanaged[Cdecl]<long> s_JmathFpZero;
+        private static delegate* unmanaged[Cdecl]<long> s_JmathFpHalf;
+        private static delegate* unmanaged[Cdecl]<long> s_JmathFpOne;
+        private static delegate* unmanaged[Cdecl]<long> s_JmathFpPi;
+        private static delegate* unmanaged[Cdecl]<long, long, long> s_JmathFpMax;
+        private static delegate* unmanaged[Cdecl]<long, long, long> s_JmathFpMin;
+        private static delegate* unmanaged[Cdecl]<long, long> s_JmathFpPow2;
+        private static delegate* unmanaged[Cdecl]<long, int> s_JmathFpSign;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long> s_JmathFpClamp;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long> s_JmathFpLerp;
+        private static delegate* unmanaged[Cdecl]<long, long, long> s_JmathVec2fNegateX;
+        private static delegate* unmanaged[Cdecl]<long, long, long> s_JmathVec2fNegateY;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long> s_JmathVec2fDot;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long> s_JmathVec2fCross;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long> s_JmathVec2fCross2X;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long> s_JmathVec2fCross2Y;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long> s_JmathVec2fCross3X;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long> s_JmathVec2fCross3Y;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long> s_JmathVec2fAddX;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long> s_JmathVec2fAddY;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long> s_JmathVec2fSubX;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long> s_JmathVec2fSubY;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long> s_JmathVec2fScaleX;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long> s_JmathVec2fScaleY;
+        private static delegate* unmanaged[Cdecl]<long, long, long> s_JmathVec2fAbsX;
+        private static delegate* unmanaged[Cdecl]<long, long, long> s_JmathVec2fAbsY;
+        private static delegate* unmanaged[Cdecl]<long, long, long> s_JmathVec2fLengthSquared;
+        private static delegate* unmanaged[Cdecl]<long, long, long> s_JmathVec2fLength;
+        private static delegate* unmanaged[Cdecl]<long, long, long> s_JmathVec2fNormalizeX;
+        private static delegate* unmanaged[Cdecl]<long, long, long> s_JmathVec2fNormalizeY;
+        private static delegate* unmanaged[Cdecl]<long, long, long> s_JmathVec2fNormalX;
+        private static delegate* unmanaged[Cdecl]<long, long, long> s_JmathVec2fNormalY;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long> s_JmathVec2fRotateX;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long> s_JmathVec2fRotateY;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long, long> s_JmathVec2fLerpX;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long, long> s_JmathVec2fLerpY;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long> s_JmathVec2fDistance;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long> s_JmathVec3fNegateX;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long> s_JmathVec3fNegateY;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long> s_JmathVec3fNegateZ;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long> s_JmathVec3fAddX;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long> s_JmathVec3fAddY;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long> s_JmathVec3fAddZ;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long> s_JmathVec3fSubX;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long> s_JmathVec3fSubY;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long> s_JmathVec3fSubZ;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long> s_JmathVec3fScaleX;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long> s_JmathVec3fScaleY;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long> s_JmathVec3fScaleZ;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long> s_JmathVec3fAbsX;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long> s_JmathVec3fAbsY;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long> s_JmathVec3fAbsZ;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long> s_JmathVec3fDot;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long> s_JmathVec3fCrossX;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long> s_JmathVec3fCrossY;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long> s_JmathVec3fCrossZ;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long> s_JmathVec3fSquareLength;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long> s_JmathVec3fLength;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long> s_JmathVec3fNormalizeX;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long> s_JmathVec3fNormalizeY;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long> s_JmathVec3fNormalizeZ;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long, long> s_JmathVec3fLerpX;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long, long> s_JmathVec3fLerpY;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long, long> s_JmathVec3fLerpZ;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long> s_JmathVec3fDistance;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long> s_JmathMat22fMulVec2fX;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long> s_JmathMat22fMulVec2fY;
+        private static delegate* unmanaged[Cdecl]<long, long> s_JmathMat22fRotateCol1X;
+        private static delegate* unmanaged[Cdecl]<long, long> s_JmathMat22fRotateCol1Y;
+        private static delegate* unmanaged[Cdecl]<long, long> s_JmathMat22fRotateCol2X;
+        private static delegate* unmanaged[Cdecl]<long, long> s_JmathMat22fRotateCol2Y;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long> s_JmathMat22fTransposeCol1X;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long> s_JmathMat22fTransposeCol1Y;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long> s_JmathMat22fTransposeCol2X;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long> s_JmathMat22fTransposeCol2Y;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long> s_JmathMat22fInvertCol1X;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long> s_JmathMat22fInvertCol1Y;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long> s_JmathMat22fInvertCol2X;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long> s_JmathMat22fInvertCol2Y;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long, long, long> s_JmathMat22fAddCol1X;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long, long, long> s_JmathMat22fAddCol1Y;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long, long, long> s_JmathMat22fAddCol2X;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long, long, long> s_JmathMat22fAddCol2Y;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long, long, long> s_JmathMat22fMulCol1X;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long, long, long> s_JmathMat22fMulCol1Y;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long, long, long> s_JmathMat22fMulCol2X;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long, long, long> s_JmathMat22fMulCol2Y;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long> s_JmathMat22fAbsCol1X;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long> s_JmathMat22fAbsCol1Y;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long> s_JmathMat22fAbsCol2X;
+        private static delegate* unmanaged[Cdecl]<long, long, long, long, long> s_JmathMat22fAbsCol2Y;
+        private static delegate* unmanaged[Cdecl]<float, float> s_JmathFtFromFloat;
+        private static delegate* unmanaged[Cdecl]<float, float> s_JmathFtToFloat;
+        private static delegate* unmanaged[Cdecl]<float> s_JmathFtMinValue;
+        private static delegate* unmanaged[Cdecl]<float> s_JmathFtMaxValue;
+        private static delegate* unmanaged[Cdecl]<float, float, float> s_JmathFtAdd;
+        private static delegate* unmanaged[Cdecl]<float, float, float> s_JmathFtSub;
+        private static delegate* unmanaged[Cdecl]<float, float, float> s_JmathFtMul;
+        private static delegate* unmanaged[Cdecl]<float, float, float> s_JmathFtDiv;
+        private static delegate* unmanaged[Cdecl]<float, float> s_JmathFtAbs;
+        private static delegate* unmanaged[Cdecl]<float, float> s_JmathFtSqrt;
+        private static delegate* unmanaged[Cdecl]<float, float> s_JmathFtSin;
+        private static delegate* unmanaged[Cdecl]<float, float> s_JmathFtCos;
+        private static delegate* unmanaged[Cdecl]<float, float, float> s_JmathFtAtan2;
+        private static delegate* unmanaged[Cdecl]<float> s_JmathFtZero;
+        private static delegate* unmanaged[Cdecl]<float> s_JmathFtHalf;
+        private static delegate* unmanaged[Cdecl]<float> s_JmathFtOne;
+        private static delegate* unmanaged[Cdecl]<float> s_JmathFtPi;
+        private static delegate* unmanaged[Cdecl]<float, float, float> s_JmathFtMax;
+        private static delegate* unmanaged[Cdecl]<float, float, float> s_JmathFtMin;
+        private static delegate* unmanaged[Cdecl]<float, float> s_JmathFtPow2;
+        private static delegate* unmanaged[Cdecl]<float, int> s_JmathFtSign;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float> s_JmathFtClamp;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float> s_JmathFtLerp;
+        private static delegate* unmanaged[Cdecl]<float, float, float> s_JmathVec2NegateX;
+        private static delegate* unmanaged[Cdecl]<float, float, float> s_JmathVec2NegateY;
+        private static delegate* unmanaged[Cdecl]<float, float, ulong> s_JmathVec2Negate;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float> s_JmathVec2Dot;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float> s_JmathVec2Cross;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float> s_JmathVec2Cross2X;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float> s_JmathVec2Cross2Y;
+        private static delegate* unmanaged[Cdecl]<float, float, float, ulong> s_JmathVec2Cross2;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float> s_JmathVec2Cross3X;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float> s_JmathVec2Cross3Y;
+        private static delegate* unmanaged[Cdecl]<float, float, float, ulong> s_JmathVec2Cross3;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float> s_JmathVec2AddX;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float> s_JmathVec2AddY;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, ulong> s_JmathVec2Add;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float> s_JmathVec2SubX;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float> s_JmathVec2SubY;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, ulong> s_JmathVec2Sub;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float> s_JmathVec2ScaleX;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float> s_JmathVec2ScaleY;
+        private static delegate* unmanaged[Cdecl]<float, float, float, ulong> s_JmathVec2Scale;
+        private static delegate* unmanaged[Cdecl]<float, float, float> s_JmathVec2AbsX;
+        private static delegate* unmanaged[Cdecl]<float, float, float> s_JmathVec2AbsY;
+        private static delegate* unmanaged[Cdecl]<float, float, ulong> s_JmathVec2Abs;
+        private static delegate* unmanaged[Cdecl]<float, float, float> s_JmathVec2LengthSquared;
+        private static delegate* unmanaged[Cdecl]<float, float, float> s_JmathVec2Length;
+        private static delegate* unmanaged[Cdecl]<float, float, float> s_JmathVec2NormalizeX;
+        private static delegate* unmanaged[Cdecl]<float, float, float> s_JmathVec2NormalizeY;
+        private static delegate* unmanaged[Cdecl]<float, float, ulong> s_JmathVec2Normalize;
+        private static delegate* unmanaged[Cdecl]<float, float, float> s_JmathVec2NormalX;
+        private static delegate* unmanaged[Cdecl]<float, float, float> s_JmathVec2NormalY;
+        private static delegate* unmanaged[Cdecl]<float, float, ulong> s_JmathVec2Normal;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float> s_JmathVec2RotateX;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float> s_JmathVec2RotateY;
+        private static delegate* unmanaged[Cdecl]<float, float, float, ulong> s_JmathVec2Rotate;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, float> s_JmathVec2LerpX;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, float> s_JmathVec2LerpY;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, ulong> s_JmathVec2Lerp;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float> s_JmathVec2Distance;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float> s_JmathVec3NegateX;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float> s_JmathVec3NegateY;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float> s_JmathVec3NegateZ;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float> s_JmathVec3AddX;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float> s_JmathVec3AddY;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float> s_JmathVec3AddZ;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float> s_JmathVec3SubX;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float> s_JmathVec3SubY;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float> s_JmathVec3SubZ;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float> s_JmathVec3ScaleX;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float> s_JmathVec3ScaleY;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float> s_JmathVec3ScaleZ;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float> s_JmathVec3AbsX;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float> s_JmathVec3AbsY;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float> s_JmathVec3AbsZ;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float> s_JmathVec3Dot;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float> s_JmathVec3CrossX;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float> s_JmathVec3CrossY;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float> s_JmathVec3CrossZ;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float> s_JmathVec3SquareLength;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float> s_JmathVec3Length;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float> s_JmathVec3NormalizeX;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float> s_JmathVec3NormalizeY;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float> s_JmathVec3NormalizeZ;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float, float> s_JmathVec3LerpX;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float, float> s_JmathVec3LerpY;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float, float> s_JmathVec3LerpZ;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float> s_JmathVec3Distance;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float> s_JmathMat22MulVec2X;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float> s_JmathMat22MulVec2Y;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, float, ulong> s_JmathMat22MulVec2;
+        private static delegate* unmanaged[Cdecl]<float, float> s_JmathMat22RotateCol1X;
+        private static delegate* unmanaged[Cdecl]<float, float> s_JmathMat22RotateCol1Y;
+        private static delegate* unmanaged[Cdecl]<float, float> s_JmathMat22RotateCol2X;
+        private static delegate* unmanaged[Cdecl]<float, float> s_JmathMat22RotateCol2Y;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float> s_JmathMat22TransposeCol1X;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float> s_JmathMat22TransposeCol1Y;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float> s_JmathMat22TransposeCol2X;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float> s_JmathMat22TransposeCol2Y;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float> s_JmathMat22InvertCol1X;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float> s_JmathMat22InvertCol1Y;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float> s_JmathMat22InvertCol2X;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float> s_JmathMat22InvertCol2Y;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float, float, float> s_JmathMat22AddCol1X;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float, float, float> s_JmathMat22AddCol1Y;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float, float, float> s_JmathMat22AddCol2X;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float, float, float> s_JmathMat22AddCol2Y;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float, float, float> s_JmathMat22MulCol1X;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float, float, float> s_JmathMat22MulCol1Y;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float, float, float> s_JmathMat22MulCol2X;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float, float, float> s_JmathMat22MulCol2Y;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float> s_JmathMat22AbsCol1X;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float> s_JmathMat22AbsCol1Y;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float> s_JmathMat22AbsCol2X;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float> s_JmathMat22AbsCol2Y;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float> s_JmathVec3DivX;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float> s_JmathVec3DivY;
+        private static delegate* unmanaged[Cdecl]<float, float, float, float, float> s_JmathVec3DivZ;
+        private static delegate* unmanaged[Cdecl]<float, float> s_JmathFtRadians;
+        private static delegate* unmanaged[Cdecl]<long, long, long> s_JoyMathFpMul;
+        private static delegate* unmanaged[Cdecl]<long, long, long> s_JoyMathFpDiv;
+        private static delegate* unmanaged[Cdecl]<long, long> s_JoyMathFpAbs;
+        private static delegate* unmanaged[Cdecl]<long, long> s_JoyMathFpSqrt;
+        private static delegate* unmanaged[Cdecl]<long, long> s_JoyMathFpSin;
+        private static delegate* unmanaged[Cdecl]<long, long> s_JoyMathFpCos;
+        private static delegate* unmanaged[Cdecl]<long, long> s_JoyMathFpRound;
+        private static delegate* unmanaged[Cdecl]<long, long> s_JoyMathFpAtan;
+        private static delegate* unmanaged[Cdecl]<long, long, long> s_JoyMathFpAtan2;
+        private static delegate* unmanaged[Cdecl]<long, long> s_JoyMathFpExp;
+        private static delegate* unmanaged[Cdecl]<long, long> s_JoyMathFpLn;
+        private static delegate* unmanaged[Cdecl]<long, long, long> s_JoyMathFpPow;
+        private static delegate* unmanaged[Cdecl]<ulong, void> s_Release;
+        private static delegate* unmanaged[Cdecl]<uint> s_DebugLiveCount;
+        private static delegate* unmanaged[Cdecl]<uint> s_DebugDestroyCount;
+
+        internal static void Init()
+        {
+            s_LcgRandomCreate = (delegate* unmanaged[Cdecl]<ulong, ulong>)NativeFuncs.Lookup("Joy.Api.Native::LcgRandomCreate");
+            s_LcgRandomDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::LcgRandomDestroy");
+            s_LcgRandomNext = (delegate* unmanaged[Cdecl]<ulong, uint>)NativeFuncs.Lookup("Joy.Api.Native::LcgRandomNext");
+            s_LcgRandomSetState = (delegate* unmanaged[Cdecl]<ulong, ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::LcgRandomSetState");
+            s_JpmConfigAddSpawn = (delegate* unmanaged[Cdecl]<ulong, int, int, int, void>)NativeFuncs.Lookup("Joy.Api.Native::JpmConfigAddSpawn");
+            s_JpmWaveSeed = (delegate* unmanaged[Cdecl]<uint, int, uint>)NativeFuncs.Lookup("Joy.Api.Native::JpmWaveSeed");
+            s_SdbmHash = (delegate* unmanaged[Cdecl]<byte*, int, ulong>)NativeFuncs.Lookup("Joy.Api.Native::SdbmHash");
+            s_Fnv1aHash = (delegate* unmanaged[Cdecl]<byte*, int, ulong>)NativeFuncs.Lookup("Joy.Api.Native::Fnv1aHash");
+            s_JenkinsHash = (delegate* unmanaged[Cdecl]<byte*, int, ulong>)NativeFuncs.Lookup("Joy.Api.Native::JenkinsHash");
+            s_Murmur3Hash = (delegate* unmanaged[Cdecl]<byte*, ulong>)NativeFuncs.Lookup("Joy.Api.Native::Murmur3Hash");
+            s_KrHash = (delegate* unmanaged[Cdecl]<byte*, int, ulong>)NativeFuncs.Lookup("Joy.Api.Native::KrHash");
+            s_JtimerDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::JtimerDestroy");
+            s_JtimerTrigger = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::JtimerTrigger");
+            s_JtimerSetInterval = (delegate* unmanaged[Cdecl]<ulong, int, void>)NativeFuncs.Lookup("Joy.Api.Native::JtimerSetInterval");
+            s_JtimerSetActive = (delegate* unmanaged[Cdecl]<ulong, byte, void>)NativeFuncs.Lookup("Joy.Api.Native::JtimerSetActive");
+            s_JtimerReset = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::JtimerReset");
+            s_JtimerGetElapsed = (delegate* unmanaged[Cdecl]<ulong, ulong>)NativeFuncs.Lookup("Joy.Api.Native::JtimerGetElapsed");
+            s_InitEnv = (delegate* unmanaged[Cdecl]<byte>)NativeFuncs.Lookup("Joy.Api.Native::InitEnv");
+            s_QuitEnv = (delegate* unmanaged[Cdecl]<void>)NativeFuncs.Lookup("Joy.Api.Native::QuitEnv");
+            s_GetTicks = (delegate* unmanaged[Cdecl]<ulong>)NativeFuncs.Lookup("Joy.Api.Native::GetTicks");
+            s_CreateWindow = (delegate* unmanaged[Cdecl]<byte*, int, int, ulong>)NativeFuncs.Lookup("Joy.Api.Native::CreateWindow");
+            s_DestroyWindow = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::DestroyWindow");
+            s_WindowSetFullscreen = (delegate* unmanaged[Cdecl]<ulong, byte, void>)NativeFuncs.Lookup("Joy.Api.Native::WindowSetFullscreen");
+            s_WindowGetFullscreen = (delegate* unmanaged[Cdecl]<ulong, byte>)NativeFuncs.Lookup("Joy.Api.Native::WindowGetFullscreen");
+            s_WindowSetIcon = (delegate* unmanaged[Cdecl]<ulong, byte*, void>)NativeFuncs.Lookup("Joy.Api.Native::WindowSetIcon");
+            s_PushUserEvent = (delegate* unmanaged[Cdecl]<int, int, byte>)NativeFuncs.Lookup("Joy.Api.Native::PushUserEvent");
+            s_PushQuitEvent = (delegate* unmanaged[Cdecl]<byte>)NativeFuncs.Lookup("Joy.Api.Native::PushQuitEvent");
+            s_LogTitle = (delegate* unmanaged[Cdecl]<int, void>)NativeFuncs.Lookup("Joy.Api.Native::LogTitle");
+            s_EnvSet = (delegate* unmanaged[Cdecl]<ulong, byte*, byte*, void>)NativeFuncs.Lookup("Joy.Api.Native::EnvSet");
+            s_EnvDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::EnvDestroy");
+            s_SimpleFpsDestory = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::SimpleFpsDestory");
+            s_SimpleFpsUpdate = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::SimpleFpsUpdate");
+            s_SimpleFpsValue = (delegate* unmanaged[Cdecl]<ulong, int>)NativeFuncs.Lookup("Joy.Api.Native::SimpleFpsValue");
+            s_GameTimerInit = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::GameTimerInit");
+            s_GameTimerUpdate = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::GameTimerUpdate");
+            s_GameTimerGetDeltaTime = (delegate* unmanaged[Cdecl]<ulong, float>)NativeFuncs.Lookup("Joy.Api.Native::GameTimerGetDeltaTime");
+            s_GameTimerGetUnscaledDeltaTime = (delegate* unmanaged[Cdecl]<ulong, float>)NativeFuncs.Lookup("Joy.Api.Native::GameTimerGetUnscaledDeltaTime");
+            s_GameTimerSetTimeScale = (delegate* unmanaged[Cdecl]<ulong, float, void>)NativeFuncs.Lookup("Joy.Api.Native::GameTimerSetTimeScale");
+            s_GameTimerGetTimeScale = (delegate* unmanaged[Cdecl]<ulong, float>)NativeFuncs.Lookup("Joy.Api.Native::GameTimerGetTimeScale");
+            s_GameTimerSetTargetFps = (delegate* unmanaged[Cdecl]<ulong, int, void>)NativeFuncs.Lookup("Joy.Api.Native::GameTimerSetTargetFps");
+            s_GameTimerGetTargetFps = (delegate* unmanaged[Cdecl]<ulong, int>)NativeFuncs.Lookup("Joy.Api.Native::GameTimerGetTargetFps");
+            s_SetClipboardText = (delegate* unmanaged[Cdecl]<byte*, void>)NativeFuncs.Lookup("Joy.Api.Native::SetClipboardText");
+            s_SysInitNetenv = (delegate* unmanaged[Cdecl]<byte>)NativeFuncs.Lookup("Joy.Api.Native::SysInitNetenv");
+            s_SysReleaseNetenv = (delegate* unmanaged[Cdecl]<byte>)NativeFuncs.Lookup("Joy.Api.Native::SysReleaseNetenv");
+            s_SysAnyaddr = (delegate* unmanaged[Cdecl]<int>)NativeFuncs.Lookup("Joy.Api.Native::SysAnyaddr");
+            s_SysClosesocket = (delegate* unmanaged[Cdecl]<long, byte>)NativeFuncs.Lookup("Joy.Api.Native::SysClosesocket");
+            s_SysSetSockSndtimeo = (delegate* unmanaged[Cdecl]<long, int, int>)NativeFuncs.Lookup("Joy.Api.Native::SysSetSockSndtimeo");
+            s_SysSetSockRcvtimeo = (delegate* unmanaged[Cdecl]<long, int, int>)NativeFuncs.Lookup("Joy.Api.Native::SysSetSockRcvtimeo");
+            s_SysSetSockAccpettimeo = (delegate* unmanaged[Cdecl]<long, int, int>)NativeFuncs.Lookup("Joy.Api.Native::SysSetSockAccpettimeo");
+            s_SysSetSockBroadcast = (delegate* unmanaged[Cdecl]<long, int>)NativeFuncs.Lookup("Joy.Api.Native::SysSetSockBroadcast");
+            s_SysSetSockReuseaddr = (delegate* unmanaged[Cdecl]<long, int>)NativeFuncs.Lookup("Joy.Api.Native::SysSetSockReuseaddr");
+            s_SysTcp = (delegate* unmanaged[Cdecl]<long>)NativeFuncs.Lookup("Joy.Api.Native::SysTcp");
+            s_SysUdp = (delegate* unmanaged[Cdecl]<long>)NativeFuncs.Lookup("Joy.Api.Native::SysUdp");
+            s_SysBind = (delegate* unmanaged[Cdecl]<long, byte*, int, byte>)NativeFuncs.Lookup("Joy.Api.Native::SysBind");
+            s_SysConnect = (delegate* unmanaged[Cdecl]<long, byte*, int, byte>)NativeFuncs.Lookup("Joy.Api.Native::SysConnect");
+            s_SysListen = (delegate* unmanaged[Cdecl]<long, byte>)NativeFuncs.Lookup("Joy.Api.Native::SysListen");
+            s_SysSend = (delegate* unmanaged[Cdecl]<long, byte*, int, int>)NativeFuncs.Lookup("Joy.Api.Native::SysSend");
+            s_SysSendto = (delegate* unmanaged[Cdecl]<long, byte*, int, byte*, int, int>)NativeFuncs.Lookup("Joy.Api.Native::SysSendto");
+            s_SysCurrentTime = (delegate* unmanaged[Cdecl]<long>)NativeFuncs.Lookup("Joy.Api.Native::SysCurrentTime");
+            s_SysSleep = (delegate* unmanaged[Cdecl]<int, void>)NativeFuncs.Lookup("Joy.Api.Native::SysSleep");
+            s_SysInstallCrashHandlers = (delegate* unmanaged[Cdecl]<void>)NativeFuncs.Lookup("Joy.Api.Native::SysInstallCrashHandlers");
+            s_IocpServerDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::IocpServerDestroy");
+            s_IocpProcessEvents = (delegate* unmanaged[Cdecl]<ulong, int, void>)NativeFuncs.Lookup("Joy.Api.Native::IocpProcessEvents");
+            s_FontCreate = (delegate* unmanaged[Cdecl]<byte*, int, ulong>)NativeFuncs.Lookup("Joy.Api.Native::FontCreate");
+            s_FontDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::FontDestroy");
+            s_FontGetScale = (delegate* unmanaged[Cdecl]<ulong, float>)NativeFuncs.Lookup("Joy.Api.Native::FontGetScale");
+            s_FontGetSize = (delegate* unmanaged[Cdecl]<ulong, int>)NativeFuncs.Lookup("Joy.Api.Native::FontGetSize");
+            s_FontGetAscent = (delegate* unmanaged[Cdecl]<ulong, int>)NativeFuncs.Lookup("Joy.Api.Native::FontGetAscent");
+            s_R2dCreate = (delegate* unmanaged[Cdecl]<ulong, ulong>)NativeFuncs.Lookup("Joy.Api.Native::R2dCreate");
+            s_R2dDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R2dDestroy");
+            s_R2dSetColor = (delegate* unmanaged[Cdecl]<ulong, uint, uint, uint, uint, byte>)NativeFuncs.Lookup("Joy.Api.Native::R2dSetColor");
+            s_R2dBegin = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R2dBegin");
+            s_R2dEnd = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R2dEnd");
+            s_R2dSetLogicalPresentation = (delegate* unmanaged[Cdecl]<ulong, int, int, byte>)NativeFuncs.Lookup("Joy.Api.Native::R2dSetLogicalPresentation");
+            s_R2dSetLogicalPresentationMode = (delegate* unmanaged[Cdecl]<ulong, int, int, int, byte>)NativeFuncs.Lookup("Joy.Api.Native::R2dSetLogicalPresentationMode");
+            s_R2dSetVsync = (delegate* unmanaged[Cdecl]<ulong, int, byte>)NativeFuncs.Lookup("Joy.Api.Native::R2dSetVsync");
+            s_R2dSetScale = (delegate* unmanaged[Cdecl]<ulong, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::R2dSetScale");
+            s_R2dSetColorf = (delegate* unmanaged[Cdecl]<ulong, float, float, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::R2dSetColorf");
+            s_R2dSetBlendMode = (delegate* unmanaged[Cdecl]<ulong, int, byte>)NativeFuncs.Lookup("Joy.Api.Native::R2dSetBlendMode");
+            s_R2dDrawPoint = (delegate* unmanaged[Cdecl]<ulong, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::R2dDrawPoint");
+            s_R2dSetClipRect = (delegate* unmanaged[Cdecl]<ulong, float, float, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::R2dSetClipRect");
+            s_R2dClearClip = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R2dClearClip");
+            s_R2dPushClipRect = (delegate* unmanaged[Cdecl]<ulong, float, float, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::R2dPushClipRect");
+            s_R2dPopClipRect = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R2dPopClipRect");
+            s_R2dResetClipStack = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R2dResetClipStack");
+            s_R2dPointInClip = (delegate* unmanaged[Cdecl]<ulong, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::R2dPointInClip");
+            s_ShapeDrawLine = (delegate* unmanaged[Cdecl]<ulong, float, float, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::ShapeDrawLine");
+            s_ShapeDrawRectangle = (delegate* unmanaged[Cdecl]<ulong, byte*, float, float, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::ShapeDrawRectangle");
+            s_ImageCreate = (delegate* unmanaged[Cdecl]<ulong, byte*, ulong>)NativeFuncs.Lookup("Joy.Api.Native::ImageCreate");
+            s_ImageDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::ImageDestroy");
+            s_ImageSetAlpha = (delegate* unmanaged[Cdecl]<ulong, uint, void>)NativeFuncs.Lookup("Joy.Api.Native::ImageSetAlpha");
+            s_ImageSetBlendMode = (delegate* unmanaged[Cdecl]<ulong, int, void>)NativeFuncs.Lookup("Joy.Api.Native::ImageSetBlendMode");
+            s_ImageSetScaleMode = (delegate* unmanaged[Cdecl]<ulong, int, void>)NativeFuncs.Lookup("Joy.Api.Native::ImageSetScaleMode");
+            s_TextUpdatex = (delegate* unmanaged[Cdecl]<ulong, ulong, byte*, int, uint, uint, uint, uint, void>)NativeFuncs.Lookup("Joy.Api.Native::TextUpdatex");
+            s_TextDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::TextDestroy");
+            s_JtextPrint = (delegate* unmanaged[Cdecl]<ulong, ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JtextPrint");
+            s_JtextPrintx = (delegate* unmanaged[Cdecl]<ulong, ulong, byte*, int, uint, uint, uint, uint, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JtextPrintx");
+            s_R2dDrawPointF = (delegate* unmanaged[Cdecl]<ulong, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::R2dDrawPointF");
+            s_ShapeDrawRectangleF = (delegate* unmanaged[Cdecl]<ulong, byte*, float, float, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::ShapeDrawRectangleF");
+            s_ShapeDrawLineF = (delegate* unmanaged[Cdecl]<ulong, float, float, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::ShapeDrawLineF");
+            s_JtextPrintf = (delegate* unmanaged[Cdecl]<ulong, ulong, byte*, int, uint, uint, uint, uint, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JtextPrintf");
+            s_JtextPrintfScaled = (delegate* unmanaged[Cdecl]<ulong, ulong, byte*, int, uint, uint, uint, uint, float, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JtextPrintfScaled");
+            s_TextGetWidth = (delegate* unmanaged[Cdecl]<ulong, int>)NativeFuncs.Lookup("Joy.Api.Native::TextGetWidth");
+            s_TextGetHeight = (delegate* unmanaged[Cdecl]<ulong, int>)NativeFuncs.Lookup("Joy.Api.Native::TextGetHeight");
+            s_JtextCacheClear = (delegate* unmanaged[Cdecl]<void>)NativeFuncs.Lookup("Joy.Api.Native::JtextCacheClear");
+            s_JtextCacheSetLimit = (delegate* unmanaged[Cdecl]<int, void>)NativeFuncs.Lookup("Joy.Api.Native::JtextCacheSetLimit");
+            s_JtextCacheGetCount = (delegate* unmanaged[Cdecl]<int>)NativeFuncs.Lookup("Joy.Api.Native::JtextCacheGetCount");
+            s_JtextCacheSweep = (delegate* unmanaged[Cdecl]<int, void>)NativeFuncs.Lookup("Joy.Api.Native::JtextCacheSweep");
+            s_AnimationDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::AnimationDestroy");
+            s_AnimationReset = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::AnimationReset");
+            s_AnimationAddClip = (delegate* unmanaged[Cdecl]<ulong, byte*, float, float, float, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::AnimationAddClip");
+            s_AnimationIsFinished = (delegate* unmanaged[Cdecl]<ulong, byte>)NativeFuncs.Lookup("Joy.Api.Native::AnimationIsFinished");
+            s_AnimationSetPosition = (delegate* unmanaged[Cdecl]<ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::AnimationSetPosition");
+            s_AnimationSetScale = (delegate* unmanaged[Cdecl]<ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::AnimationSetScale");
+            s_AnimationSetRotation = (delegate* unmanaged[Cdecl]<ulong, float, void>)NativeFuncs.Lookup("Joy.Api.Native::AnimationSetRotation");
+            s_AnimationUpdate = (delegate* unmanaged[Cdecl]<ulong, float, void>)NativeFuncs.Lookup("Joy.Api.Native::AnimationUpdate");
+            s_R3dDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dDestroy");
+            s_R3dBegin = (delegate* unmanaged[Cdecl]<ulong, byte>)NativeFuncs.Lookup("Joy.Api.Native::R3dBegin");
+            s_R3dEnd = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dEnd");
+            s_R3dGetDrawCalls = (delegate* unmanaged[Cdecl]<ulong, int>)NativeFuncs.Lookup("Joy.Api.Native::R3dGetDrawCalls");
+            s_R3dSetClearColor = (delegate* unmanaged[Cdecl]<ulong, uint, uint, uint, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dSetClearColor");
+            s_R3dCameraLookat = (delegate* unmanaged[Cdecl]<ulong, float, float, float, float, float, float, float, float, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dCameraLookat");
+            s_R3dMeshCube = (delegate* unmanaged[Cdecl]<ulong, float, float, float, ulong>)NativeFuncs.Lookup("Joy.Api.Native::R3dMeshCube");
+            s_R3dMeshSphere = (delegate* unmanaged[Cdecl]<ulong, float, int, int, ulong>)NativeFuncs.Lookup("Joy.Api.Native::R3dMeshSphere");
+            s_R3dMeshPlane = (delegate* unmanaged[Cdecl]<ulong, float, float, int, ulong>)NativeFuncs.Lookup("Joy.Api.Native::R3dMeshPlane");
+            s_R3dMeshRamp = (delegate* unmanaged[Cdecl]<ulong, float, float, float, ulong>)NativeFuncs.Lookup("Joy.Api.Native::R3dMeshRamp");
+            s_R3dMeshQuad = (delegate* unmanaged[Cdecl]<ulong, ulong>)NativeFuncs.Lookup("Joy.Api.Native::R3dMeshQuad");
+            s_R3dMeshCubeWire = (delegate* unmanaged[Cdecl]<ulong, float, float, float, ulong>)NativeFuncs.Lookup("Joy.Api.Native::R3dMeshCubeWire");
+            s_R3dMeshSphereWire = (delegate* unmanaged[Cdecl]<ulong, float, int, int, ulong>)NativeFuncs.Lookup("Joy.Api.Native::R3dMeshSphereWire");
+            s_R3dMeshPlaneWire = (delegate* unmanaged[Cdecl]<ulong, float, float, int, ulong>)NativeFuncs.Lookup("Joy.Api.Native::R3dMeshPlaneWire");
+            s_R3dMeshRampWire = (delegate* unmanaged[Cdecl]<ulong, float, float, float, ulong>)NativeFuncs.Lookup("Joy.Api.Native::R3dMeshRampWire");
+            s_R3dMeshDestroy = (delegate* unmanaged[Cdecl]<ulong, ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dMeshDestroy");
+            s_R3dFontInit = (delegate* unmanaged[Cdecl]<ulong, byte*, int, byte>)NativeFuncs.Lookup("Joy.Api.Native::R3dFontInit");
+            s_R3dFontSetColor = (delegate* unmanaged[Cdecl]<ulong, uint, uint, uint, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dFontSetColor");
+            s_R3dFontDraw2d = (delegate* unmanaged[Cdecl]<ulong, ulong, byte*, float, float, float, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::R3dFontDraw2d");
+            s_R3dFontDraw2dColor = (delegate* unmanaged[Cdecl]<ulong, ulong, byte*, float, float, float, float, float, uint, uint, uint, byte>)NativeFuncs.Lookup("Joy.Api.Native::R3dFontDraw2dColor");
+            s_R3dFontDraw2dOutline = (delegate* unmanaged[Cdecl]<ulong, ulong, byte*, float, float, float, float, float, uint, uint, uint, uint, uint, uint, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::R3dFontDraw2dOutline");
+            s_R3dFontCacheSetLimit = (delegate* unmanaged[Cdecl]<ulong, int, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dFontCacheSetLimit");
+            s_R3dFontCacheGetCount = (delegate* unmanaged[Cdecl]<ulong, int>)NativeFuncs.Lookup("Joy.Api.Native::R3dFontCacheGetCount");
+            s_R3dFontCacheClear = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dFontCacheClear");
+            s_R3dFontCacheSweep = (delegate* unmanaged[Cdecl]<ulong, int, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dFontCacheSweep");
+            s_R3dSetLogicalPresentation = (delegate* unmanaged[Cdecl]<ulong, int, int, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dSetLogicalPresentation");
+            s_R3dSetLogicalPresentationMode = (delegate* unmanaged[Cdecl]<ulong, int, int, int, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dSetLogicalPresentationMode");
+            s_R3dButtonDraw = (delegate* unmanaged[Cdecl]<ulong, ulong, ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dButtonDraw");
+            s_R3dButtonDrawCircle = (delegate* unmanaged[Cdecl]<ulong, ulong, ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dButtonDrawCircle");
+            s_R3dButtonIsHovered = (delegate* unmanaged[Cdecl]<ulong, ulong, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::R3dButtonIsHovered");
+            s_R3dButtonIsPressed = (delegate* unmanaged[Cdecl]<ulong, ulong, byte, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::R3dButtonIsPressed");
+            s_R3dButtonRelease = (delegate* unmanaged[Cdecl]<ulong, ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dButtonRelease");
+            s_R3dButtonDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dButtonDestroy");
+            s_R3dDrawRect2d = (delegate* unmanaged[Cdecl]<ulong, ulong, float, float, float, float, uint, uint, uint, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dDrawRect2d");
+            s_R3dDrawMesh2d = (delegate* unmanaged[Cdecl]<ulong, ulong, float, float, float, float, uint, uint, uint, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dDrawMesh2d");
+            s_R3dLabelSetText = (delegate* unmanaged[Cdecl]<ulong, byte*, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dLabelSetText");
+            s_R3dLabelDraw = (delegate* unmanaged[Cdecl]<ulong, ulong, ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dLabelDraw");
+            s_R3dLabelDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dLabelDestroy");
+            s_R3dInputSetText = (delegate* unmanaged[Cdecl]<ulong, byte*, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dInputSetText");
+            s_R3dInputIsHovered = (delegate* unmanaged[Cdecl]<ulong, ulong, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::R3dInputIsHovered");
+            s_R3dInputFocus = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dInputFocus");
+            s_R3dInputDefocus = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dInputDefocus");
+            s_R3dInputIsFocused = (delegate* unmanaged[Cdecl]<ulong, byte>)NativeFuncs.Lookup("Joy.Api.Native::R3dInputIsFocused");
+            s_R3dInputStartTextInput = (delegate* unmanaged[Cdecl]<ulong, ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dInputStartTextInput");
+            s_R3dInputStopTextInput = (delegate* unmanaged[Cdecl]<ulong, ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dInputStopTextInput");
+            s_R3dInputInsert = (delegate* unmanaged[Cdecl]<ulong, byte*, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dInputInsert");
+            s_R3dInputBackspace = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dInputBackspace");
+            s_R3dInputDelete = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dInputDelete");
+            s_R3dInputCursorLeft = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dInputCursorLeft");
+            s_R3dInputCursorRight = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dInputCursorRight");
+            s_R3dInputCursorHome = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dInputCursorHome");
+            s_R3dInputCursorEnd = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dInputCursorEnd");
+            s_R3dInputClick = (delegate* unmanaged[Cdecl]<ulong, ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dInputClick");
+            s_R3dInputSubmit = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dInputSubmit");
+            s_R3dInputDraw = (delegate* unmanaged[Cdecl]<ulong, ulong, ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dInputDraw");
+            s_R3dInputDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dInputDestroy");
+            s_R3dComboboxInputDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dComboboxInputDestroy");
+            s_R3dComboboxInputAddItem = (delegate* unmanaged[Cdecl]<ulong, byte*, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dComboboxInputAddItem");
+            s_R3dComboboxInputClearItems = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dComboboxInputClearItems");
+            s_R3dComboboxInputSetText = (delegate* unmanaged[Cdecl]<ulong, byte*, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dComboboxInputSetText");
+            s_R3dComboboxInputHitItem = (delegate* unmanaged[Cdecl]<ulong, float, float, int>)NativeFuncs.Lookup("Joy.Api.Native::R3dComboboxInputHitItem");
+            s_R3dComboboxInputDraw = (delegate* unmanaged[Cdecl]<ulong, ulong, ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dComboboxInputDraw");
+            s_R3dComboboxInputDrawDropdown = (delegate* unmanaged[Cdecl]<ulong, ulong, ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dComboboxInputDrawDropdown");
+            s_R3dSliderDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dSliderDestroy");
+            s_R3dSliderSetValue = (delegate* unmanaged[Cdecl]<ulong, float, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dSliderSetValue");
+            s_R3dSliderGetValue = (delegate* unmanaged[Cdecl]<ulong, float>)NativeFuncs.Lookup("Joy.Api.Native::R3dSliderGetValue");
+            s_R3dSliderDraw = (delegate* unmanaged[Cdecl]<ulong, ulong, ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dSliderDraw");
+            s_R3dSliderIsPressed = (delegate* unmanaged[Cdecl]<ulong, ulong, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::R3dSliderIsPressed");
+            s_R3dSliderSetPressed = (delegate* unmanaged[Cdecl]<ulong, byte, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dSliderSetPressed");
+            s_R3dSliderDragMove = (delegate* unmanaged[Cdecl]<ulong, ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dSliderDragMove");
+            s_R3dSliderIsHovered = (delegate* unmanaged[Cdecl]<ulong, ulong, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::R3dSliderIsHovered");
+            s_R3dSliderSetHovered = (delegate* unmanaged[Cdecl]<ulong, byte, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dSliderSetHovered");
+            s_R3dCheckboxDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dCheckboxDestroy");
+            s_R3dCheckboxToggle = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dCheckboxToggle");
+            s_R3dCheckboxIsPressed = (delegate* unmanaged[Cdecl]<ulong, ulong, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::R3dCheckboxIsPressed");
+            s_R3dCheckboxSetHovered = (delegate* unmanaged[Cdecl]<ulong, byte, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dCheckboxSetHovered");
+            s_R3dCheckboxIsHovered = (delegate* unmanaged[Cdecl]<ulong, ulong, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::R3dCheckboxIsHovered");
+            s_R3dCheckboxSetColors = (delegate* unmanaged[Cdecl]<ulong, uint, uint, uint, uint, uint, uint, uint, uint, uint, uint, uint, uint, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dCheckboxSetColors");
+            s_R3dCheckboxDraw = (delegate* unmanaged[Cdecl]<ulong, ulong, ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dCheckboxDraw");
+            s_R3dDrawGrid = (delegate* unmanaged[Cdecl]<ulong, int, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dDrawGrid");
+            s_R3dDrawMeshSolid = (delegate* unmanaged[Cdecl]<ulong, ulong, float, float, float, float, float, float, uint, uint, uint, uint, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dDrawMeshSolid");
+            s_R3dDrawWire = (delegate* unmanaged[Cdecl]<ulong, ulong, float, float, float, float, float, float, uint, uint, uint, uint, void>)NativeFuncs.Lookup("Joy.Api.Native::R3dDrawWire");
+            s_R3dMeshCubeLit = (delegate* unmanaged[Cdecl]<ulong, float, float, float, ulong>)NativeFuncs.Lookup("Joy.Api.Native::R3dMeshCubeLit");
+            s_R3dMeshSphereLit = (delegate* unmanaged[Cdecl]<ulong, float, int, int, ulong>)NativeFuncs.Lookup("Joy.Api.Native::R3dMeshSphereLit");
+            s_R3dMeshPlaneLit = (delegate* unmanaged[Cdecl]<ulong, float, float, int, ulong>)NativeFuncs.Lookup("Joy.Api.Native::R3dMeshPlaneLit");
+            s_R3dMeshRampLit = (delegate* unmanaged[Cdecl]<ulong, float, float, float, ulong>)NativeFuncs.Lookup("Joy.Api.Native::R3dMeshRampLit");
+            s_JanimatorDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::JanimatorDestroy");
+            s_JanimatorSetFloat = (delegate* unmanaged[Cdecl]<ulong, byte*, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JanimatorSetFloat");
+            s_JanimatorSetInt = (delegate* unmanaged[Cdecl]<ulong, byte*, int, void>)NativeFuncs.Lookup("Joy.Api.Native::JanimatorSetInt");
+            s_JanimatorSetBool = (delegate* unmanaged[Cdecl]<ulong, byte*, byte, void>)NativeFuncs.Lookup("Joy.Api.Native::JanimatorSetBool");
+            s_JanimatorSetTrigger = (delegate* unmanaged[Cdecl]<ulong, byte*, void>)NativeFuncs.Lookup("Joy.Api.Native::JanimatorSetTrigger");
+            s_JanimatorGetFloat = (delegate* unmanaged[Cdecl]<ulong, byte*, float>)NativeFuncs.Lookup("Joy.Api.Native::JanimatorGetFloat");
+            s_JanimatorGetInt = (delegate* unmanaged[Cdecl]<ulong, byte*, int>)NativeFuncs.Lookup("Joy.Api.Native::JanimatorGetInt");
+            s_JanimatorGetBool = (delegate* unmanaged[Cdecl]<ulong, byte*, byte>)NativeFuncs.Lookup("Joy.Api.Native::JanimatorGetBool");
+            s_JanimatorAddState = (delegate* unmanaged[Cdecl]<ulong, byte*, void>)NativeFuncs.Lookup("Joy.Api.Native::JanimatorAddState");
+            s_JanimatorSetDefaultState = (delegate* unmanaged[Cdecl]<ulong, byte*, void>)NativeFuncs.Lookup("Joy.Api.Native::JanimatorSetDefaultState");
+            s_JanimatorStateAddClip = (delegate* unmanaged[Cdecl]<ulong, byte*, byte*, float, float, float, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JanimatorStateAddClip");
+            s_JanimatorStateAddColor = (delegate* unmanaged[Cdecl]<ulong, byte*, float, int, int, uint, uint, uint, uint, void>)NativeFuncs.Lookup("Joy.Api.Native::JanimatorStateAddColor");
+            s_JanimatorStateSetLoop = (delegate* unmanaged[Cdecl]<ulong, byte*, byte, void>)NativeFuncs.Lookup("Joy.Api.Native::JanimatorStateSetLoop");
+            s_JanimatorStateSetSpeed = (delegate* unmanaged[Cdecl]<ulong, byte*, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JanimatorStateSetSpeed");
+            s_JanimatorStateSetBlend = (delegate* unmanaged[Cdecl]<ulong, byte*, byte*, void>)NativeFuncs.Lookup("Joy.Api.Native::JanimatorStateSetBlend");
+            s_JanimatorStateAddMotion = (delegate* unmanaged[Cdecl]<ulong, byte*, byte*, float, float, float, float, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JanimatorStateAddMotion");
+            s_JanimatorAddTransition = (delegate* unmanaged[Cdecl]<ulong, byte*, byte*, int>)NativeFuncs.Lookup("Joy.Api.Native::JanimatorAddTransition");
+            s_JanimatorAddAnyTransition = (delegate* unmanaged[Cdecl]<ulong, byte*, int>)NativeFuncs.Lookup("Joy.Api.Native::JanimatorAddAnyTransition");
+            s_JanimatorTransitionAddCond = (delegate* unmanaged[Cdecl]<ulong, int, byte*, int, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JanimatorTransitionAddCond");
+            s_JanimatorTransitionSetExitTime = (delegate* unmanaged[Cdecl]<ulong, int, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JanimatorTransitionSetExitTime");
+            s_JanimatorUpdate = (delegate* unmanaged[Cdecl]<ulong, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JanimatorUpdate");
+            s_JanimatorDraw = (delegate* unmanaged[Cdecl]<ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JanimatorDraw");
+            s_JanimatorSetFlipH = (delegate* unmanaged[Cdecl]<ulong, byte, void>)NativeFuncs.Lookup("Joy.Api.Native::JanimatorSetFlipH");
+            s_LabelDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::LabelDestroy");
+            s_LabelDraw = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::LabelDraw");
+            s_ButtonDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::ButtonDestroy");
+            s_ButtonSetPosition = (delegate* unmanaged[Cdecl]<ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::ButtonSetPosition");
+            s_ButtonSetSize = (delegate* unmanaged[Cdecl]<ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::ButtonSetSize");
+            s_ButtonSetNormalColor = (delegate* unmanaged[Cdecl]<ulong, uint, uint, uint, uint, void>)NativeFuncs.Lookup("Joy.Api.Native::ButtonSetNormalColor");
+            s_ButtonSetHoverColor = (delegate* unmanaged[Cdecl]<ulong, uint, uint, uint, uint, void>)NativeFuncs.Lookup("Joy.Api.Native::ButtonSetHoverColor");
+            s_ButtonSetPressedColor = (delegate* unmanaged[Cdecl]<ulong, uint, uint, uint, uint, void>)NativeFuncs.Lookup("Joy.Api.Native::ButtonSetPressedColor");
+            s_ButtonSetImage = (delegate* unmanaged[Cdecl]<ulong, ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::ButtonSetImage");
+            s_ButtonSetPressedImage = (delegate* unmanaged[Cdecl]<ulong, ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::ButtonSetPressedImage");
+            s_ButtonSetTextx = (delegate* unmanaged[Cdecl]<ulong, ulong, byte*, int, uint, uint, uint, uint, void>)NativeFuncs.Lookup("Joy.Api.Native::ButtonSetTextx");
+            s_ButtonIsHovered = (delegate* unmanaged[Cdecl]<ulong, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::ButtonIsHovered");
+            s_ButtonIsPressed = (delegate* unmanaged[Cdecl]<ulong, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::ButtonIsPressed");
+            s_ButtonSetHovered = (delegate* unmanaged[Cdecl]<ulong, byte, void>)NativeFuncs.Lookup("Joy.Api.Native::ButtonSetHovered");
+            s_ButtonSetPressed = (delegate* unmanaged[Cdecl]<ulong, byte, void>)NativeFuncs.Lookup("Joy.Api.Native::ButtonSetPressed");
+            s_ButtonGetPressed = (delegate* unmanaged[Cdecl]<ulong, byte>)NativeFuncs.Lookup("Joy.Api.Native::ButtonGetPressed");
+            s_ButtonSetTextOffset = (delegate* unmanaged[Cdecl]<ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::ButtonSetTextOffset");
+            s_ButtonDraw = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::ButtonDraw");
+            s_ScrollviewDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::ScrollviewDestroy");
+            s_ScrollviewSetViewPx = (delegate* unmanaged[Cdecl]<ulong, float, float, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::ScrollviewSetViewPx");
+            s_ScrollviewSetContent = (delegate* unmanaged[Cdecl]<ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::ScrollviewSetContent");
+            s_ScrollviewSetOffset = (delegate* unmanaged[Cdecl]<ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::ScrollviewSetOffset");
+            s_ScrollviewClamp = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::ScrollviewClamp");
+            s_ScrollviewGetOffsetX = (delegate* unmanaged[Cdecl]<ulong, float>)NativeFuncs.Lookup("Joy.Api.Native::ScrollviewGetOffsetX");
+            s_ScrollviewGetOffsetY = (delegate* unmanaged[Cdecl]<ulong, float>)NativeFuncs.Lookup("Joy.Api.Native::ScrollviewGetOffsetY");
+            s_ScrollviewSetShowBar = (delegate* unmanaged[Cdecl]<ulong, byte, void>)NativeFuncs.Lookup("Joy.Api.Native::ScrollviewSetShowBar");
+            s_ScrollviewDragging = (delegate* unmanaged[Cdecl]<ulong, byte>)NativeFuncs.Lookup("Joy.Api.Native::ScrollviewDragging");
+            s_ScrollviewHit = (delegate* unmanaged[Cdecl]<ulong, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::ScrollviewHit");
+            s_ScrollviewBegin = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::ScrollviewBegin");
+            s_ScrollviewEnd = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::ScrollviewEnd");
+            s_ComboboxDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::ComboboxDestroy");
+            s_ComboboxAddItem = (delegate* unmanaged[Cdecl]<ulong, ulong, byte*, int, uint, uint, uint, uint, void>)NativeFuncs.Lookup("Joy.Api.Native::ComboboxAddItem");
+            s_ComboboxIsPressed = (delegate* unmanaged[Cdecl]<ulong, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::ComboboxIsPressed");
+            s_ComboboxIsOpen = (delegate* unmanaged[Cdecl]<ulong, byte>)NativeFuncs.Lookup("Joy.Api.Native::ComboboxIsOpen");
+            s_ComboboxSetOpen = (delegate* unmanaged[Cdecl]<ulong, byte, void>)NativeFuncs.Lookup("Joy.Api.Native::ComboboxSetOpen");
+            s_ComboboxHitItem = (delegate* unmanaged[Cdecl]<ulong, float, float, int>)NativeFuncs.Lookup("Joy.Api.Native::ComboboxHitItem");
+            s_ComboboxSetSelected = (delegate* unmanaged[Cdecl]<ulong, int, void>)NativeFuncs.Lookup("Joy.Api.Native::ComboboxSetSelected");
+            s_ComboboxGetSelected = (delegate* unmanaged[Cdecl]<ulong, int>)NativeFuncs.Lookup("Joy.Api.Native::ComboboxGetSelected");
+            s_ComboboxDraw = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::ComboboxDraw");
+            s_ComboboxInputDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::ComboboxInputDestroy");
+            s_ComboboxInputAddItem = (delegate* unmanaged[Cdecl]<ulong, byte*, int, void>)NativeFuncs.Lookup("Joy.Api.Native::ComboboxInputAddItem");
+            s_ComboboxInputClearItems = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::ComboboxInputClearItems");
+            s_ComboboxInputSetText = (delegate* unmanaged[Cdecl]<ulong, byte*, void>)NativeFuncs.Lookup("Joy.Api.Native::ComboboxInputSetText");
+            s_ComboboxInputDraw = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::ComboboxInputDraw");
+            s_ComboboxInputDrawDropdown = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::ComboboxInputDrawDropdown");
+            s_ComboboxInputIsOpen = (delegate* unmanaged[Cdecl]<ulong, byte>)NativeFuncs.Lookup("Joy.Api.Native::ComboboxInputIsOpen");
+            s_ComboboxInputSetPopupNode = (delegate* unmanaged[Cdecl]<ulong, ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::ComboboxInputSetPopupNode");
+            s_ComboboxInputHitItem = (delegate* unmanaged[Cdecl]<ulong, float, float, int>)NativeFuncs.Lookup("Joy.Api.Native::ComboboxInputHitItem");
+            s_ComboboxInputSetOpen = (delegate* unmanaged[Cdecl]<ulong, byte, void>)NativeFuncs.Lookup("Joy.Api.Native::ComboboxInputSetOpen");
+            s_DatagridSetheaders = (delegate* unmanaged[Cdecl]<ulong, byte*, void>)NativeFuncs.Lookup("Joy.Api.Native::DatagridSetheaders");
+            s_DatagridSetheader = (delegate* unmanaged[Cdecl]<ulong, int, byte*, void>)NativeFuncs.Lookup("Joy.Api.Native::DatagridSetheader");
+            s_DatagridSetcell = (delegate* unmanaged[Cdecl]<ulong, int, int, byte*, void>)NativeFuncs.Lookup("Joy.Api.Native::DatagridSetcell");
+            s_DatagridDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::DatagridDestroy");
+            s_DatagridDraw = (delegate* unmanaged[Cdecl]<ulong, ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::DatagridDraw");
+            s_DatagridHitRow = (delegate* unmanaged[Cdecl]<ulong, float, float, int>)NativeFuncs.Lookup("Joy.Api.Native::DatagridHitRow");
+            s_DatagridScroll = (delegate* unmanaged[Cdecl]<ulong, int, void>)NativeFuncs.Lookup("Joy.Api.Native::DatagridScroll");
+            s_DatagridSetSelectedRow = (delegate* unmanaged[Cdecl]<ulong, int, void>)NativeFuncs.Lookup("Joy.Api.Native::DatagridSetSelectedRow");
+            s_RadioDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::RadioDestroy");
+            s_RadioIsPressed = (delegate* unmanaged[Cdecl]<ulong, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::RadioIsPressed");
+            s_RadioSetHovered = (delegate* unmanaged[Cdecl]<ulong, byte, void>)NativeFuncs.Lookup("Joy.Api.Native::RadioSetHovered");
+            s_CheckboxDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::CheckboxDestroy");
+            s_CheckboxSetColors = (delegate* unmanaged[Cdecl]<ulong, uint, uint, uint, uint, uint, uint, uint, uint, uint, uint, uint, uint, void>)NativeFuncs.Lookup("Joy.Api.Native::CheckboxSetColors");
+            s_CheckboxSetR2d = (delegate* unmanaged[Cdecl]<ulong, ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::CheckboxSetR2d");
+            s_CheckboxSetPosition = (delegate* unmanaged[Cdecl]<ulong, int, int, void>)NativeFuncs.Lookup("Joy.Api.Native::CheckboxSetPosition");
+            s_CheckboxSetTextColor = (delegate* unmanaged[Cdecl]<ulong, uint, uint, uint, uint, void>)NativeFuncs.Lookup("Joy.Api.Native::CheckboxSetTextColor");
+            s_CheckboxToggle = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::CheckboxToggle");
+            s_CheckboxIsPressed = (delegate* unmanaged[Cdecl]<ulong, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::CheckboxIsPressed");
+            s_CheckboxSetHovered = (delegate* unmanaged[Cdecl]<ulong, byte, void>)NativeFuncs.Lookup("Joy.Api.Native::CheckboxSetHovered");
+            s_JoystickDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::JoystickDestroy");
+            s_JoystickSetTextures = (delegate* unmanaged[Cdecl]<ulong, byte*, byte*, void>)NativeFuncs.Lookup("Joy.Api.Native::JoystickSetTextures");
+            s_JoystickSetVector = (delegate* unmanaged[Cdecl]<ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JoystickSetVector");
+            s_JoystickDraw = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::JoystickDraw");
+            s_JoystickReset = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::JoystickReset");
+            s_JoystickSetPosition = (delegate* unmanaged[Cdecl]<ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JoystickSetPosition");
+            s_JoystickSetRadius = (delegate* unmanaged[Cdecl]<ulong, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JoystickSetRadius");
+            s_JoystickIsDragging = (delegate* unmanaged[Cdecl]<ulong, byte>)NativeFuncs.Lookup("Joy.Api.Native::JoystickIsDragging");
+            s_JoystickTouchDown = (delegate* unmanaged[Cdecl]<ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JoystickTouchDown");
+            s_JoystickTouchMove = (delegate* unmanaged[Cdecl]<ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JoystickTouchMove");
+            s_JoystickTouchUp = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::JoystickTouchUp");
+            s_JoystickGetMagnitude = (delegate* unmanaged[Cdecl]<ulong, float>)NativeFuncs.Lookup("Joy.Api.Native::JoystickGetMagnitude");
+            s_InputboxDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::InputboxDestroy");
+            s_InputboxSetText = (delegate* unmanaged[Cdecl]<ulong, byte*, void>)NativeFuncs.Lookup("Joy.Api.Native::InputboxSetText");
+            s_InputboxDraw = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::InputboxDraw");
+            s_InputboxIsPressed = (delegate* unmanaged[Cdecl]<ulong, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::InputboxIsPressed");
+            s_InputboxIsHovered = (delegate* unmanaged[Cdecl]<ulong, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::InputboxIsHovered");
+            s_InputboxFocus = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::InputboxFocus");
+            s_InputboxDefocus = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::InputboxDefocus");
+            s_InputboxBlur = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::InputboxBlur");
+            s_InputboxInsert = (delegate* unmanaged[Cdecl]<ulong, byte*, int, void>)NativeFuncs.Lookup("Joy.Api.Native::InputboxInsert");
+            s_InputboxBackspace = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::InputboxBackspace");
+            s_InputboxDelete = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::InputboxDelete");
+            s_InputboxCursorLeft = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::InputboxCursorLeft");
+            s_InputboxCursorRight = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::InputboxCursorRight");
+            s_InputboxCursorHome = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::InputboxCursorHome");
+            s_InputboxCursorEnd = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::InputboxCursorEnd");
+            s_InputboxSelectLeft = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::InputboxSelectLeft");
+            s_InputboxSelectRight = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::InputboxSelectRight");
+            s_InputboxSelectHome = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::InputboxSelectHome");
+            s_InputboxSelectEnd = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::InputboxSelectEnd");
+            s_InputboxSelectAll = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::InputboxSelectAll");
+            s_InputboxPaste = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::InputboxPaste");
+            s_InputboxCopy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::InputboxCopy");
+            s_InputboxCut = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::InputboxCut");
+            s_InputboxIsFocused = (delegate* unmanaged[Cdecl]<ulong, byte>)NativeFuncs.Lookup("Joy.Api.Native::InputboxIsFocused");
+            s_SliderDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::SliderDestroy");
+            s_SliderSetValue = (delegate* unmanaged[Cdecl]<ulong, float, void>)NativeFuncs.Lookup("Joy.Api.Native::SliderSetValue");
+            s_SliderGetValue = (delegate* unmanaged[Cdecl]<ulong, float>)NativeFuncs.Lookup("Joy.Api.Native::SliderGetValue");
+            s_SliderSetRect = (delegate* unmanaged[Cdecl]<ulong, float, float, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::SliderSetRect");
+            s_SliderSetRange = (delegate* unmanaged[Cdecl]<ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::SliderSetRange");
+            s_SliderDraw = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::SliderDraw");
+            s_SliderIsPressed = (delegate* unmanaged[Cdecl]<ulong, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::SliderIsPressed");
+            s_SliderSetPressed = (delegate* unmanaged[Cdecl]<ulong, byte, void>)NativeFuncs.Lookup("Joy.Api.Native::SliderSetPressed");
+            s_SliderDragMove = (delegate* unmanaged[Cdecl]<ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::SliderDragMove");
+            s_SliderIsHovered = (delegate* unmanaged[Cdecl]<ulong, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::SliderIsHovered");
+            s_SliderSetHovered = (delegate* unmanaged[Cdecl]<ulong, byte, void>)NativeFuncs.Lookup("Joy.Api.Native::SliderSetHovered");
+            s_PopupDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::PopupDestroy");
+            s_PopupSetTitle = (delegate* unmanaged[Cdecl]<ulong, byte*, int, void>)NativeFuncs.Lookup("Joy.Api.Native::PopupSetTitle");
+            s_PopupSetContent = (delegate* unmanaged[Cdecl]<ulong, byte*, int, void>)NativeFuncs.Lookup("Joy.Api.Native::PopupSetContent");
+            s_PopupSetPosition = (delegate* unmanaged[Cdecl]<ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::PopupSetPosition");
+            s_PopupSetVisible = (delegate* unmanaged[Cdecl]<ulong, byte, void>)NativeFuncs.Lookup("Joy.Api.Native::PopupSetVisible");
+            s_PopupSetCloseable = (delegate* unmanaged[Cdecl]<ulong, byte, void>)NativeFuncs.Lookup("Joy.Api.Native::PopupSetCloseable");
+            s_PopupDraw = (delegate* unmanaged[Cdecl]<ulong, ulong, ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::PopupDraw");
+            s_PopupIsCloseClicked = (delegate* unmanaged[Cdecl]<ulong, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::PopupIsCloseClicked");
+            s_PopupIsTitleClicked = (delegate* unmanaged[Cdecl]<ulong, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::PopupIsTitleClicked");
+            s_PopupDragMove = (delegate* unmanaged[Cdecl]<ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::PopupDragMove");
+            s_PopupIsInside = (delegate* unmanaged[Cdecl]<ulong, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::PopupIsInside");
+            s_TooltipDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::TooltipDestroy");
+            s_TooltipSetText = (delegate* unmanaged[Cdecl]<ulong, byte*, int, void>)NativeFuncs.Lookup("Joy.Api.Native::TooltipSetText");
+            s_TooltipSetPosition = (delegate* unmanaged[Cdecl]<ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::TooltipSetPosition");
+            s_TooltipSetVisible = (delegate* unmanaged[Cdecl]<ulong, byte, void>)NativeFuncs.Lookup("Joy.Api.Native::TooltipSetVisible");
+            s_TooltipDraw = (delegate* unmanaged[Cdecl]<ulong, ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::TooltipDraw");
+            s_JuiCtxDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::JuiCtxDestroy");
+            s_JuiBegin = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::JuiBegin");
+            s_JuiEnd = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::JuiEnd");
+            s_JuiInputMotion = (delegate* unmanaged[Cdecl]<ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JuiInputMotion");
+            s_JuiInputDown = (delegate* unmanaged[Cdecl]<ulong, int, void>)NativeFuncs.Lookup("Joy.Api.Native::JuiInputDown");
+            s_JuiInputUp = (delegate* unmanaged[Cdecl]<ulong, int, void>)NativeFuncs.Lookup("Joy.Api.Native::JuiInputUp");
+            s_JuiInputWheel = (delegate* unmanaged[Cdecl]<ulong, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JuiInputWheel");
+            s_JuiInputKey = (delegate* unmanaged[Cdecl]<ulong, byte, byte, void>)NativeFuncs.Lookup("Joy.Api.Native::JuiInputKey");
+            s_JuiIsDown = (delegate* unmanaged[Cdecl]<ulong, byte>)NativeFuncs.Lookup("Joy.Api.Native::JuiIsDown");
+            s_JuiIsPressed = (delegate* unmanaged[Cdecl]<ulong, byte>)NativeFuncs.Lookup("Joy.Api.Native::JuiIsPressed");
+            s_JuiIsReleased = (delegate* unmanaged[Cdecl]<ulong, byte>)NativeFuncs.Lookup("Joy.Api.Native::JuiIsReleased");
+            s_JuiTakeWheel = (delegate* unmanaged[Cdecl]<ulong, float>)NativeFuncs.Lookup("Joy.Api.Native::JuiTakeWheel");
+            s_JuiIsShift = (delegate* unmanaged[Cdecl]<ulong, byte>)NativeFuncs.Lookup("Joy.Api.Native::JuiIsShift");
+            s_JuiIsCtrl = (delegate* unmanaged[Cdecl]<ulong, byte>)NativeFuncs.Lookup("Joy.Api.Native::JuiIsCtrl");
+            s_JuiPushClip = (delegate* unmanaged[Cdecl]<ulong, float, float, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JuiPushClip");
+            s_JuiPopClip = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::JuiPopClip");
+            s_JuiResetClip = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::JuiResetClip");
+            s_JuiHit = (delegate* unmanaged[Cdecl]<ulong, float, float, float, float, byte>)NativeFuncs.Lookup("Joy.Api.Native::JuiHit");
+            s_JuiFillRect = (delegate* unmanaged[Cdecl]<ulong, float, float, float, float, uint, uint, uint, uint, void>)NativeFuncs.Lookup("Joy.Api.Native::JuiFillRect");
+            s_JuiStrokeRect = (delegate* unmanaged[Cdecl]<ulong, float, float, float, float, uint, uint, uint, uint, void>)NativeFuncs.Lookup("Joy.Api.Native::JuiStrokeRect");
+            s_JuiLine = (delegate* unmanaged[Cdecl]<ulong, float, float, float, float, uint, uint, uint, uint, void>)NativeFuncs.Lookup("Joy.Api.Native::JuiLine");
+            s_JuiText = (delegate* unmanaged[Cdecl]<ulong, float, float, byte*, uint, uint, uint, uint, int>)NativeFuncs.Lookup("Joy.Api.Native::JuiText");
+            s_JuiTextCentered = (delegate* unmanaged[Cdecl]<ulong, float, float, float, float, byte*, uint, uint, uint, uint, int>)NativeFuncs.Lookup("Joy.Api.Native::JuiTextCentered");
+            s_JuiPanelBegin = (delegate* unmanaged[Cdecl]<ulong, float, float, float, float, byte*, void>)NativeFuncs.Lookup("Joy.Api.Native::JuiPanelBegin");
+            s_JuiPanelEnd = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::JuiPanelEnd");
+            s_JuiPanelFrame = (delegate* unmanaged[Cdecl]<ulong, float, float, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JuiPanelFrame");
+            s_JuiScrollBegin = (delegate* unmanaged[Cdecl]<ulong, int, float, float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JuiScrollBegin");
+            s_JuiScrollEnd = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::JuiScrollEnd");
+            s_JuiScrollbar = (delegate* unmanaged[Cdecl]<ulong, float, float, float, float, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JuiScrollbar");
+            s_JuiScrollSetOffset = (delegate* unmanaged[Cdecl]<ulong, int, float, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JuiScrollSetOffset");
+            s_JuiButton = (delegate* unmanaged[Cdecl]<ulong, int, float, float, float, float, byte*, byte>)NativeFuncs.Lookup("Joy.Api.Native::JuiButton");
+            s_JtilemapDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::JtilemapDestroy");
+            s_JtilemapGetWidth = (delegate* unmanaged[Cdecl]<ulong, int>)NativeFuncs.Lookup("Joy.Api.Native::JtilemapGetWidth");
+            s_JtilemapGetHeight = (delegate* unmanaged[Cdecl]<ulong, int>)NativeFuncs.Lookup("Joy.Api.Native::JtilemapGetHeight");
+            s_JtilemapGetTilewidth = (delegate* unmanaged[Cdecl]<ulong, int>)NativeFuncs.Lookup("Joy.Api.Native::JtilemapGetTilewidth");
+            s_JtilemapGetTileheight = (delegate* unmanaged[Cdecl]<ulong, int>)NativeFuncs.Lookup("Joy.Api.Native::JtilemapGetTileheight");
+            s_JtilemapGetAnimTileid = (delegate* unmanaged[Cdecl]<ulong, int, uint, int>)NativeFuncs.Lookup("Joy.Api.Native::JtilemapGetAnimTileid");
+            s_JtilemapFindTileLayer = (delegate* unmanaged[Cdecl]<ulong, byte*, ulong>)NativeFuncs.Lookup("Joy.Api.Native::JtilemapFindTileLayer");
+            s_JtilemapFindObjectLayer = (delegate* unmanaged[Cdecl]<ulong, byte*, ulong>)NativeFuncs.Lookup("Joy.Api.Native::JtilemapFindObjectLayer");
+            s_JtilemapGetTile = (delegate* unmanaged[Cdecl]<ulong, int, int, int>)NativeFuncs.Lookup("Joy.Api.Native::JtilemapGetTile");
+            s_JtilemapRenderAll = (delegate* unmanaged[Cdecl]<ulong, ulong, float, float, uint, void>)NativeFuncs.Lookup("Joy.Api.Native::JtilemapRenderAll");
+            s_JtilemapRenderTiles = (delegate* unmanaged[Cdecl]<ulong, ulong, float, float, uint, void>)NativeFuncs.Lookup("Joy.Api.Native::JtilemapRenderTiles");
+            s_JtilemapRenderSetTilePx = (delegate* unmanaged[Cdecl]<ulong, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JtilemapRenderSetTilePx");
+            s_JtilemapRenderLayer = (delegate* unmanaged[Cdecl]<ulong, ulong, byte*, float, float, uint, byte>)NativeFuncs.Lookup("Joy.Api.Native::JtilemapRenderLayer");
+            s_JtilemapRenderDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::JtilemapRenderDestroy");
+            s_KcpserverDestroy = (delegate* unmanaged[Cdecl]<ulong, int>)NativeFuncs.Lookup("Joy.Api.Native::KcpserverDestroy");
+            s_KcpserverSend = (delegate* unmanaged[Cdecl]<ulong, int, byte*, int, void>)NativeFuncs.Lookup("Joy.Api.Native::KcpserverSend");
+            s_KcpserverBroadcast = (delegate* unmanaged[Cdecl]<ulong, byte*, int, void>)NativeFuncs.Lookup("Joy.Api.Native::KcpserverBroadcast");
+            s_KcpserverOffline = (delegate* unmanaged[Cdecl]<ulong, int, void>)NativeFuncs.Lookup("Joy.Api.Native::KcpserverOffline");
+            s_KcpserverUpdate = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::KcpserverUpdate");
+            s_KcpserverConnectionCount = (delegate* unmanaged[Cdecl]<ulong, int>)NativeFuncs.Lookup("Joy.Api.Native::KcpserverConnectionCount");
+            s_KcpserverPollMessage = (delegate* unmanaged[Cdecl]<ulong, ulong, byte>)NativeFuncs.Lookup("Joy.Api.Native::KcpserverPollMessage");
+            s_KcpclientDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::KcpclientDestroy");
+            s_KcpclientSend = (delegate* unmanaged[Cdecl]<ulong, byte*, int, int>)NativeFuncs.Lookup("Joy.Api.Native::KcpclientSend");
+            s_KcpclientUpdate = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::KcpclientUpdate");
+            s_KcpclientPollMessage = (delegate* unmanaged[Cdecl]<ulong, ulong, byte>)NativeFuncs.Lookup("Joy.Api.Native::KcpclientPollMessage");
+            s_TcpserverDestroy = (delegate* unmanaged[Cdecl]<ulong, int>)NativeFuncs.Lookup("Joy.Api.Native::TcpserverDestroy");
+            s_TcpserverSend = (delegate* unmanaged[Cdecl]<ulong, int, byte*, int, void>)NativeFuncs.Lookup("Joy.Api.Native::TcpserverSend");
+            s_TcpserverBroadcast = (delegate* unmanaged[Cdecl]<ulong, byte*, int, void>)NativeFuncs.Lookup("Joy.Api.Native::TcpserverBroadcast");
+            s_TcpserverOffline = (delegate* unmanaged[Cdecl]<ulong, int, void>)NativeFuncs.Lookup("Joy.Api.Native::TcpserverOffline");
+            s_TcpserverUpdate = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::TcpserverUpdate");
+            s_TcpserverConnectionCount = (delegate* unmanaged[Cdecl]<ulong, int>)NativeFuncs.Lookup("Joy.Api.Native::TcpserverConnectionCount");
+            s_TcpserverPollMessage = (delegate* unmanaged[Cdecl]<ulong, ulong, byte>)NativeFuncs.Lookup("Joy.Api.Native::TcpserverPollMessage");
+            s_TcpclientDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::TcpclientDestroy");
+            s_TcpclientSend = (delegate* unmanaged[Cdecl]<ulong, byte*, int, int>)NativeFuncs.Lookup("Joy.Api.Native::TcpclientSend");
+            s_TcpclientUpdate = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::TcpclientUpdate");
+            s_TcpclientPollMessage = (delegate* unmanaged[Cdecl]<ulong, ulong, byte>)NativeFuncs.Lookup("Joy.Api.Native::TcpclientPollMessage");
+            s_WsnetserverDestroy = (delegate* unmanaged[Cdecl]<ulong, int>)NativeFuncs.Lookup("Joy.Api.Native::WsnetserverDestroy");
+            s_WsnetserverSend = (delegate* unmanaged[Cdecl]<ulong, int, byte*, int, void>)NativeFuncs.Lookup("Joy.Api.Native::WsnetserverSend");
+            s_WsnetserverBroadcast = (delegate* unmanaged[Cdecl]<ulong, byte*, int, void>)NativeFuncs.Lookup("Joy.Api.Native::WsnetserverBroadcast");
+            s_WsnetserverOffline = (delegate* unmanaged[Cdecl]<ulong, int, void>)NativeFuncs.Lookup("Joy.Api.Native::WsnetserverOffline");
+            s_WsnetserverUpdate = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::WsnetserverUpdate");
+            s_WsnetserverConnectionCount = (delegate* unmanaged[Cdecl]<ulong, int>)NativeFuncs.Lookup("Joy.Api.Native::WsnetserverConnectionCount");
+            s_WsnetserverPollMessage = (delegate* unmanaged[Cdecl]<ulong, ulong, byte>)NativeFuncs.Lookup("Joy.Api.Native::WsnetserverPollMessage");
+            s_WsnetclientDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::WsnetclientDestroy");
+            s_WsnetclientSend = (delegate* unmanaged[Cdecl]<ulong, byte*, int, int>)NativeFuncs.Lookup("Joy.Api.Native::WsnetclientSend");
+            s_WsnetclientUpdate = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::WsnetclientUpdate");
+            s_WsnetclientPollMessage = (delegate* unmanaged[Cdecl]<ulong, ulong, byte>)NativeFuncs.Lookup("Joy.Api.Native::WsnetclientPollMessage");
+            s_NetclientDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::NetclientDestroy");
+            s_NetclientSend = (delegate* unmanaged[Cdecl]<ulong, byte*, int, int>)NativeFuncs.Lookup("Joy.Api.Native::NetclientSend");
+            s_NetclientUpdate = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::NetclientUpdate");
+            s_NetclientPollMessage = (delegate* unmanaged[Cdecl]<ulong, ulong, byte>)NativeFuncs.Lookup("Joy.Api.Native::NetclientPollMessage");
+            s_NetserverDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::NetserverDestroy");
+            s_NetserverSend = (delegate* unmanaged[Cdecl]<ulong, int, byte*, int, void>)NativeFuncs.Lookup("Joy.Api.Native::NetserverSend");
+            s_NetserverBroadcast = (delegate* unmanaged[Cdecl]<ulong, byte*, int, void>)NativeFuncs.Lookup("Joy.Api.Native::NetserverBroadcast");
+            s_NetserverOffline = (delegate* unmanaged[Cdecl]<ulong, int, void>)NativeFuncs.Lookup("Joy.Api.Native::NetserverOffline");
+            s_NetserverUpdate = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::NetserverUpdate");
+            s_NetserverConnectionCount = (delegate* unmanaged[Cdecl]<ulong, int>)NativeFuncs.Lookup("Joy.Api.Native::NetserverConnectionCount");
+            s_NetserverPollMessage = (delegate* unmanaged[Cdecl]<ulong, ulong, byte>)NativeFuncs.Lookup("Joy.Api.Native::NetserverPollMessage");
+            s_NetmessageFreeData = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::NetmessageFreeData");
+            s_SceneNodeDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::SceneNodeDestroy");
+            s_SceneNodeAddChild = (delegate* unmanaged[Cdecl]<ulong, ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::SceneNodeAddChild");
+            s_SceneNodeRemoveChild = (delegate* unmanaged[Cdecl]<ulong, ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::SceneNodeRemoveChild");
+            s_SceneNodeGetChildCount = (delegate* unmanaged[Cdecl]<ulong, int>)NativeFuncs.Lookup("Joy.Api.Native::SceneNodeGetChildCount");
+            s_SceneNodeSetPosition = (delegate* unmanaged[Cdecl]<ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::SceneNodeSetPosition");
+            s_SceneNodeSetWorldPosition = (delegate* unmanaged[Cdecl]<ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::SceneNodeSetWorldPosition");
+            s_SceneNodeSetRotation = (delegate* unmanaged[Cdecl]<ulong, float, void>)NativeFuncs.Lookup("Joy.Api.Native::SceneNodeSetRotation");
+            s_SceneNodeGetRotation = (delegate* unmanaged[Cdecl]<ulong, float>)NativeFuncs.Lookup("Joy.Api.Native::SceneNodeGetRotation");
+            s_SceneNodeSetScale = (delegate* unmanaged[Cdecl]<ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::SceneNodeSetScale");
+            s_SceneNodeSetZorder = (delegate* unmanaged[Cdecl]<ulong, int, void>)NativeFuncs.Lookup("Joy.Api.Native::SceneNodeSetZorder");
+            s_SceneNodeGetZorder = (delegate* unmanaged[Cdecl]<ulong, int>)NativeFuncs.Lookup("Joy.Api.Native::SceneNodeGetZorder");
+            s_SceneNodeSetName = (delegate* unmanaged[Cdecl]<ulong, byte*, void>)NativeFuncs.Lookup("Joy.Api.Native::SceneNodeSetName");
+            s_SceneNodeSetTag = (delegate* unmanaged[Cdecl]<ulong, byte*, void>)NativeFuncs.Lookup("Joy.Api.Native::SceneNodeSetTag");
+            s_SceneFindNodeByName = (delegate* unmanaged[Cdecl]<ulong, byte*, ulong>)NativeFuncs.Lookup("Joy.Api.Native::SceneFindNodeByName");
+            s_SceneFindNodeByNameDeep = (delegate* unmanaged[Cdecl]<ulong, byte*, ulong>)NativeFuncs.Lookup("Joy.Api.Native::SceneFindNodeByNameDeep");
+            s_SceneNodeUpdate = (delegate* unmanaged[Cdecl]<ulong, float, void>)NativeFuncs.Lookup("Joy.Api.Native::SceneNodeUpdate");
+            s_SceneDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::SceneDestroy");
+            s_SceneAddRootNode = (delegate* unmanaged[Cdecl]<ulong, ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::SceneAddRootNode");
+            s_SceneRemoveRootNode = (delegate* unmanaged[Cdecl]<ulong, ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::SceneRemoveRootNode");
+            s_SceneGetRootCount = (delegate* unmanaged[Cdecl]<ulong, int>)NativeFuncs.Lookup("Joy.Api.Native::SceneGetRootCount");
+            s_SceneGetRootAt = (delegate* unmanaged[Cdecl]<ulong, int, ulong>)NativeFuncs.Lookup("Joy.Api.Native::SceneGetRootAt");
+            s_SceneUpdate = (delegate* unmanaged[Cdecl]<ulong, float, void>)NativeFuncs.Lookup("Joy.Api.Native::SceneUpdate");
+            s_SceneSetPopupNode = (delegate* unmanaged[Cdecl]<ulong, ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::SceneSetPopupNode");
+            s_SceneGetPopupNode = (delegate* unmanaged[Cdecl]<ulong, ulong>)NativeFuncs.Lookup("Joy.Api.Native::SceneGetPopupNode");
+            s_SceneManagerDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::SceneManagerDestroy");
+            s_SceneManagerPush = (delegate* unmanaged[Cdecl]<ulong, ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::SceneManagerPush");
+            s_SceneManagerReplace = (delegate* unmanaged[Cdecl]<ulong, ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::SceneManagerReplace");
+            s_SceneManagerPop = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::SceneManagerPop");
+            s_SceneManagerUpdate = (delegate* unmanaged[Cdecl]<ulong, float, void>)NativeFuncs.Lookup("Joy.Api.Native::SceneManagerUpdate");
+            s_SceneManagerGetCurrent = (delegate* unmanaged[Cdecl]<ulong, ulong>)NativeFuncs.Lookup("Joy.Api.Native::SceneManagerGetCurrent");
+            s_SceneManagerGetCount = (delegate* unmanaged[Cdecl]<ulong, int>)NativeFuncs.Lookup("Joy.Api.Native::SceneManagerGetCount");
+            s_JparticleDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::JparticleDestroy");
+            s_JparticleSetPosition = (delegate* unmanaged[Cdecl]<ulong, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JparticleSetPosition");
+            s_JparticleEmit = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::JparticleEmit");
+            s_JparticleClear = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::JparticleClear");
+            s_JparticleUpdate = (delegate* unmanaged[Cdecl]<ulong, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JparticleUpdate");
+            s_JparticleRender = (delegate* unmanaged[Cdecl]<ulong, ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::JparticleRender");
+            s_JparticleCount = (delegate* unmanaged[Cdecl]<ulong, int>)NativeFuncs.Lookup("Joy.Api.Native::JparticleCount");
+            s_JparticleIsActive = (delegate* unmanaged[Cdecl]<ulong, byte>)NativeFuncs.Lookup("Joy.Api.Native::JparticleIsActive");
+            s_JlightSysDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::JlightSysDestroy");
+            s_JlightSysResize = (delegate* unmanaged[Cdecl]<ulong, int, int, void>)NativeFuncs.Lookup("Joy.Api.Native::JlightSysResize");
+            s_JlightRemove = (delegate* unmanaged[Cdecl]<ulong, int, void>)NativeFuncs.Lookup("Joy.Api.Native::JlightRemove");
+            s_JlightClear = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::JlightClear");
+            s_JlightAddOccluder = (delegate* unmanaged[Cdecl]<ulong, float, float, float, float, int>)NativeFuncs.Lookup("Joy.Api.Native::JlightAddOccluder");
+            s_JlightClearOccluders = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::JlightClearOccluders");
+            s_JlightSetAmbient = (delegate* unmanaged[Cdecl]<ulong, uint, uint, uint, void>)NativeFuncs.Lookup("Joy.Api.Native::JlightSetAmbient");
+            s_JlightRender = (delegate* unmanaged[Cdecl]<ulong, ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::JlightRender");
+            s_JecsDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::JecsDestroy");
+            s_JecsProcess = (delegate* unmanaged[Cdecl]<ulong, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JecsProcess");
+            s_JecsDefine = (delegate* unmanaged[Cdecl]<ulong, byte*, ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::JecsDefine");
+            s_AudioOpenDevice = (delegate* unmanaged[Cdecl]<uint>)NativeFuncs.Lookup("Joy.Api.Native::AudioOpenDevice");
+            s_AudioCloseDevice = (delegate* unmanaged[Cdecl]<uint, void>)NativeFuncs.Lookup("Joy.Api.Native::AudioCloseDevice");
+            s_AudioCreateWav = (delegate* unmanaged[Cdecl]<byte*, uint, byte>)NativeFuncs.Lookup("Joy.Api.Native::AudioCreateWav");
+            s_AudioCreateMp3 = (delegate* unmanaged[Cdecl]<byte*, uint, byte>)NativeFuncs.Lookup("Joy.Api.Native::AudioCreateMp3");
+            s_AudioCreateFlac = (delegate* unmanaged[Cdecl]<byte*, uint, byte>)NativeFuncs.Lookup("Joy.Api.Native::AudioCreateFlac");
+            s_AudioCreateOgg = (delegate* unmanaged[Cdecl]<byte*, uint, byte>)NativeFuncs.Lookup("Joy.Api.Native::AudioCreateOgg");
+            s_AudioShotPlay = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::AudioShotPlay");
+            s_AudioShotSetGain = (delegate* unmanaged[Cdecl]<ulong, float, void>)NativeFuncs.Lookup("Joy.Api.Native::AudioShotSetGain");
+            s_AudioShotDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::AudioShotDestroy");
+            s_AudioBgmStop = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::AudioBgmStop");
+            s_AudioBgmSetGain = (delegate* unmanaged[Cdecl]<ulong, float, void>)NativeFuncs.Lookup("Joy.Api.Native::AudioBgmSetGain");
+            s_AudioBgmDestroy = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::AudioBgmDestroy");
+            s_ImageDrawRect = (delegate* unmanaged[Cdecl]<ulong, ulong, float, float, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::ImageDrawRect");
+            s_JoyInputFeedKey = (delegate* unmanaged[Cdecl]<int, byte, void>)NativeFuncs.Lookup("Joy.Api.Native::JoyInputFeedKey");
+            s_JoyInputFeedMouseMove = (delegate* unmanaged[Cdecl]<float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JoyInputFeedMouseMove");
+            s_JoyInputFeedMouseButton = (delegate* unmanaged[Cdecl]<int, byte, void>)NativeFuncs.Lookup("Joy.Api.Native::JoyInputFeedMouseButton");
+            s_JoyInputFeedWheel = (delegate* unmanaged[Cdecl]<float, void>)NativeFuncs.Lookup("Joy.Api.Native::JoyInputFeedWheel");
+            s_JoyInputEndFrame = (delegate* unmanaged[Cdecl]<void>)NativeFuncs.Lookup("Joy.Api.Native::JoyInputEndFrame");
+            s_JoyInputReset = (delegate* unmanaged[Cdecl]<void>)NativeFuncs.Lookup("Joy.Api.Native::JoyInputReset");
+            s_JoyInputIsKeyDown = (delegate* unmanaged[Cdecl]<int, byte>)NativeFuncs.Lookup("Joy.Api.Native::JoyInputIsKeyDown");
+            s_JoyInputIsMouseButtonDown = (delegate* unmanaged[Cdecl]<int, byte>)NativeFuncs.Lookup("Joy.Api.Native::JoyInputIsMouseButtonDown");
+            s_JoyInputGetMouseX = (delegate* unmanaged[Cdecl]<float>)NativeFuncs.Lookup("Joy.Api.Native::JoyInputGetMouseX");
+            s_JoyInputGetMouseY = (delegate* unmanaged[Cdecl]<float>)NativeFuncs.Lookup("Joy.Api.Native::JoyInputGetMouseY");
+            s_JoyInputGetWheel = (delegate* unmanaged[Cdecl]<float>)NativeFuncs.Lookup("Joy.Api.Native::JoyInputGetWheel");
+            s_JoyInputWasKeyPressed = (delegate* unmanaged[Cdecl]<int, byte>)NativeFuncs.Lookup("Joy.Api.Native::JoyInputWasKeyPressed");
+            s_JoyInputWasKeyReleased = (delegate* unmanaged[Cdecl]<int, byte>)NativeFuncs.Lookup("Joy.Api.Native::JoyInputWasKeyReleased");
+            s_JmathFpFromFloat = (delegate* unmanaged[Cdecl]<float, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathFpFromFloat");
+            s_JmathFpToFloat = (delegate* unmanaged[Cdecl]<long, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathFpToFloat");
+            s_JmathFpFromUint = (delegate* unmanaged[Cdecl]<uint, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathFpFromUint");
+            s_JmathFpFromInt = (delegate* unmanaged[Cdecl]<int, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathFpFromInt");
+            s_JmathFpFromFraction = (delegate* unmanaged[Cdecl]<uint, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathFpFromFraction");
+            s_JmathFpMinValue = (delegate* unmanaged[Cdecl]<long>)NativeFuncs.Lookup("Joy.Api.Native::JmathFpMinValue");
+            s_JmathFpMaxValue = (delegate* unmanaged[Cdecl]<long>)NativeFuncs.Lookup("Joy.Api.Native::JmathFpMaxValue");
+            s_JmathFpAdd = (delegate* unmanaged[Cdecl]<long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathFpAdd");
+            s_JmathFpSub = (delegate* unmanaged[Cdecl]<long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathFpSub");
+            s_JmathFpZero = (delegate* unmanaged[Cdecl]<long>)NativeFuncs.Lookup("Joy.Api.Native::JmathFpZero");
+            s_JmathFpHalf = (delegate* unmanaged[Cdecl]<long>)NativeFuncs.Lookup("Joy.Api.Native::JmathFpHalf");
+            s_JmathFpOne = (delegate* unmanaged[Cdecl]<long>)NativeFuncs.Lookup("Joy.Api.Native::JmathFpOne");
+            s_JmathFpPi = (delegate* unmanaged[Cdecl]<long>)NativeFuncs.Lookup("Joy.Api.Native::JmathFpPi");
+            s_JmathFpMax = (delegate* unmanaged[Cdecl]<long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathFpMax");
+            s_JmathFpMin = (delegate* unmanaged[Cdecl]<long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathFpMin");
+            s_JmathFpPow2 = (delegate* unmanaged[Cdecl]<long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathFpPow2");
+            s_JmathFpSign = (delegate* unmanaged[Cdecl]<long, int>)NativeFuncs.Lookup("Joy.Api.Native::JmathFpSign");
+            s_JmathFpClamp = (delegate* unmanaged[Cdecl]<long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathFpClamp");
+            s_JmathFpLerp = (delegate* unmanaged[Cdecl]<long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathFpLerp");
+            s_JmathVec2fNegateX = (delegate* unmanaged[Cdecl]<long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2fNegateX");
+            s_JmathVec2fNegateY = (delegate* unmanaged[Cdecl]<long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2fNegateY");
+            s_JmathVec2fDot = (delegate* unmanaged[Cdecl]<long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2fDot");
+            s_JmathVec2fCross = (delegate* unmanaged[Cdecl]<long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2fCross");
+            s_JmathVec2fCross2X = (delegate* unmanaged[Cdecl]<long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2fCross2X");
+            s_JmathVec2fCross2Y = (delegate* unmanaged[Cdecl]<long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2fCross2Y");
+            s_JmathVec2fCross3X = (delegate* unmanaged[Cdecl]<long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2fCross3X");
+            s_JmathVec2fCross3Y = (delegate* unmanaged[Cdecl]<long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2fCross3Y");
+            s_JmathVec2fAddX = (delegate* unmanaged[Cdecl]<long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2fAddX");
+            s_JmathVec2fAddY = (delegate* unmanaged[Cdecl]<long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2fAddY");
+            s_JmathVec2fSubX = (delegate* unmanaged[Cdecl]<long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2fSubX");
+            s_JmathVec2fSubY = (delegate* unmanaged[Cdecl]<long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2fSubY");
+            s_JmathVec2fScaleX = (delegate* unmanaged[Cdecl]<long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2fScaleX");
+            s_JmathVec2fScaleY = (delegate* unmanaged[Cdecl]<long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2fScaleY");
+            s_JmathVec2fAbsX = (delegate* unmanaged[Cdecl]<long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2fAbsX");
+            s_JmathVec2fAbsY = (delegate* unmanaged[Cdecl]<long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2fAbsY");
+            s_JmathVec2fLengthSquared = (delegate* unmanaged[Cdecl]<long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2fLengthSquared");
+            s_JmathVec2fLength = (delegate* unmanaged[Cdecl]<long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2fLength");
+            s_JmathVec2fNormalizeX = (delegate* unmanaged[Cdecl]<long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2fNormalizeX");
+            s_JmathVec2fNormalizeY = (delegate* unmanaged[Cdecl]<long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2fNormalizeY");
+            s_JmathVec2fNormalX = (delegate* unmanaged[Cdecl]<long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2fNormalX");
+            s_JmathVec2fNormalY = (delegate* unmanaged[Cdecl]<long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2fNormalY");
+            s_JmathVec2fRotateX = (delegate* unmanaged[Cdecl]<long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2fRotateX");
+            s_JmathVec2fRotateY = (delegate* unmanaged[Cdecl]<long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2fRotateY");
+            s_JmathVec2fLerpX = (delegate* unmanaged[Cdecl]<long, long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2fLerpX");
+            s_JmathVec2fLerpY = (delegate* unmanaged[Cdecl]<long, long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2fLerpY");
+            s_JmathVec2fDistance = (delegate* unmanaged[Cdecl]<long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2fDistance");
+            s_JmathVec3fNegateX = (delegate* unmanaged[Cdecl]<long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fNegateX");
+            s_JmathVec3fNegateY = (delegate* unmanaged[Cdecl]<long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fNegateY");
+            s_JmathVec3fNegateZ = (delegate* unmanaged[Cdecl]<long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fNegateZ");
+            s_JmathVec3fAddX = (delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fAddX");
+            s_JmathVec3fAddY = (delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fAddY");
+            s_JmathVec3fAddZ = (delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fAddZ");
+            s_JmathVec3fSubX = (delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fSubX");
+            s_JmathVec3fSubY = (delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fSubY");
+            s_JmathVec3fSubZ = (delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fSubZ");
+            s_JmathVec3fScaleX = (delegate* unmanaged[Cdecl]<long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fScaleX");
+            s_JmathVec3fScaleY = (delegate* unmanaged[Cdecl]<long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fScaleY");
+            s_JmathVec3fScaleZ = (delegate* unmanaged[Cdecl]<long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fScaleZ");
+            s_JmathVec3fAbsX = (delegate* unmanaged[Cdecl]<long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fAbsX");
+            s_JmathVec3fAbsY = (delegate* unmanaged[Cdecl]<long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fAbsY");
+            s_JmathVec3fAbsZ = (delegate* unmanaged[Cdecl]<long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fAbsZ");
+            s_JmathVec3fDot = (delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fDot");
+            s_JmathVec3fCrossX = (delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fCrossX");
+            s_JmathVec3fCrossY = (delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fCrossY");
+            s_JmathVec3fCrossZ = (delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fCrossZ");
+            s_JmathVec3fSquareLength = (delegate* unmanaged[Cdecl]<long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fSquareLength");
+            s_JmathVec3fLength = (delegate* unmanaged[Cdecl]<long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fLength");
+            s_JmathVec3fNormalizeX = (delegate* unmanaged[Cdecl]<long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fNormalizeX");
+            s_JmathVec3fNormalizeY = (delegate* unmanaged[Cdecl]<long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fNormalizeY");
+            s_JmathVec3fNormalizeZ = (delegate* unmanaged[Cdecl]<long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fNormalizeZ");
+            s_JmathVec3fLerpX = (delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fLerpX");
+            s_JmathVec3fLerpY = (delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fLerpY");
+            s_JmathVec3fLerpZ = (delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fLerpZ");
+            s_JmathVec3fDistance = (delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3fDistance");
+            s_JmathMat22fMulVec2fX = (delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22fMulVec2fX");
+            s_JmathMat22fMulVec2fY = (delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22fMulVec2fY");
+            s_JmathMat22fRotateCol1X = (delegate* unmanaged[Cdecl]<long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22fRotateCol1X");
+            s_JmathMat22fRotateCol1Y = (delegate* unmanaged[Cdecl]<long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22fRotateCol1Y");
+            s_JmathMat22fRotateCol2X = (delegate* unmanaged[Cdecl]<long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22fRotateCol2X");
+            s_JmathMat22fRotateCol2Y = (delegate* unmanaged[Cdecl]<long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22fRotateCol2Y");
+            s_JmathMat22fTransposeCol1X = (delegate* unmanaged[Cdecl]<long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22fTransposeCol1X");
+            s_JmathMat22fTransposeCol1Y = (delegate* unmanaged[Cdecl]<long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22fTransposeCol1Y");
+            s_JmathMat22fTransposeCol2X = (delegate* unmanaged[Cdecl]<long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22fTransposeCol2X");
+            s_JmathMat22fTransposeCol2Y = (delegate* unmanaged[Cdecl]<long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22fTransposeCol2Y");
+            s_JmathMat22fInvertCol1X = (delegate* unmanaged[Cdecl]<long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22fInvertCol1X");
+            s_JmathMat22fInvertCol1Y = (delegate* unmanaged[Cdecl]<long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22fInvertCol1Y");
+            s_JmathMat22fInvertCol2X = (delegate* unmanaged[Cdecl]<long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22fInvertCol2X");
+            s_JmathMat22fInvertCol2Y = (delegate* unmanaged[Cdecl]<long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22fInvertCol2Y");
+            s_JmathMat22fAddCol1X = (delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22fAddCol1X");
+            s_JmathMat22fAddCol1Y = (delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22fAddCol1Y");
+            s_JmathMat22fAddCol2X = (delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22fAddCol2X");
+            s_JmathMat22fAddCol2Y = (delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22fAddCol2Y");
+            s_JmathMat22fMulCol1X = (delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22fMulCol1X");
+            s_JmathMat22fMulCol1Y = (delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22fMulCol1Y");
+            s_JmathMat22fMulCol2X = (delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22fMulCol2X");
+            s_JmathMat22fMulCol2Y = (delegate* unmanaged[Cdecl]<long, long, long, long, long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22fMulCol2Y");
+            s_JmathMat22fAbsCol1X = (delegate* unmanaged[Cdecl]<long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22fAbsCol1X");
+            s_JmathMat22fAbsCol1Y = (delegate* unmanaged[Cdecl]<long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22fAbsCol1Y");
+            s_JmathMat22fAbsCol2X = (delegate* unmanaged[Cdecl]<long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22fAbsCol2X");
+            s_JmathMat22fAbsCol2Y = (delegate* unmanaged[Cdecl]<long, long, long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22fAbsCol2Y");
+            s_JmathFtFromFloat = (delegate* unmanaged[Cdecl]<float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathFtFromFloat");
+            s_JmathFtToFloat = (delegate* unmanaged[Cdecl]<float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathFtToFloat");
+            s_JmathFtMinValue = (delegate* unmanaged[Cdecl]<float>)NativeFuncs.Lookup("Joy.Api.Native::JmathFtMinValue");
+            s_JmathFtMaxValue = (delegate* unmanaged[Cdecl]<float>)NativeFuncs.Lookup("Joy.Api.Native::JmathFtMaxValue");
+            s_JmathFtAdd = (delegate* unmanaged[Cdecl]<float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathFtAdd");
+            s_JmathFtSub = (delegate* unmanaged[Cdecl]<float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathFtSub");
+            s_JmathFtMul = (delegate* unmanaged[Cdecl]<float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathFtMul");
+            s_JmathFtDiv = (delegate* unmanaged[Cdecl]<float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathFtDiv");
+            s_JmathFtAbs = (delegate* unmanaged[Cdecl]<float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathFtAbs");
+            s_JmathFtSqrt = (delegate* unmanaged[Cdecl]<float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathFtSqrt");
+            s_JmathFtSin = (delegate* unmanaged[Cdecl]<float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathFtSin");
+            s_JmathFtCos = (delegate* unmanaged[Cdecl]<float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathFtCos");
+            s_JmathFtAtan2 = (delegate* unmanaged[Cdecl]<float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathFtAtan2");
+            s_JmathFtZero = (delegate* unmanaged[Cdecl]<float>)NativeFuncs.Lookup("Joy.Api.Native::JmathFtZero");
+            s_JmathFtHalf = (delegate* unmanaged[Cdecl]<float>)NativeFuncs.Lookup("Joy.Api.Native::JmathFtHalf");
+            s_JmathFtOne = (delegate* unmanaged[Cdecl]<float>)NativeFuncs.Lookup("Joy.Api.Native::JmathFtOne");
+            s_JmathFtPi = (delegate* unmanaged[Cdecl]<float>)NativeFuncs.Lookup("Joy.Api.Native::JmathFtPi");
+            s_JmathFtMax = (delegate* unmanaged[Cdecl]<float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathFtMax");
+            s_JmathFtMin = (delegate* unmanaged[Cdecl]<float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathFtMin");
+            s_JmathFtPow2 = (delegate* unmanaged[Cdecl]<float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathFtPow2");
+            s_JmathFtSign = (delegate* unmanaged[Cdecl]<float, int>)NativeFuncs.Lookup("Joy.Api.Native::JmathFtSign");
+            s_JmathFtClamp = (delegate* unmanaged[Cdecl]<float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathFtClamp");
+            s_JmathFtLerp = (delegate* unmanaged[Cdecl]<float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathFtLerp");
+            s_JmathVec2NegateX = (delegate* unmanaged[Cdecl]<float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2NegateX");
+            s_JmathVec2NegateY = (delegate* unmanaged[Cdecl]<float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2NegateY");
+            s_JmathVec2Negate = (delegate* unmanaged[Cdecl]<float, float, ulong>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2Negate");
+            s_JmathVec2Dot = (delegate* unmanaged[Cdecl]<float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2Dot");
+            s_JmathVec2Cross = (delegate* unmanaged[Cdecl]<float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2Cross");
+            s_JmathVec2Cross2X = (delegate* unmanaged[Cdecl]<float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2Cross2X");
+            s_JmathVec2Cross2Y = (delegate* unmanaged[Cdecl]<float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2Cross2Y");
+            s_JmathVec2Cross2 = (delegate* unmanaged[Cdecl]<float, float, float, ulong>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2Cross2");
+            s_JmathVec2Cross3X = (delegate* unmanaged[Cdecl]<float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2Cross3X");
+            s_JmathVec2Cross3Y = (delegate* unmanaged[Cdecl]<float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2Cross3Y");
+            s_JmathVec2Cross3 = (delegate* unmanaged[Cdecl]<float, float, float, ulong>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2Cross3");
+            s_JmathVec2AddX = (delegate* unmanaged[Cdecl]<float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2AddX");
+            s_JmathVec2AddY = (delegate* unmanaged[Cdecl]<float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2AddY");
+            s_JmathVec2Add = (delegate* unmanaged[Cdecl]<float, float, float, float, ulong>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2Add");
+            s_JmathVec2SubX = (delegate* unmanaged[Cdecl]<float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2SubX");
+            s_JmathVec2SubY = (delegate* unmanaged[Cdecl]<float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2SubY");
+            s_JmathVec2Sub = (delegate* unmanaged[Cdecl]<float, float, float, float, ulong>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2Sub");
+            s_JmathVec2ScaleX = (delegate* unmanaged[Cdecl]<float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2ScaleX");
+            s_JmathVec2ScaleY = (delegate* unmanaged[Cdecl]<float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2ScaleY");
+            s_JmathVec2Scale = (delegate* unmanaged[Cdecl]<float, float, float, ulong>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2Scale");
+            s_JmathVec2AbsX = (delegate* unmanaged[Cdecl]<float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2AbsX");
+            s_JmathVec2AbsY = (delegate* unmanaged[Cdecl]<float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2AbsY");
+            s_JmathVec2Abs = (delegate* unmanaged[Cdecl]<float, float, ulong>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2Abs");
+            s_JmathVec2LengthSquared = (delegate* unmanaged[Cdecl]<float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2LengthSquared");
+            s_JmathVec2Length = (delegate* unmanaged[Cdecl]<float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2Length");
+            s_JmathVec2NormalizeX = (delegate* unmanaged[Cdecl]<float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2NormalizeX");
+            s_JmathVec2NormalizeY = (delegate* unmanaged[Cdecl]<float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2NormalizeY");
+            s_JmathVec2Normalize = (delegate* unmanaged[Cdecl]<float, float, ulong>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2Normalize");
+            s_JmathVec2NormalX = (delegate* unmanaged[Cdecl]<float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2NormalX");
+            s_JmathVec2NormalY = (delegate* unmanaged[Cdecl]<float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2NormalY");
+            s_JmathVec2Normal = (delegate* unmanaged[Cdecl]<float, float, ulong>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2Normal");
+            s_JmathVec2RotateX = (delegate* unmanaged[Cdecl]<float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2RotateX");
+            s_JmathVec2RotateY = (delegate* unmanaged[Cdecl]<float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2RotateY");
+            s_JmathVec2Rotate = (delegate* unmanaged[Cdecl]<float, float, float, ulong>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2Rotate");
+            s_JmathVec2LerpX = (delegate* unmanaged[Cdecl]<float, float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2LerpX");
+            s_JmathVec2LerpY = (delegate* unmanaged[Cdecl]<float, float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2LerpY");
+            s_JmathVec2Lerp = (delegate* unmanaged[Cdecl]<float, float, float, float, float, ulong>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2Lerp");
+            s_JmathVec2Distance = (delegate* unmanaged[Cdecl]<float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec2Distance");
+            s_JmathVec3NegateX = (delegate* unmanaged[Cdecl]<float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3NegateX");
+            s_JmathVec3NegateY = (delegate* unmanaged[Cdecl]<float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3NegateY");
+            s_JmathVec3NegateZ = (delegate* unmanaged[Cdecl]<float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3NegateZ");
+            s_JmathVec3AddX = (delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3AddX");
+            s_JmathVec3AddY = (delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3AddY");
+            s_JmathVec3AddZ = (delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3AddZ");
+            s_JmathVec3SubX = (delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3SubX");
+            s_JmathVec3SubY = (delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3SubY");
+            s_JmathVec3SubZ = (delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3SubZ");
+            s_JmathVec3ScaleX = (delegate* unmanaged[Cdecl]<float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3ScaleX");
+            s_JmathVec3ScaleY = (delegate* unmanaged[Cdecl]<float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3ScaleY");
+            s_JmathVec3ScaleZ = (delegate* unmanaged[Cdecl]<float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3ScaleZ");
+            s_JmathVec3AbsX = (delegate* unmanaged[Cdecl]<float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3AbsX");
+            s_JmathVec3AbsY = (delegate* unmanaged[Cdecl]<float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3AbsY");
+            s_JmathVec3AbsZ = (delegate* unmanaged[Cdecl]<float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3AbsZ");
+            s_JmathVec3Dot = (delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3Dot");
+            s_JmathVec3CrossX = (delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3CrossX");
+            s_JmathVec3CrossY = (delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3CrossY");
+            s_JmathVec3CrossZ = (delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3CrossZ");
+            s_JmathVec3SquareLength = (delegate* unmanaged[Cdecl]<float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3SquareLength");
+            s_JmathVec3Length = (delegate* unmanaged[Cdecl]<float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3Length");
+            s_JmathVec3NormalizeX = (delegate* unmanaged[Cdecl]<float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3NormalizeX");
+            s_JmathVec3NormalizeY = (delegate* unmanaged[Cdecl]<float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3NormalizeY");
+            s_JmathVec3NormalizeZ = (delegate* unmanaged[Cdecl]<float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3NormalizeZ");
+            s_JmathVec3LerpX = (delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3LerpX");
+            s_JmathVec3LerpY = (delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3LerpY");
+            s_JmathVec3LerpZ = (delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3LerpZ");
+            s_JmathVec3Distance = (delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3Distance");
+            s_JmathMat22MulVec2X = (delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22MulVec2X");
+            s_JmathMat22MulVec2Y = (delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22MulVec2Y");
+            s_JmathMat22MulVec2 = (delegate* unmanaged[Cdecl]<float, float, float, float, float, float, ulong>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22MulVec2");
+            s_JmathMat22RotateCol1X = (delegate* unmanaged[Cdecl]<float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22RotateCol1X");
+            s_JmathMat22RotateCol1Y = (delegate* unmanaged[Cdecl]<float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22RotateCol1Y");
+            s_JmathMat22RotateCol2X = (delegate* unmanaged[Cdecl]<float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22RotateCol2X");
+            s_JmathMat22RotateCol2Y = (delegate* unmanaged[Cdecl]<float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22RotateCol2Y");
+            s_JmathMat22TransposeCol1X = (delegate* unmanaged[Cdecl]<float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22TransposeCol1X");
+            s_JmathMat22TransposeCol1Y = (delegate* unmanaged[Cdecl]<float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22TransposeCol1Y");
+            s_JmathMat22TransposeCol2X = (delegate* unmanaged[Cdecl]<float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22TransposeCol2X");
+            s_JmathMat22TransposeCol2Y = (delegate* unmanaged[Cdecl]<float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22TransposeCol2Y");
+            s_JmathMat22InvertCol1X = (delegate* unmanaged[Cdecl]<float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22InvertCol1X");
+            s_JmathMat22InvertCol1Y = (delegate* unmanaged[Cdecl]<float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22InvertCol1Y");
+            s_JmathMat22InvertCol2X = (delegate* unmanaged[Cdecl]<float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22InvertCol2X");
+            s_JmathMat22InvertCol2Y = (delegate* unmanaged[Cdecl]<float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22InvertCol2Y");
+            s_JmathMat22AddCol1X = (delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22AddCol1X");
+            s_JmathMat22AddCol1Y = (delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22AddCol1Y");
+            s_JmathMat22AddCol2X = (delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22AddCol2X");
+            s_JmathMat22AddCol2Y = (delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22AddCol2Y");
+            s_JmathMat22MulCol1X = (delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22MulCol1X");
+            s_JmathMat22MulCol1Y = (delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22MulCol1Y");
+            s_JmathMat22MulCol2X = (delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22MulCol2X");
+            s_JmathMat22MulCol2Y = (delegate* unmanaged[Cdecl]<float, float, float, float, float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22MulCol2Y");
+            s_JmathMat22AbsCol1X = (delegate* unmanaged[Cdecl]<float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22AbsCol1X");
+            s_JmathMat22AbsCol1Y = (delegate* unmanaged[Cdecl]<float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22AbsCol1Y");
+            s_JmathMat22AbsCol2X = (delegate* unmanaged[Cdecl]<float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22AbsCol2X");
+            s_JmathMat22AbsCol2Y = (delegate* unmanaged[Cdecl]<float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathMat22AbsCol2Y");
+            s_JmathVec3DivX = (delegate* unmanaged[Cdecl]<float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3DivX");
+            s_JmathVec3DivY = (delegate* unmanaged[Cdecl]<float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3DivY");
+            s_JmathVec3DivZ = (delegate* unmanaged[Cdecl]<float, float, float, float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathVec3DivZ");
+            s_JmathFtRadians = (delegate* unmanaged[Cdecl]<float, float>)NativeFuncs.Lookup("Joy.Api.Native::JmathFtRadians");
+            s_JoyMathFpMul = (delegate* unmanaged[Cdecl]<long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JoyMathFpMul");
+            s_JoyMathFpDiv = (delegate* unmanaged[Cdecl]<long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JoyMathFpDiv");
+            s_JoyMathFpAbs = (delegate* unmanaged[Cdecl]<long, long>)NativeFuncs.Lookup("Joy.Api.Native::JoyMathFpAbs");
+            s_JoyMathFpSqrt = (delegate* unmanaged[Cdecl]<long, long>)NativeFuncs.Lookup("Joy.Api.Native::JoyMathFpSqrt");
+            s_JoyMathFpSin = (delegate* unmanaged[Cdecl]<long, long>)NativeFuncs.Lookup("Joy.Api.Native::JoyMathFpSin");
+            s_JoyMathFpCos = (delegate* unmanaged[Cdecl]<long, long>)NativeFuncs.Lookup("Joy.Api.Native::JoyMathFpCos");
+            s_JoyMathFpRound = (delegate* unmanaged[Cdecl]<long, long>)NativeFuncs.Lookup("Joy.Api.Native::JoyMathFpRound");
+            s_JoyMathFpAtan = (delegate* unmanaged[Cdecl]<long, long>)NativeFuncs.Lookup("Joy.Api.Native::JoyMathFpAtan");
+            s_JoyMathFpAtan2 = (delegate* unmanaged[Cdecl]<long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JoyMathFpAtan2");
+            s_JoyMathFpExp = (delegate* unmanaged[Cdecl]<long, long>)NativeFuncs.Lookup("Joy.Api.Native::JoyMathFpExp");
+            s_JoyMathFpLn = (delegate* unmanaged[Cdecl]<long, long>)NativeFuncs.Lookup("Joy.Api.Native::JoyMathFpLn");
+            s_JoyMathFpPow = (delegate* unmanaged[Cdecl]<long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JoyMathFpPow");
+            s_Release = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::Release");
+            s_DebugLiveCount = (delegate* unmanaged[Cdecl]<uint>)NativeFuncs.Lookup("Joy.Api.Native::DebugLiveCount");
+            s_DebugDestroyCount = (delegate* unmanaged[Cdecl]<uint>)NativeFuncs.Lookup("Joy.Api.Native::DebugDestroyCount");
+        }
+
+        internal static ulong LcgRandomCreate(ulong seed)
+        {
+            return s_LcgRandomCreate(seed);
+        }
+
+        internal static void LcgRandomDestroy(ulong lcg)
+        {
+            s_LcgRandomDestroy(lcg);
+        }
+
+        internal static uint LcgRandomNext(ulong lcg)
+        {
+            return s_LcgRandomNext(lcg);
+        }
+
+        internal static void LcgRandomSetState(ulong lcg, ulong state)
+        {
+            s_LcgRandomSetState(lcg, state);
+        }
+
+        internal static void JpmConfigAddSpawn(ulong cfg, int cx10, int cz10, int radius10)
+        {
+            s_JpmConfigAddSpawn(cfg, cx10, cz10, radius10);
+        }
+
+        internal static uint JpmWaveSeed(uint base_seed, int wave)
+        {
+            return s_JpmWaveSeed(base_seed, wave);
+        }
+
+        internal static ulong SdbmHash(string str, int size)
+        {
+            byte* __p0 = NativeFuncs.Utf8(str);
+            try { return s_SdbmHash(__p0, size); }
+            finally { NativeFuncs.FreeUtf8(__p0); }
+        }
+
+        internal static ulong Fnv1aHash(string str, int size)
+        {
+            byte* __p0 = NativeFuncs.Utf8(str);
+            try { return s_Fnv1aHash(__p0, size); }
+            finally { NativeFuncs.FreeUtf8(__p0); }
+        }
+
+        internal static ulong JenkinsHash(string str, int size)
+        {
+            byte* __p0 = NativeFuncs.Utf8(str);
+            try { return s_JenkinsHash(__p0, size); }
+            finally { NativeFuncs.FreeUtf8(__p0); }
+        }
+
+        internal static ulong Murmur3Hash(string str)
+        {
+            byte* __p0 = NativeFuncs.Utf8(str);
+            try { return s_Murmur3Hash(__p0); }
+            finally { NativeFuncs.FreeUtf8(__p0); }
+        }
+
+        internal static ulong KrHash(string str, int size)
+        {
+            byte* __p0 = NativeFuncs.Utf8(str);
+            try { return s_KrHash(__p0, size); }
+            finally { NativeFuncs.FreeUtf8(__p0); }
+        }
+
+        internal static void JtimerDestroy(ulong timer)
+        {
+            s_JtimerDestroy(timer);
+        }
+
+        internal static void JtimerTrigger(ulong timer)
+        {
+            s_JtimerTrigger(timer);
+        }
+
+        internal static void JtimerSetInterval(ulong timer, int interval)
+        {
+            s_JtimerSetInterval(timer, interval);
+        }
+
+        internal static void JtimerSetActive(ulong timer, bool active)
+        {
+            s_JtimerSetActive(timer, (byte)(active ? 1 : 0));
+        }
+
+        internal static void JtimerReset(ulong timer)
+        {
+            s_JtimerReset(timer);
+        }
+
+        internal static ulong JtimerGetElapsed(ulong timer)
+        {
+            return s_JtimerGetElapsed(timer);
+        }
+
+        internal static bool InitEnv()
+        {
+            return s_InitEnv() != 0;
+        }
+
+        internal static void QuitEnv()
+        {
+            s_QuitEnv();
+        }
+
+        internal static ulong GetTicks()
+        {
+            return s_GetTicks();
+        }
+
+        internal static ulong CreateWindow(string title, int w, int h)
+        {
+            byte* __p0 = NativeFuncs.Utf8(title);
+            try { return s_CreateWindow(__p0, w, h); }
+            finally { NativeFuncs.FreeUtf8(__p0); }
+        }
+
+        internal static void DestroyWindow(ulong win)
+        {
+            s_DestroyWindow(win);
+        }
+
+        internal static void WindowSetFullscreen(ulong win, bool fullscreen)
+        {
+            s_WindowSetFullscreen(win, (byte)(fullscreen ? 1 : 0));
+        }
+
+        internal static bool WindowGetFullscreen(ulong win)
+        {
+            return s_WindowGetFullscreen(win) != 0;
+        }
+
+        internal static void WindowSetIcon(ulong win, string png_path)
+        {
+            byte* __p1 = NativeFuncs.Utf8(png_path);
+            try { s_WindowSetIcon(win, __p1); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static bool PushUserEvent(int type, int code)
+        {
+            return s_PushUserEvent(type, code) != 0;
+        }
+
+        internal static bool PushQuitEvent()
+        {
+            return s_PushQuitEvent() != 0;
+        }
+
+        internal static void LogTitle(int type)
+        {
+            s_LogTitle(type);
+        }
+
+        internal static void EnvSet(ulong env, string key, string value)
+        {
+            byte* __p1 = NativeFuncs.Utf8(key);
+            byte* __p2 = NativeFuncs.Utf8(value);
+            try { s_EnvSet(env, __p1, __p2); }
+            finally { NativeFuncs.FreeUtf8(__p1); NativeFuncs.FreeUtf8(__p2); }
+        }
+
+        internal static void EnvDestroy(ulong env)
+        {
+            s_EnvDestroy(env);
+        }
+
+        internal static void SimpleFpsDestory(ulong fps)
+        {
+            s_SimpleFpsDestory(fps);
+        }
+
+        internal static void SimpleFpsUpdate(ulong fps)
+        {
+            s_SimpleFpsUpdate(fps);
+        }
+
+        internal static int SimpleFpsValue(ulong fps)
+        {
+            return s_SimpleFpsValue(fps);
+        }
+
+        internal static void GameTimerInit(ulong clock)
+        {
+            s_GameTimerInit(clock);
+        }
+
+        internal static void GameTimerUpdate(ulong clock)
+        {
+            s_GameTimerUpdate(clock);
+        }
+
+        internal static float GameTimerGetDeltaTime(ulong clock)
+        {
+            return s_GameTimerGetDeltaTime(clock);
+        }
+
+        internal static float GameTimerGetUnscaledDeltaTime(ulong clock)
+        {
+            return s_GameTimerGetUnscaledDeltaTime(clock);
+        }
+
+        internal static void GameTimerSetTimeScale(ulong clock, float scale)
+        {
+            s_GameTimerSetTimeScale(clock, scale);
+        }
+
+        internal static float GameTimerGetTimeScale(ulong clock)
+        {
+            return s_GameTimerGetTimeScale(clock);
+        }
+
+        internal static void GameTimerSetTargetFps(ulong clock, int fps)
+        {
+            s_GameTimerSetTargetFps(clock, fps);
+        }
+
+        internal static int GameTimerGetTargetFps(ulong clock)
+        {
+            return s_GameTimerGetTargetFps(clock);
+        }
+
+        internal static void SetClipboardText(string text)
+        {
+            byte* __p0 = NativeFuncs.Utf8(text);
+            try { s_SetClipboardText(__p0); }
+            finally { NativeFuncs.FreeUtf8(__p0); }
+        }
+
+        internal static bool SysInitNetenv()
+        {
+            return s_SysInitNetenv() != 0;
+        }
+
+        internal static bool SysReleaseNetenv()
+        {
+            return s_SysReleaseNetenv() != 0;
+        }
+
+        internal static int SysAnyaddr()
+        {
+            return s_SysAnyaddr();
+        }
+
+        internal static bool SysClosesocket(long sockfd)
+        {
+            return s_SysClosesocket(sockfd) != 0;
+        }
+
+        internal static int SysSetSockSndtimeo(long sockfd, int ms)
+        {
+            return s_SysSetSockSndtimeo(sockfd, ms);
+        }
+
+        internal static int SysSetSockRcvtimeo(long sockfd, int ms)
+        {
+            return s_SysSetSockRcvtimeo(sockfd, ms);
+        }
+
+        internal static int SysSetSockAccpettimeo(long sockfd, int ms)
+        {
+            return s_SysSetSockAccpettimeo(sockfd, ms);
+        }
+
+        internal static int SysSetSockBroadcast(long sockfd)
+        {
+            return s_SysSetSockBroadcast(sockfd);
+        }
+
+        internal static int SysSetSockReuseaddr(long sockfd)
+        {
+            return s_SysSetSockReuseaddr(sockfd);
+        }
+
+        internal static long SysTcp()
+        {
+            return s_SysTcp();
+        }
+
+        internal static long SysUdp()
+        {
+            return s_SysUdp();
+        }
+
+        internal static bool SysBind(long sockfd, string ip, int port)
+        {
+            byte* __p1 = NativeFuncs.Utf8(ip);
+            try { return s_SysBind(sockfd, __p1, port) != 0; }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static bool SysConnect(long sockfd, string ip, int port)
+        {
+            byte* __p1 = NativeFuncs.Utf8(ip);
+            try { return s_SysConnect(sockfd, __p1, port) != 0; }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static bool SysListen(long sockfd)
+        {
+            return s_SysListen(sockfd) != 0;
+        }
+
+        internal static int SysSend(long sockfd, string buf, int len)
+        {
+            byte* __p1 = NativeFuncs.Utf8(buf);
+            try { return s_SysSend(sockfd, __p1, len); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static int SysSendto(long sockfd, string buf, int len, string ip, int port)
+        {
+            byte* __p1 = NativeFuncs.Utf8(buf);
+            byte* __p3 = NativeFuncs.Utf8(ip);
+            try { return s_SysSendto(sockfd, __p1, len, __p3, port); }
+            finally { NativeFuncs.FreeUtf8(__p1); NativeFuncs.FreeUtf8(__p3); }
+        }
+
+        internal static long SysCurrentTime()
+        {
+            return s_SysCurrentTime();
+        }
+
+        internal static void SysSleep(int ms)
+        {
+            s_SysSleep(ms);
+        }
+
+        internal static void SysInstallCrashHandlers()
+        {
+            s_SysInstallCrashHandlers();
+        }
+
+        internal static void IocpServerDestroy(ulong server)
+        {
+            s_IocpServerDestroy(server);
+        }
+
+        internal static void IocpProcessEvents(ulong server, int timeout_ms)
+        {
+            s_IocpProcessEvents(server, timeout_ms);
+        }
+
+        internal static ulong FontCreate(string filename, int fontsize)
+        {
+            byte* __p0 = NativeFuncs.Utf8(filename);
+            try { return s_FontCreate(__p0, fontsize); }
+            finally { NativeFuncs.FreeUtf8(__p0); }
+        }
+
+        internal static void FontDestroy(ulong font)
+        {
+            s_FontDestroy(font);
+        }
+
+        internal static float FontGetScale(ulong font)
+        {
+            return s_FontGetScale(font);
+        }
+
+        internal static int FontGetSize(ulong font)
+        {
+            return s_FontGetSize(font);
+        }
+
+        internal static int FontGetAscent(ulong font)
+        {
+            return s_FontGetAscent(font);
+        }
+
+        internal static ulong R2dCreate(ulong win)
+        {
+            return s_R2dCreate(win);
+        }
+
+        internal static void R2dDestroy(ulong r2d)
+        {
+            s_R2dDestroy(r2d);
+        }
+
+        internal static bool R2dSetColor(ulong r2d, uint r, uint g, uint b, uint a)
+        {
+            return s_R2dSetColor(r2d, r, g, b, a) != 0;
+        }
+
+        internal static void R2dBegin(ulong r2d)
+        {
+            s_R2dBegin(r2d);
+        }
+
+        internal static void R2dEnd(ulong r2d)
+        {
+            s_R2dEnd(r2d);
+        }
+
+        internal static bool R2dSetLogicalPresentation(ulong r2d, int w, int h)
+        {
+            return s_R2dSetLogicalPresentation(r2d, w, h) != 0;
+        }
+
+        internal static bool R2dSetLogicalPresentationMode(ulong r2d, int w, int h, int mode)
+        {
+            return s_R2dSetLogicalPresentationMode(r2d, w, h, mode) != 0;
+        }
+
+        internal static bool R2dSetVsync(ulong r2d, int vsync)
+        {
+            return s_R2dSetVsync(r2d, vsync) != 0;
+        }
+
+        internal static bool R2dSetScale(ulong r2d, float sx, float sy)
+        {
+            return s_R2dSetScale(r2d, sx, sy) != 0;
+        }
+
+        internal static void R2dSetColorf(ulong r2d, float r, float g, float b, float a)
+        {
+            s_R2dSetColorf(r2d, r, g, b, a);
+        }
+
+        internal static bool R2dSetBlendMode(ulong r2d, int mode)
+        {
+            return s_R2dSetBlendMode(r2d, mode) != 0;
+        }
+
+        internal static bool R2dDrawPoint(ulong r2d, float x, float y)
+        {
+            return s_R2dDrawPoint(r2d, x, y) != 0;
+        }
+
+        internal static bool R2dSetClipRect(ulong r2d, float rect_x, float rect_y, float rect_w, float rect_h)
+        {
+            return s_R2dSetClipRect(r2d, rect_x, rect_y, rect_w, rect_h) != 0;
+        }
+
+        internal static void R2dClearClip(ulong r2d)
+        {
+            s_R2dClearClip(r2d);
+        }
+
+        internal static bool R2dPushClipRect(ulong r2d, float rect_x, float rect_y, float rect_w, float rect_h)
+        {
+            return s_R2dPushClipRect(r2d, rect_x, rect_y, rect_w, rect_h) != 0;
+        }
+
+        internal static void R2dPopClipRect(ulong r2d)
+        {
+            s_R2dPopClipRect(r2d);
+        }
+
+        internal static void R2dResetClipStack(ulong r2d)
+        {
+            s_R2dResetClipStack(r2d);
+        }
+
+        internal static bool R2dPointInClip(ulong r2d, float x, float y)
+        {
+            return s_R2dPointInClip(r2d, x, y) != 0;
+        }
+
+        internal static bool ShapeDrawLine(ulong r2d, float x1, float y1, float x2, float y2)
+        {
+            return s_ShapeDrawLine(r2d, x1, y1, x2, y2) != 0;
+        }
+
+        internal static bool ShapeDrawRectangle(ulong r2d, string mode, float rect_x, float rect_y, float rect_w, float rect_h)
+        {
+            byte* __p1 = NativeFuncs.Utf8(mode);
+            try { return s_ShapeDrawRectangle(r2d, __p1, rect_x, rect_y, rect_w, rect_h) != 0; }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static ulong ImageCreate(ulong r2d, string filename)
+        {
+            byte* __p1 = NativeFuncs.Utf8(filename);
+            try { return s_ImageCreate(r2d, __p1); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void ImageDestroy(ulong image)
+        {
+            s_ImageDestroy(image);
+        }
+
+        internal static void ImageSetAlpha(ulong image, uint alpha)
+        {
+            s_ImageSetAlpha(image, alpha);
+        }
+
+        internal static void ImageSetBlendMode(ulong image, int mode)
+        {
+            s_ImageSetBlendMode(image, mode);
+        }
+
+        internal static void ImageSetScaleMode(ulong image, int nearest)
+        {
+            s_ImageSetScaleMode(image, nearest);
+        }
+
+        internal static void TextUpdatex(ulong text, ulong font, string str, int len, uint color_r, uint color_g, uint color_b, uint color_a)
+        {
+            byte* __p2 = NativeFuncs.Utf8(str);
+            try { s_TextUpdatex(text, font, __p2, len, color_r, color_g, color_b, color_a); }
+            finally { NativeFuncs.FreeUtf8(__p2); }
+        }
+
+        internal static void TextDestroy(ulong jtext_tex)
+        {
+            s_TextDestroy(jtext_tex);
+        }
+
+        internal static void JtextPrint(ulong r2d, ulong jtext_tex, float x, float y)
+        {
+            s_JtextPrint(r2d, jtext_tex, x, y);
+        }
+
+        internal static void JtextPrintx(ulong r2d, ulong font, string str, int len, uint color_r, uint color_g, uint color_b, uint color_a, float x, float y)
+        {
+            byte* __p2 = NativeFuncs.Utf8(str);
+            try { s_JtextPrintx(r2d, font, __p2, len, color_r, color_g, color_b, color_a, x, y); }
+            finally { NativeFuncs.FreeUtf8(__p2); }
+        }
+
+        internal static bool R2dDrawPointF(ulong r2d, float fx, float fy)
+        {
+            return s_R2dDrawPointF(r2d, fx, fy) != 0;
+        }
+
+        internal static bool ShapeDrawRectangleF(ulong r2d, string mode, float fx, float fy, float fw, float fh)
+        {
+            byte* __p1 = NativeFuncs.Utf8(mode);
+            try { return s_ShapeDrawRectangleF(r2d, __p1, fx, fy, fw, fh) != 0; }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static bool ShapeDrawLineF(ulong r2d, float fx1, float fy1, float fx2, float fy2)
+        {
+            return s_ShapeDrawLineF(r2d, fx1, fy1, fx2, fy2) != 0;
+        }
+
+        internal static void JtextPrintf(ulong r2d, ulong font, string str, int len, uint color_r, uint color_g, uint color_b, uint color_a, float fx, float fy)
+        {
+            byte* __p2 = NativeFuncs.Utf8(str);
+            try { s_JtextPrintf(r2d, font, __p2, len, color_r, color_g, color_b, color_a, fx, fy); }
+            finally { NativeFuncs.FreeUtf8(__p2); }
+        }
+
+        internal static void JtextPrintfScaled(ulong r2d, ulong font, string str, int len, uint color_r, uint color_g, uint color_b, uint color_a, float fx, float fy, float scale)
+        {
+            byte* __p2 = NativeFuncs.Utf8(str);
+            try { s_JtextPrintfScaled(r2d, font, __p2, len, color_r, color_g, color_b, color_a, fx, fy, scale); }
+            finally { NativeFuncs.FreeUtf8(__p2); }
+        }
+
+        internal static int TextGetWidth(ulong jtext_tex)
+        {
+            return s_TextGetWidth(jtext_tex);
+        }
+
+        internal static int TextGetHeight(ulong jtext_tex)
+        {
+            return s_TextGetHeight(jtext_tex);
+        }
+
+        internal static void JtextCacheClear()
+        {
+            s_JtextCacheClear();
+        }
+
+        internal static void JtextCacheSetLimit(int max_entries)
+        {
+            s_JtextCacheSetLimit(max_entries);
+        }
+
+        internal static int JtextCacheGetCount()
+        {
+            return s_JtextCacheGetCount();
+        }
+
+        internal static void JtextCacheSweep(int max_idle_frames)
+        {
+            s_JtextCacheSweep(max_idle_frames);
+        }
+
+        internal static void AnimationDestroy(ulong animation)
+        {
+            s_AnimationDestroy(animation);
+        }
+
+        internal static void AnimationReset(ulong animation)
+        {
+            s_AnimationReset(animation);
+        }
+
+        internal static void AnimationAddClip(ulong animation, string image_path, float duration, float src_rect_x, float src_rect_y, float src_rect_w, float src_rect_h)
+        {
+            byte* __p1 = NativeFuncs.Utf8(image_path);
+            try { s_AnimationAddClip(animation, __p1, duration, src_rect_x, src_rect_y, src_rect_w, src_rect_h); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static bool AnimationIsFinished(ulong animation)
+        {
+            return s_AnimationIsFinished(animation) != 0;
+        }
+
+        internal static void AnimationSetPosition(ulong animation, float x, float y)
+        {
+            s_AnimationSetPosition(animation, x, y);
+        }
+
+        internal static void AnimationSetScale(ulong animation, float x, float y)
+        {
+            s_AnimationSetScale(animation, x, y);
+        }
+
+        internal static void AnimationSetRotation(ulong animation, float rotation)
+        {
+            s_AnimationSetRotation(animation, rotation);
+        }
+
+        internal static void AnimationUpdate(ulong animation, float dt)
+        {
+            s_AnimationUpdate(animation, dt);
+        }
+
+        internal static void R3dDestroy(ulong r)
+        {
+            s_R3dDestroy(r);
+        }
+
+        internal static bool R3dBegin(ulong r)
+        {
+            return s_R3dBegin(r) != 0;
+        }
+
+        internal static void R3dEnd(ulong r)
+        {
+            s_R3dEnd(r);
+        }
+
+        internal static int R3dGetDrawCalls(ulong r)
+        {
+            return s_R3dGetDrawCalls(r);
+        }
+
+        internal static void R3dSetClearColor(ulong r, uint cr, uint cg, uint cb)
+        {
+            s_R3dSetClearColor(r, cr, cg, cb);
+        }
+
+        internal static void R3dCameraLookat(ulong r, float eye_x, float eye_y, float eye_z, float target_x, float target_y, float target_z, float up_x, float up_y, float up_z, float fovy)
+        {
+            s_R3dCameraLookat(r, eye_x, eye_y, eye_z, target_x, target_y, target_z, up_x, up_y, up_z, fovy);
+        }
+
+        internal static ulong R3dMeshCube(ulong r, float w, float h, float d)
+        {
+            return s_R3dMeshCube(r, w, h, d);
+        }
+
+        internal static ulong R3dMeshSphere(ulong r, float radius, int slices, int stacks)
+        {
+            return s_R3dMeshSphere(r, radius, slices, stacks);
+        }
+
+        internal static ulong R3dMeshPlane(ulong r, float w, float d, int segs)
+        {
+            return s_R3dMeshPlane(r, w, d, segs);
+        }
+
+        internal static ulong R3dMeshRamp(ulong r, float w, float l, float h)
+        {
+            return s_R3dMeshRamp(r, w, l, h);
+        }
+
+        internal static ulong R3dMeshQuad(ulong r)
+        {
+            return s_R3dMeshQuad(r);
+        }
+
+        internal static ulong R3dMeshCubeWire(ulong r, float w, float h, float d)
+        {
+            return s_R3dMeshCubeWire(r, w, h, d);
+        }
+
+        internal static ulong R3dMeshSphereWire(ulong r, float radius, int slices, int stacks)
+        {
+            return s_R3dMeshSphereWire(r, radius, slices, stacks);
+        }
+
+        internal static ulong R3dMeshPlaneWire(ulong r, float w, float d, int segs)
+        {
+            return s_R3dMeshPlaneWire(r, w, d, segs);
+        }
+
+        internal static ulong R3dMeshRampWire(ulong r, float w, float l, float h)
+        {
+            return s_R3dMeshRampWire(r, w, l, h);
+        }
+
+        internal static void R3dMeshDestroy(ulong r, ulong m)
+        {
+            s_R3dMeshDestroy(r, m);
+        }
+
+        internal static bool R3dFontInit(ulong r, string ttf_path, int pixel_height)
+        {
+            byte* __p1 = NativeFuncs.Utf8(ttf_path);
+            try { return s_R3dFontInit(r, __p1, pixel_height) != 0; }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void R3dFontSetColor(ulong r, uint cr, uint cg, uint cb)
+        {
+            s_R3dFontSetColor(r, cr, cg, cb);
+        }
+
+        internal static bool R3dFontDraw2d(ulong r, ulong m, string text, float pixelX, float pixelY, float fontSize, float winW, float winH)
+        {
+            byte* __p2 = NativeFuncs.Utf8(text);
+            try { return s_R3dFontDraw2d(r, m, __p2, pixelX, pixelY, fontSize, winW, winH) != 0; }
+            finally { NativeFuncs.FreeUtf8(__p2); }
+        }
+
+        internal static bool R3dFontDraw2dColor(ulong r, ulong m, string text, float pixelX, float pixelY, float fontSize, float winW, float winH, uint cr, uint cg, uint cb)
+        {
+            byte* __p2 = NativeFuncs.Utf8(text);
+            try { return s_R3dFontDraw2dColor(r, m, __p2, pixelX, pixelY, fontSize, winW, winH, cr, cg, cb) != 0; }
+            finally { NativeFuncs.FreeUtf8(__p2); }
+        }
+
+        internal static bool R3dFontDraw2dOutline(ulong r, ulong m, string text, float pixelX, float pixelY, float fontSize, float winW, float winH, uint cr, uint cg, uint cb, uint or_, uint og, uint ob, float outline)
+        {
+            byte* __p2 = NativeFuncs.Utf8(text);
+            try { return s_R3dFontDraw2dOutline(r, m, __p2, pixelX, pixelY, fontSize, winW, winH, cr, cg, cb, or_, og, ob, outline) != 0; }
+            finally { NativeFuncs.FreeUtf8(__p2); }
+        }
+
+        internal static void R3dFontCacheSetLimit(ulong r, int max_entries)
+        {
+            s_R3dFontCacheSetLimit(r, max_entries);
+        }
+
+        internal static int R3dFontCacheGetCount(ulong r)
+        {
+            return s_R3dFontCacheGetCount(r);
+        }
+
+        internal static void R3dFontCacheClear(ulong r)
+        {
+            s_R3dFontCacheClear(r);
+        }
+
+        internal static void R3dFontCacheSweep(ulong r, int max_idle_frames)
+        {
+            s_R3dFontCacheSweep(r, max_idle_frames);
+        }
+
+        internal static void R3dSetLogicalPresentation(ulong r, int w, int h)
+        {
+            s_R3dSetLogicalPresentation(r, w, h);
+        }
+
+        internal static void R3dSetLogicalPresentationMode(ulong r, int w, int h, int mode)
+        {
+            s_R3dSetLogicalPresentationMode(r, w, h, mode);
+        }
+
+        internal static void R3dButtonDraw(ulong r, ulong m, ulong btn, float winW, float winH)
+        {
+            s_R3dButtonDraw(r, m, btn, winW, winH);
+        }
+
+        internal static void R3dButtonDrawCircle(ulong r, ulong m, ulong btn, float winW, float winH)
+        {
+            s_R3dButtonDrawCircle(r, m, btn, winW, winH);
+        }
+
+        internal static bool R3dButtonIsHovered(ulong r, ulong btn, float mx, float my)
+        {
+            return s_R3dButtonIsHovered(r, btn, mx, my) != 0;
+        }
+
+        internal static bool R3dButtonIsPressed(ulong r, ulong btn, bool mouse_down, float mx, float my)
+        {
+            return s_R3dButtonIsPressed(r, btn, (byte)(mouse_down ? 1 : 0), mx, my) != 0;
+        }
+
+        internal static void R3dButtonRelease(ulong r, ulong btn, float mx, float my)
+        {
+            s_R3dButtonRelease(r, btn, mx, my);
+        }
+
+        internal static void R3dButtonDestroy(ulong btn)
+        {
+            s_R3dButtonDestroy(btn);
+        }
+
+        internal static void R3dDrawRect2d(ulong r, ulong m, float x, float y, float w, float h, uint cr, uint cg, uint cb, float winW, float winH)
+        {
+            s_R3dDrawRect2d(r, m, x, y, w, h, cr, cg, cb, winW, winH);
+        }
+
+        internal static void R3dDrawMesh2d(ulong r, ulong m, float cx, float cy, float sx, float sy, uint cr, uint cg, uint cb, float winW, float winH)
+        {
+            s_R3dDrawMesh2d(r, m, cx, cy, sx, sy, cr, cg, cb, winW, winH);
+        }
+
+        internal static void R3dLabelSetText(ulong l, string text)
+        {
+            byte* __p1 = NativeFuncs.Utf8(text);
+            try { s_R3dLabelSetText(l, __p1); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void R3dLabelDraw(ulong r, ulong m, ulong l, float winW, float winH)
+        {
+            s_R3dLabelDraw(r, m, l, winW, winH);
+        }
+
+        internal static void R3dLabelDestroy(ulong l)
+        {
+            s_R3dLabelDestroy(l);
+        }
+
+        internal static void R3dInputSetText(ulong inp, string text)
+        {
+            byte* __p1 = NativeFuncs.Utf8(text);
+            try { s_R3dInputSetText(inp, __p1); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static bool R3dInputIsHovered(ulong r, ulong inp, float mx, float my)
+        {
+            return s_R3dInputIsHovered(r, inp, mx, my) != 0;
+        }
+
+        internal static void R3dInputFocus(ulong inp)
+        {
+            s_R3dInputFocus(inp);
+        }
+
+        internal static void R3dInputDefocus(ulong inp)
+        {
+            s_R3dInputDefocus(inp);
+        }
+
+        internal static bool R3dInputIsFocused(ulong inp)
+        {
+            return s_R3dInputIsFocused(inp) != 0;
+        }
+
+        internal static void R3dInputStartTextInput(ulong r, ulong inp)
+        {
+            s_R3dInputStartTextInput(r, inp);
+        }
+
+        internal static void R3dInputStopTextInput(ulong r, ulong inp)
+        {
+            s_R3dInputStopTextInput(r, inp);
+        }
+
+        internal static void R3dInputInsert(ulong inp, string s)
+        {
+            byte* __p1 = NativeFuncs.Utf8(s);
+            try { s_R3dInputInsert(inp, __p1); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void R3dInputBackspace(ulong inp)
+        {
+            s_R3dInputBackspace(inp);
+        }
+
+        internal static void R3dInputDelete(ulong inp)
+        {
+            s_R3dInputDelete(inp);
+        }
+
+        internal static void R3dInputCursorLeft(ulong inp)
+        {
+            s_R3dInputCursorLeft(inp);
+        }
+
+        internal static void R3dInputCursorRight(ulong inp)
+        {
+            s_R3dInputCursorRight(inp);
+        }
+
+        internal static void R3dInputCursorHome(ulong inp)
+        {
+            s_R3dInputCursorHome(inp);
+        }
+
+        internal static void R3dInputCursorEnd(ulong inp)
+        {
+            s_R3dInputCursorEnd(inp);
+        }
+
+        internal static void R3dInputClick(ulong r, ulong inp, float mx, float my)
+        {
+            s_R3dInputClick(r, inp, mx, my);
+        }
+
+        internal static void R3dInputSubmit(ulong inp)
+        {
+            s_R3dInputSubmit(inp);
+        }
+
+        internal static void R3dInputDraw(ulong r, ulong m, ulong inp, float winW, float winH)
+        {
+            s_R3dInputDraw(r, m, inp, winW, winH);
+        }
+
+        internal static void R3dInputDestroy(ulong inp)
+        {
+            s_R3dInputDestroy(inp);
+        }
+
+        internal static void R3dComboboxInputDestroy(ulong ci)
+        {
+            s_R3dComboboxInputDestroy(ci);
+        }
+
+        internal static void R3dComboboxInputAddItem(ulong ci, string str)
+        {
+            byte* __p1 = NativeFuncs.Utf8(str);
+            try { s_R3dComboboxInputAddItem(ci, __p1); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void R3dComboboxInputClearItems(ulong ci)
+        {
+            s_R3dComboboxInputClearItems(ci);
+        }
+
+        internal static void R3dComboboxInputSetText(ulong ci, string str)
+        {
+            byte* __p1 = NativeFuncs.Utf8(str);
+            try { s_R3dComboboxInputSetText(ci, __p1); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static int R3dComboboxInputHitItem(ulong ci, float x, float y)
+        {
+            return s_R3dComboboxInputHitItem(ci, x, y);
+        }
+
+        internal static void R3dComboboxInputDraw(ulong r, ulong m, ulong ci, float winW, float winH)
+        {
+            s_R3dComboboxInputDraw(r, m, ci, winW, winH);
+        }
+
+        internal static void R3dComboboxInputDrawDropdown(ulong r, ulong m, ulong ci, float winW, float winH)
+        {
+            s_R3dComboboxInputDrawDropdown(r, m, ci, winW, winH);
+        }
+
+        internal static void R3dSliderDestroy(ulong s)
+        {
+            s_R3dSliderDestroy(s);
+        }
+
+        internal static void R3dSliderSetValue(ulong s, float v)
+        {
+            s_R3dSliderSetValue(s, v);
+        }
+
+        internal static float R3dSliderGetValue(ulong s)
+        {
+            return s_R3dSliderGetValue(s);
+        }
+
+        internal static void R3dSliderDraw(ulong r, ulong m, ulong s, float winW, float winH)
+        {
+            s_R3dSliderDraw(r, m, s, winW, winH);
+        }
+
+        internal static bool R3dSliderIsPressed(ulong r, ulong s, float x, float y)
+        {
+            return s_R3dSliderIsPressed(r, s, x, y) != 0;
+        }
+
+        internal static void R3dSliderSetPressed(ulong s, bool v)
+        {
+            s_R3dSliderSetPressed(s, (byte)(v ? 1 : 0));
+        }
+
+        internal static void R3dSliderDragMove(ulong r, ulong s, float x, float y)
+        {
+            s_R3dSliderDragMove(r, s, x, y);
+        }
+
+        internal static bool R3dSliderIsHovered(ulong r, ulong s, float x, float y)
+        {
+            return s_R3dSliderIsHovered(r, s, x, y) != 0;
+        }
+
+        internal static void R3dSliderSetHovered(ulong s, bool v)
+        {
+            s_R3dSliderSetHovered(s, (byte)(v ? 1 : 0));
+        }
+
+        internal static void R3dCheckboxDestroy(ulong cb)
+        {
+            s_R3dCheckboxDestroy(cb);
+        }
+
+        internal static void R3dCheckboxToggle(ulong cb)
+        {
+            s_R3dCheckboxToggle(cb);
+        }
+
+        internal static bool R3dCheckboxIsPressed(ulong r, ulong cb, float x, float y)
+        {
+            return s_R3dCheckboxIsPressed(r, cb, x, y) != 0;
+        }
+
+        internal static void R3dCheckboxSetHovered(ulong cb, bool v)
+        {
+            s_R3dCheckboxSetHovered(cb, (byte)(v ? 1 : 0));
+        }
+
+        internal static bool R3dCheckboxIsHovered(ulong r, ulong cb, float x, float y)
+        {
+            return s_R3dCheckboxIsHovered(r, cb, x, y) != 0;
+        }
+
+        internal static void R3dCheckboxSetColors(ulong cb, uint box_r, uint box_g, uint box_b, uint box_a, uint check_r, uint check_g, uint check_b, uint check_a, uint hover_r, uint hover_g, uint hover_b, uint hover_a)
+        {
+            s_R3dCheckboxSetColors(cb, box_r, box_g, box_b, box_a, check_r, check_g, check_b, check_a, hover_r, hover_g, hover_b, hover_a);
+        }
+
+        internal static void R3dCheckboxDraw(ulong r, ulong m, ulong cb, float winW, float winH)
+        {
+            s_R3dCheckboxDraw(r, m, cb, winW, winH);
+        }
+
+        internal static void R3dDrawGrid(ulong r, int slices, float spacing, float line_width)
+        {
+            s_R3dDrawGrid(r, slices, spacing, line_width);
+        }
+
+        internal static void R3dDrawMeshSolid(ulong r, ulong m, float pos_x, float pos_y, float pos_z, float scale_x, float scale_y, float scale_z, uint color_r, uint color_g, uint color_b, uint color_a)
+        {
+            s_R3dDrawMeshSolid(r, m, pos_x, pos_y, pos_z, scale_x, scale_y, scale_z, color_r, color_g, color_b, color_a);
+        }
+
+        internal static void R3dDrawWire(ulong r, ulong m, float pos_x, float pos_y, float pos_z, float scale_x, float scale_y, float scale_z, uint color_r, uint color_g, uint color_b, uint color_a)
+        {
+            s_R3dDrawWire(r, m, pos_x, pos_y, pos_z, scale_x, scale_y, scale_z, color_r, color_g, color_b, color_a);
+        }
+
+        internal static ulong R3dMeshCubeLit(ulong r, float w, float h, float d)
+        {
+            return s_R3dMeshCubeLit(r, w, h, d);
+        }
+
+        internal static ulong R3dMeshSphereLit(ulong r, float radius, int slices, int stacks)
+        {
+            return s_R3dMeshSphereLit(r, radius, slices, stacks);
+        }
+
+        internal static ulong R3dMeshPlaneLit(ulong r, float w, float d, int segs)
+        {
+            return s_R3dMeshPlaneLit(r, w, d, segs);
+        }
+
+        internal static ulong R3dMeshRampLit(ulong r, float w, float l, float h)
+        {
+            return s_R3dMeshRampLit(r, w, l, h);
+        }
+
+        internal static void JanimatorDestroy(ulong anim)
+        {
+            s_JanimatorDestroy(anim);
+        }
+
+        internal static void JanimatorSetFloat(ulong anim, string name, float v)
+        {
+            byte* __p1 = NativeFuncs.Utf8(name);
+            try { s_JanimatorSetFloat(anim, __p1, v); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void JanimatorSetInt(ulong anim, string name, int v)
+        {
+            byte* __p1 = NativeFuncs.Utf8(name);
+            try { s_JanimatorSetInt(anim, __p1, v); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void JanimatorSetBool(ulong anim, string name, bool v)
+        {
+            byte* __p1 = NativeFuncs.Utf8(name);
+            try { s_JanimatorSetBool(anim, __p1, (byte)(v ? 1 : 0)); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void JanimatorSetTrigger(ulong anim, string name)
+        {
+            byte* __p1 = NativeFuncs.Utf8(name);
+            try { s_JanimatorSetTrigger(anim, __p1); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static float JanimatorGetFloat(ulong anim, string name)
+        {
+            byte* __p1 = NativeFuncs.Utf8(name);
+            try { return s_JanimatorGetFloat(anim, __p1); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static int JanimatorGetInt(ulong anim, string name)
+        {
+            byte* __p1 = NativeFuncs.Utf8(name);
+            try { return s_JanimatorGetInt(anim, __p1); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static bool JanimatorGetBool(ulong anim, string name)
+        {
+            byte* __p1 = NativeFuncs.Utf8(name);
+            try { return s_JanimatorGetBool(anim, __p1) != 0; }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void JanimatorAddState(ulong anim, string name)
+        {
+            byte* __p1 = NativeFuncs.Utf8(name);
+            try { s_JanimatorAddState(anim, __p1); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void JanimatorSetDefaultState(ulong anim, string name)
+        {
+            byte* __p1 = NativeFuncs.Utf8(name);
+            try { s_JanimatorSetDefaultState(anim, __p1); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void JanimatorStateAddClip(ulong anim, string state_name, string image_path, float duration, float src_rect_x, float src_rect_y, float src_rect_w, float src_rect_h)
+        {
+            byte* __p1 = NativeFuncs.Utf8(state_name);
+            byte* __p2 = NativeFuncs.Utf8(image_path);
+            try { s_JanimatorStateAddClip(anim, __p1, __p2, duration, src_rect_x, src_rect_y, src_rect_w, src_rect_h); }
+            finally { NativeFuncs.FreeUtf8(__p1); NativeFuncs.FreeUtf8(__p2); }
+        }
+
+        internal static void JanimatorStateAddColor(ulong anim, string state_name, float duration, int w, int h, uint r, uint g, uint b, uint a)
+        {
+            byte* __p1 = NativeFuncs.Utf8(state_name);
+            try { s_JanimatorStateAddColor(anim, __p1, duration, w, h, r, g, b, a); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void JanimatorStateSetLoop(ulong anim, string state_name, bool loop)
+        {
+            byte* __p1 = NativeFuncs.Utf8(state_name);
+            try { s_JanimatorStateSetLoop(anim, __p1, (byte)(loop ? 1 : 0)); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void JanimatorStateSetSpeed(ulong anim, string state_name, float speed)
+        {
+            byte* __p1 = NativeFuncs.Utf8(state_name);
+            try { s_JanimatorStateSetSpeed(anim, __p1, speed); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void JanimatorStateSetBlend(ulong anim, string state_name, string param_name)
+        {
+            byte* __p1 = NativeFuncs.Utf8(state_name);
+            byte* __p2 = NativeFuncs.Utf8(param_name);
+            try { s_JanimatorStateSetBlend(anim, __p1, __p2); }
+            finally { NativeFuncs.FreeUtf8(__p1); NativeFuncs.FreeUtf8(__p2); }
+        }
+
+        internal static void JanimatorStateAddMotion(ulong anim, string state_name, string image_path, float duration, float src_rect_x, float src_rect_y, float src_rect_w, float src_rect_h, float threshold)
+        {
+            byte* __p1 = NativeFuncs.Utf8(state_name);
+            byte* __p2 = NativeFuncs.Utf8(image_path);
+            try { s_JanimatorStateAddMotion(anim, __p1, __p2, duration, src_rect_x, src_rect_y, src_rect_w, src_rect_h, threshold); }
+            finally { NativeFuncs.FreeUtf8(__p1); NativeFuncs.FreeUtf8(__p2); }
+        }
+
+        internal static int JanimatorAddTransition(ulong anim, string from, string to)
+        {
+            byte* __p1 = NativeFuncs.Utf8(from);
+            byte* __p2 = NativeFuncs.Utf8(to);
+            try { return s_JanimatorAddTransition(anim, __p1, __p2); }
+            finally { NativeFuncs.FreeUtf8(__p1); NativeFuncs.FreeUtf8(__p2); }
+        }
+
+        internal static int JanimatorAddAnyTransition(ulong anim, string to)
+        {
+            byte* __p1 = NativeFuncs.Utf8(to);
+            try { return s_JanimatorAddAnyTransition(anim, __p1); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void JanimatorTransitionAddCond(ulong anim, int trans_idx, string param_name, int mode, float threshold)
+        {
+            byte* __p2 = NativeFuncs.Utf8(param_name);
+            try { s_JanimatorTransitionAddCond(anim, trans_idx, __p2, mode, threshold); }
+            finally { NativeFuncs.FreeUtf8(__p2); }
+        }
+
+        internal static void JanimatorTransitionSetExitTime(ulong anim, int trans_idx, float seconds)
+        {
+            s_JanimatorTransitionSetExitTime(anim, trans_idx, seconds);
+        }
+
+        internal static void JanimatorUpdate(ulong anim, float dt)
+        {
+            s_JanimatorUpdate(anim, dt);
+        }
+
+        internal static void JanimatorDraw(ulong anim, float x, float y)
+        {
+            s_JanimatorDraw(anim, x, y);
+        }
+
+        internal static void JanimatorSetFlipH(ulong anim, bool flip)
+        {
+            s_JanimatorSetFlipH(anim, (byte)(flip ? 1 : 0));
+        }
+
+        internal static void LabelDestroy(ulong label)
+        {
+            s_LabelDestroy(label);
+        }
+
+        internal static void LabelDraw(ulong label)
+        {
+            s_LabelDraw(label);
+        }
+
+        internal static void ButtonDestroy(ulong btn)
+        {
+            s_ButtonDestroy(btn);
+        }
+
+        internal static void ButtonSetPosition(ulong btn, float x, float y)
+        {
+            s_ButtonSetPosition(btn, x, y);
+        }
+
+        internal static void ButtonSetSize(ulong btn, float width, float height)
+        {
+            s_ButtonSetSize(btn, width, height);
+        }
+
+        internal static void ButtonSetNormalColor(ulong btn, uint color_r, uint color_g, uint color_b, uint color_a)
+        {
+            s_ButtonSetNormalColor(btn, color_r, color_g, color_b, color_a);
+        }
+
+        internal static void ButtonSetHoverColor(ulong btn, uint color_r, uint color_g, uint color_b, uint color_a)
+        {
+            s_ButtonSetHoverColor(btn, color_r, color_g, color_b, color_a);
+        }
+
+        internal static void ButtonSetPressedColor(ulong btn, uint color_r, uint color_g, uint color_b, uint color_a)
+        {
+            s_ButtonSetPressedColor(btn, color_r, color_g, color_b, color_a);
+        }
+
+        internal static void ButtonSetImage(ulong btn, ulong image)
+        {
+            s_ButtonSetImage(btn, image);
+        }
+
+        internal static void ButtonSetPressedImage(ulong btn, ulong image)
+        {
+            s_ButtonSetPressedImage(btn, image);
+        }
+
+        internal static void ButtonSetTextx(ulong btn, ulong fontinfo, string str, int len, uint color_r, uint color_g, uint color_b, uint color_a)
+        {
+            byte* __p2 = NativeFuncs.Utf8(str);
+            try { s_ButtonSetTextx(btn, fontinfo, __p2, len, color_r, color_g, color_b, color_a); }
+            finally { NativeFuncs.FreeUtf8(__p2); }
+        }
+
+        internal static bool ButtonIsHovered(ulong btn, float x, float y)
+        {
+            return s_ButtonIsHovered(btn, x, y) != 0;
+        }
+
+        internal static bool ButtonIsPressed(ulong btn, float x, float y)
+        {
+            return s_ButtonIsPressed(btn, x, y) != 0;
+        }
+
+        internal static void ButtonSetHovered(ulong btn, bool v)
+        {
+            s_ButtonSetHovered(btn, (byte)(v ? 1 : 0));
+        }
+
+        internal static void ButtonSetPressed(ulong btn, bool v)
+        {
+            s_ButtonSetPressed(btn, (byte)(v ? 1 : 0));
+        }
+
+        internal static bool ButtonGetPressed(ulong btn)
+        {
+            return s_ButtonGetPressed(btn) != 0;
+        }
+
+        internal static void ButtonSetTextOffset(ulong btn, float x, float y)
+        {
+            s_ButtonSetTextOffset(btn, x, y);
+        }
+
+        internal static void ButtonDraw(ulong btn)
+        {
+            s_ButtonDraw(btn);
+        }
+
+        internal static void ScrollviewDestroy(ulong v)
+        {
+            s_ScrollviewDestroy(v);
+        }
+
+        internal static void ScrollviewSetViewPx(ulong v, float x, float y, float w, float h)
+        {
+            s_ScrollviewSetViewPx(v, x, y, w, h);
+        }
+
+        internal static void ScrollviewSetContent(ulong v, float content_w, float content_h)
+        {
+            s_ScrollviewSetContent(v, content_w, content_h);
+        }
+
+        internal static void ScrollviewSetOffset(ulong v, float ox, float oy)
+        {
+            s_ScrollviewSetOffset(v, ox, oy);
+        }
+
+        internal static void ScrollviewClamp(ulong v)
+        {
+            s_ScrollviewClamp(v);
+        }
+
+        internal static float ScrollviewGetOffsetX(ulong v)
+        {
+            return s_ScrollviewGetOffsetX(v);
+        }
+
+        internal static float ScrollviewGetOffsetY(ulong v)
+        {
+            return s_ScrollviewGetOffsetY(v);
+        }
+
+        internal static void ScrollviewSetShowBar(ulong v, bool show)
+        {
+            s_ScrollviewSetShowBar(v, (byte)(show ? 1 : 0));
+        }
+
+        internal static bool ScrollviewDragging(ulong v)
+        {
+            return s_ScrollviewDragging(v) != 0;
+        }
+
+        internal static bool ScrollviewHit(ulong v, float win_x, float win_y)
+        {
+            return s_ScrollviewHit(v, win_x, win_y) != 0;
+        }
+
+        internal static void ScrollviewBegin(ulong v)
+        {
+            s_ScrollviewBegin(v);
+        }
+
+        internal static void ScrollviewEnd(ulong v)
+        {
+            s_ScrollviewEnd(v);
+        }
+
+        internal static void ComboboxDestroy(ulong combobox)
+        {
+            s_ComboboxDestroy(combobox);
+        }
+
+        internal static void ComboboxAddItem(ulong combobox, ulong font, string str, int len, uint color_r, uint color_g, uint color_b, uint color_a)
+        {
+            byte* __p2 = NativeFuncs.Utf8(str);
+            try { s_ComboboxAddItem(combobox, font, __p2, len, color_r, color_g, color_b, color_a); }
+            finally { NativeFuncs.FreeUtf8(__p2); }
+        }
+
+        internal static bool ComboboxIsPressed(ulong combobox, float x, float y)
+        {
+            return s_ComboboxIsPressed(combobox, x, y) != 0;
+        }
+
+        internal static bool ComboboxIsOpen(ulong combobox)
+        {
+            return s_ComboboxIsOpen(combobox) != 0;
+        }
+
+        internal static void ComboboxSetOpen(ulong combobox, bool v)
+        {
+            s_ComboboxSetOpen(combobox, (byte)(v ? 1 : 0));
+        }
+
+        internal static int ComboboxHitItem(ulong combobox, float x, float y)
+        {
+            return s_ComboboxHitItem(combobox, x, y);
+        }
+
+        internal static void ComboboxSetSelected(ulong combobox, int index)
+        {
+            s_ComboboxSetSelected(combobox, index);
+        }
+
+        internal static int ComboboxGetSelected(ulong combobox)
+        {
+            return s_ComboboxGetSelected(combobox);
+        }
+
+        internal static void ComboboxDraw(ulong combobox)
+        {
+            s_ComboboxDraw(combobox);
+        }
+
+        internal static void ComboboxInputDestroy(ulong ci)
+        {
+            s_ComboboxInputDestroy(ci);
+        }
+
+        internal static void ComboboxInputAddItem(ulong ci, string str, int len)
+        {
+            byte* __p1 = NativeFuncs.Utf8(str);
+            try { s_ComboboxInputAddItem(ci, __p1, len); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void ComboboxInputClearItems(ulong ci)
+        {
+            s_ComboboxInputClearItems(ci);
+        }
+
+        internal static void ComboboxInputSetText(ulong ci, string str)
+        {
+            byte* __p1 = NativeFuncs.Utf8(str);
+            try { s_ComboboxInputSetText(ci, __p1); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void ComboboxInputDraw(ulong ci)
+        {
+            s_ComboboxInputDraw(ci);
+        }
+
+        internal static void ComboboxInputDrawDropdown(ulong ci)
+        {
+            s_ComboboxInputDrawDropdown(ci);
+        }
+
+        internal static bool ComboboxInputIsOpen(ulong ci)
+        {
+            return s_ComboboxInputIsOpen(ci) != 0;
+        }
+
+        internal static void ComboboxInputSetPopupNode(ulong ci, ulong node)
+        {
+            s_ComboboxInputSetPopupNode(ci, node);
+        }
+
+        internal static int ComboboxInputHitItem(ulong ci, float x, float y)
+        {
+            return s_ComboboxInputHitItem(ci, x, y);
+        }
+
+        internal static void ComboboxInputSetOpen(ulong ci, bool v)
+        {
+            s_ComboboxInputSetOpen(ci, (byte)(v ? 1 : 0));
+        }
+
+        internal static void DatagridSetheaders(ulong grid, string headers)
+        {
+            byte* __p1 = NativeFuncs.Utf8(headers);
+            try { s_DatagridSetheaders(grid, __p1); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void DatagridSetheader(ulong grid, int index, string header)
+        {
+            byte* __p2 = NativeFuncs.Utf8(header);
+            try { s_DatagridSetheader(grid, index, __p2); }
+            finally { NativeFuncs.FreeUtf8(__p2); }
+        }
+
+        internal static void DatagridSetcell(ulong grid, int row_index, int col_index, string data)
+        {
+            byte* __p3 = NativeFuncs.Utf8(data);
+            try { s_DatagridSetcell(grid, row_index, col_index, __p3); }
+            finally { NativeFuncs.FreeUtf8(__p3); }
+        }
+
+        internal static void DatagridDestroy(ulong grid)
+        {
+            s_DatagridDestroy(grid);
+        }
+
+        internal static void DatagridDraw(ulong grid, ulong r2d)
+        {
+            s_DatagridDraw(grid, r2d);
+        }
+
+        internal static int DatagridHitRow(ulong grid, float x, float y)
+        {
+            return s_DatagridHitRow(grid, x, y);
+        }
+
+        internal static void DatagridScroll(ulong grid, int lines)
+        {
+            s_DatagridScroll(grid, lines);
+        }
+
+        internal static void DatagridSetSelectedRow(ulong grid, int row)
+        {
+            s_DatagridSetSelectedRow(grid, row);
+        }
+
+        internal static void RadioDestroy(ulong radio)
+        {
+            s_RadioDestroy(radio);
+        }
+
+        internal static bool RadioIsPressed(ulong radio, float x, float y)
+        {
+            return s_RadioIsPressed(radio, x, y) != 0;
+        }
+
+        internal static void RadioSetHovered(ulong radio, bool v)
+        {
+            s_RadioSetHovered(radio, (byte)(v ? 1 : 0));
+        }
+
+        internal static void CheckboxDestroy(ulong checkbox)
+        {
+            s_CheckboxDestroy(checkbox);
+        }
+
+        internal static void CheckboxSetColors(ulong checkbox, uint box_r, uint box_g, uint box_b, uint box_a, uint check_r, uint check_g, uint check_b, uint check_a, uint hover_r, uint hover_g, uint hover_b, uint hover_a)
+        {
+            s_CheckboxSetColors(checkbox, box_r, box_g, box_b, box_a, check_r, check_g, check_b, check_a, hover_r, hover_g, hover_b, hover_a);
+        }
+
+        internal static void CheckboxSetR2d(ulong checkbox, ulong r2d)
+        {
+            s_CheckboxSetR2d(checkbox, r2d);
+        }
+
+        internal static void CheckboxSetPosition(ulong checkbox, int x, int y)
+        {
+            s_CheckboxSetPosition(checkbox, x, y);
+        }
+
+        internal static void CheckboxSetTextColor(ulong checkbox, uint color_r, uint color_g, uint color_b, uint color_a)
+        {
+            s_CheckboxSetTextColor(checkbox, color_r, color_g, color_b, color_a);
+        }
+
+        internal static void CheckboxToggle(ulong checkbox)
+        {
+            s_CheckboxToggle(checkbox);
+        }
+
+        internal static bool CheckboxIsPressed(ulong cb, float x, float y)
+        {
+            return s_CheckboxIsPressed(cb, x, y) != 0;
+        }
+
+        internal static void CheckboxSetHovered(ulong cb, bool v)
+        {
+            s_CheckboxSetHovered(cb, (byte)(v ? 1 : 0));
+        }
+
+        internal static void JoystickDestroy(ulong joystick)
+        {
+            s_JoystickDestroy(joystick);
+        }
+
+        internal static void JoystickSetTextures(ulong joystick, string base_path, string thumb_path)
+        {
+            byte* __p1 = NativeFuncs.Utf8(base_path);
+            byte* __p2 = NativeFuncs.Utf8(thumb_path);
+            try { s_JoystickSetTextures(joystick, __p1, __p2); }
+            finally { NativeFuncs.FreeUtf8(__p1); NativeFuncs.FreeUtf8(__p2); }
+        }
+
+        internal static void JoystickSetVector(ulong joystick, float dx, float dy)
+        {
+            s_JoystickSetVector(joystick, dx, dy);
+        }
+
+        internal static void JoystickDraw(ulong joystick)
+        {
+            s_JoystickDraw(joystick);
+        }
+
+        internal static void JoystickReset(ulong joystick)
+        {
+            s_JoystickReset(joystick);
+        }
+
+        internal static void JoystickSetPosition(ulong joystick, float x, float y)
+        {
+            s_JoystickSetPosition(joystick, x, y);
+        }
+
+        internal static void JoystickSetRadius(ulong joystick, float radius)
+        {
+            s_JoystickSetRadius(joystick, radius);
+        }
+
+        internal static bool JoystickIsDragging(ulong joystick)
+        {
+            return s_JoystickIsDragging(joystick) != 0;
+        }
+
+        internal static void JoystickTouchDown(ulong joystick, float x, float y)
+        {
+            s_JoystickTouchDown(joystick, x, y);
+        }
+
+        internal static void JoystickTouchMove(ulong joystick, float x, float y)
+        {
+            s_JoystickTouchMove(joystick, x, y);
+        }
+
+        internal static void JoystickTouchUp(ulong joystick)
+        {
+            s_JoystickTouchUp(joystick);
+        }
+
+        internal static float JoystickGetMagnitude(ulong joystick)
+        {
+            return s_JoystickGetMagnitude(joystick);
+        }
+
+        internal static void InputboxDestroy(ulong ti)
+        {
+            s_InputboxDestroy(ti);
+        }
+
+        internal static void InputboxSetText(ulong ti, string text)
+        {
+            byte* __p1 = NativeFuncs.Utf8(text);
+            try { s_InputboxSetText(ti, __p1); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void InputboxDraw(ulong ti)
+        {
+            s_InputboxDraw(ti);
+        }
+
+        internal static bool InputboxIsPressed(ulong ti, float x, float y)
+        {
+            return s_InputboxIsPressed(ti, x, y) != 0;
+        }
+
+        internal static bool InputboxIsHovered(ulong ti, float x, float y)
+        {
+            return s_InputboxIsHovered(ti, x, y) != 0;
+        }
+
+        internal static void InputboxFocus(ulong ti)
+        {
+            s_InputboxFocus(ti);
+        }
+
+        internal static void InputboxDefocus(ulong ti)
+        {
+            s_InputboxDefocus(ti);
+        }
+
+        internal static void InputboxBlur(ulong ti)
+        {
+            s_InputboxBlur(ti);
+        }
+
+        internal static void InputboxInsert(ulong ti, string s, int len)
+        {
+            byte* __p1 = NativeFuncs.Utf8(s);
+            try { s_InputboxInsert(ti, __p1, len); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void InputboxBackspace(ulong ti)
+        {
+            s_InputboxBackspace(ti);
+        }
+
+        internal static void InputboxDelete(ulong ti)
+        {
+            s_InputboxDelete(ti);
+        }
+
+        internal static void InputboxCursorLeft(ulong ti)
+        {
+            s_InputboxCursorLeft(ti);
+        }
+
+        internal static void InputboxCursorRight(ulong ti)
+        {
+            s_InputboxCursorRight(ti);
+        }
+
+        internal static void InputboxCursorHome(ulong ti)
+        {
+            s_InputboxCursorHome(ti);
+        }
+
+        internal static void InputboxCursorEnd(ulong ti)
+        {
+            s_InputboxCursorEnd(ti);
+        }
+
+        internal static void InputboxSelectLeft(ulong ti)
+        {
+            s_InputboxSelectLeft(ti);
+        }
+
+        internal static void InputboxSelectRight(ulong ti)
+        {
+            s_InputboxSelectRight(ti);
+        }
+
+        internal static void InputboxSelectHome(ulong ti)
+        {
+            s_InputboxSelectHome(ti);
+        }
+
+        internal static void InputboxSelectEnd(ulong ti)
+        {
+            s_InputboxSelectEnd(ti);
+        }
+
+        internal static void InputboxSelectAll(ulong ti)
+        {
+            s_InputboxSelectAll(ti);
+        }
+
+        internal static void InputboxPaste(ulong ti)
+        {
+            s_InputboxPaste(ti);
+        }
+
+        internal static void InputboxCopy(ulong ti)
+        {
+            s_InputboxCopy(ti);
+        }
+
+        internal static void InputboxCut(ulong ti)
+        {
+            s_InputboxCut(ti);
+        }
+
+        internal static bool InputboxIsFocused(ulong ti)
+        {
+            return s_InputboxIsFocused(ti) != 0;
+        }
+
+        internal static void SliderDestroy(ulong s)
+        {
+            s_SliderDestroy(s);
+        }
+
+        internal static void SliderSetValue(ulong s, float v)
+        {
+            s_SliderSetValue(s, v);
+        }
+
+        internal static float SliderGetValue(ulong s)
+        {
+            return s_SliderGetValue(s);
+        }
+
+        internal static void SliderSetRect(ulong s, float x, float y, float w, float h)
+        {
+            s_SliderSetRect(s, x, y, w, h);
+        }
+
+        internal static void SliderSetRange(ulong s, float min, float max)
+        {
+            s_SliderSetRange(s, min, max);
+        }
+
+        internal static void SliderDraw(ulong s)
+        {
+            s_SliderDraw(s);
+        }
+
+        internal static bool SliderIsPressed(ulong s, float x, float y)
+        {
+            return s_SliderIsPressed(s, x, y) != 0;
+        }
+
+        internal static void SliderSetPressed(ulong s, bool v)
+        {
+            s_SliderSetPressed(s, (byte)(v ? 1 : 0));
+        }
+
+        internal static void SliderDragMove(ulong s, float x, float y)
+        {
+            s_SliderDragMove(s, x, y);
+        }
+
+        internal static bool SliderIsHovered(ulong s, float x, float y)
+        {
+            return s_SliderIsHovered(s, x, y) != 0;
+        }
+
+        internal static void SliderSetHovered(ulong s, bool v)
+        {
+            s_SliderSetHovered(s, (byte)(v ? 1 : 0));
+        }
+
+        internal static void PopupDestroy(ulong p)
+        {
+            s_PopupDestroy(p);
+        }
+
+        internal static void PopupSetTitle(ulong p, string text, int len)
+        {
+            byte* __p1 = NativeFuncs.Utf8(text);
+            try { s_PopupSetTitle(p, __p1, len); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void PopupSetContent(ulong p, string text, int len)
+        {
+            byte* __p1 = NativeFuncs.Utf8(text);
+            try { s_PopupSetContent(p, __p1, len); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void PopupSetPosition(ulong p, float x, float y)
+        {
+            s_PopupSetPosition(p, x, y);
+        }
+
+        internal static void PopupSetVisible(ulong p, bool v)
+        {
+            s_PopupSetVisible(p, (byte)(v ? 1 : 0));
+        }
+
+        internal static void PopupSetCloseable(ulong p, bool v)
+        {
+            s_PopupSetCloseable(p, (byte)(v ? 1 : 0));
+        }
+
+        internal static void PopupDraw(ulong p, ulong title_font, ulong content_font)
+        {
+            s_PopupDraw(p, title_font, content_font);
+        }
+
+        internal static bool PopupIsCloseClicked(ulong p, float mx, float my)
+        {
+            return s_PopupIsCloseClicked(p, mx, my) != 0;
+        }
+
+        internal static bool PopupIsTitleClicked(ulong p, float mx, float my)
+        {
+            return s_PopupIsTitleClicked(p, mx, my) != 0;
+        }
+
+        internal static void PopupDragMove(ulong p, float mx, float my)
+        {
+            s_PopupDragMove(p, mx, my);
+        }
+
+        internal static bool PopupIsInside(ulong p, float mx, float my)
+        {
+            return s_PopupIsInside(p, mx, my) != 0;
+        }
+
+        internal static void TooltipDestroy(ulong t)
+        {
+            s_TooltipDestroy(t);
+        }
+
+        internal static void TooltipSetText(ulong t, string text, int len)
+        {
+            byte* __p1 = NativeFuncs.Utf8(text);
+            try { s_TooltipSetText(t, __p1, len); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void TooltipSetPosition(ulong t, float x, float y)
+        {
+            s_TooltipSetPosition(t, x, y);
+        }
+
+        internal static void TooltipSetVisible(ulong t, bool v)
+        {
+            s_TooltipSetVisible(t, (byte)(v ? 1 : 0));
+        }
+
+        internal static void TooltipDraw(ulong t, ulong font)
+        {
+            s_TooltipDraw(t, font);
+        }
+
+        internal static void JuiCtxDestroy(ulong ctx)
+        {
+            s_JuiCtxDestroy(ctx);
+        }
+
+        internal static void JuiBegin(ulong ctx)
+        {
+            s_JuiBegin(ctx);
+        }
+
+        internal static void JuiEnd(ulong ctx)
+        {
+            s_JuiEnd(ctx);
+        }
+
+        internal static void JuiInputMotion(ulong ctx, float win_x, float win_y)
+        {
+            s_JuiInputMotion(ctx, win_x, win_y);
+        }
+
+        internal static void JuiInputDown(ulong ctx, int button)
+        {
+            s_JuiInputDown(ctx, button);
+        }
+
+        internal static void JuiInputUp(ulong ctx, int button)
+        {
+            s_JuiInputUp(ctx, button);
+        }
+
+        internal static void JuiInputWheel(ulong ctx, float dy)
+        {
+            s_JuiInputWheel(ctx, dy);
+        }
+
+        internal static void JuiInputKey(ulong ctx, bool shift, bool ctrl)
+        {
+            s_JuiInputKey(ctx, (byte)(shift ? 1 : 0), (byte)(ctrl ? 1 : 0));
+        }
+
+        internal static bool JuiIsDown(ulong ctx)
+        {
+            return s_JuiIsDown(ctx) != 0;
+        }
+
+        internal static bool JuiIsPressed(ulong ctx)
+        {
+            return s_JuiIsPressed(ctx) != 0;
+        }
+
+        internal static bool JuiIsReleased(ulong ctx)
+        {
+            return s_JuiIsReleased(ctx) != 0;
+        }
+
+        internal static float JuiTakeWheel(ulong ctx)
+        {
+            return s_JuiTakeWheel(ctx);
+        }
+
+        internal static bool JuiIsShift(ulong ctx)
+        {
+            return s_JuiIsShift(ctx) != 0;
+        }
+
+        internal static bool JuiIsCtrl(ulong ctx)
+        {
+            return s_JuiIsCtrl(ctx) != 0;
+        }
+
+        internal static void JuiPushClip(ulong ctx, float rect_x, float rect_y, float rect_w, float rect_h)
+        {
+            s_JuiPushClip(ctx, rect_x, rect_y, rect_w, rect_h);
+        }
+
+        internal static void JuiPopClip(ulong ctx)
+        {
+            s_JuiPopClip(ctx);
+        }
+
+        internal static void JuiResetClip(ulong ctx)
+        {
+            s_JuiResetClip(ctx);
+        }
+
+        internal static bool JuiHit(ulong ctx, float rect_x, float rect_y, float rect_w, float rect_h)
+        {
+            return s_JuiHit(ctx, rect_x, rect_y, rect_w, rect_h) != 0;
+        }
+
+        internal static void JuiFillRect(ulong ctx, float r_x, float r_y, float r_w, float r_h, uint c_r, uint c_g, uint c_b, uint c_a)
+        {
+            s_JuiFillRect(ctx, r_x, r_y, r_w, r_h, c_r, c_g, c_b, c_a);
+        }
+
+        internal static void JuiStrokeRect(ulong ctx, float r_x, float r_y, float r_w, float r_h, uint c_r, uint c_g, uint c_b, uint c_a)
+        {
+            s_JuiStrokeRect(ctx, r_x, r_y, r_w, r_h, c_r, c_g, c_b, c_a);
+        }
+
+        internal static void JuiLine(ulong ctx, float x1, float y1, float x2, float y2, uint c_r, uint c_g, uint c_b, uint c_a)
+        {
+            s_JuiLine(ctx, x1, y1, x2, y2, c_r, c_g, c_b, c_a);
+        }
+
+        internal static int JuiText(ulong ctx, float x, float y, string s, uint c_r, uint c_g, uint c_b, uint c_a)
+        {
+            byte* __p3 = NativeFuncs.Utf8(s);
+            try { return s_JuiText(ctx, x, y, __p3, c_r, c_g, c_b, c_a); }
+            finally { NativeFuncs.FreeUtf8(__p3); }
+        }
+
+        internal static int JuiTextCentered(ulong ctx, float r_x, float r_y, float r_w, float r_h, string s, uint c_r, uint c_g, uint c_b, uint c_a)
+        {
+            byte* __p5 = NativeFuncs.Utf8(s);
+            try { return s_JuiTextCentered(ctx, r_x, r_y, r_w, r_h, __p5, c_r, c_g, c_b, c_a); }
+            finally { NativeFuncs.FreeUtf8(__p5); }
+        }
+
+        internal static void JuiPanelBegin(ulong ctx, float r_x, float r_y, float r_w, float r_h, string title)
+        {
+            byte* __p5 = NativeFuncs.Utf8(title);
+            try { s_JuiPanelBegin(ctx, r_x, r_y, r_w, r_h, __p5); }
+            finally { NativeFuncs.FreeUtf8(__p5); }
+        }
+
+        internal static void JuiPanelEnd(ulong ctx)
+        {
+            s_JuiPanelEnd(ctx);
+        }
+
+        internal static void JuiPanelFrame(ulong ctx, float r_x, float r_y, float r_w, float r_h)
+        {
+            s_JuiPanelFrame(ctx, r_x, r_y, r_w, r_h);
+        }
+
+        internal static float JuiScrollBegin(ulong ctx, int id, float view_x, float view_y, float view_w, float view_h, float content_h)
+        {
+            return s_JuiScrollBegin(ctx, id, view_x, view_y, view_w, view_h, content_h);
+        }
+
+        internal static void JuiScrollEnd(ulong ctx)
+        {
+            s_JuiScrollEnd(ctx);
+        }
+
+        internal static void JuiScrollbar(ulong ctx, float view_x, float view_y, float view_w, float view_h, float content_h, float off)
+        {
+            s_JuiScrollbar(ctx, view_x, view_y, view_w, view_h, content_h, off);
+        }
+
+        internal static void JuiScrollSetOffset(ulong ctx, int id, float off, float content_h, float view_h)
+        {
+            s_JuiScrollSetOffset(ctx, id, off, content_h, view_h);
+        }
+
+        internal static bool JuiButton(ulong ctx, int id, float r_x, float r_y, float r_w, float r_h, string text)
+        {
+            byte* __p6 = NativeFuncs.Utf8(text);
+            try { return s_JuiButton(ctx, id, r_x, r_y, r_w, r_h, __p6) != 0; }
+            finally { NativeFuncs.FreeUtf8(__p6); }
+        }
+
+        internal static void JtilemapDestroy(ulong tm)
+        {
+            s_JtilemapDestroy(tm);
+        }
+
+        internal static int JtilemapGetWidth(ulong tm)
+        {
+            return s_JtilemapGetWidth(tm);
+        }
+
+        internal static int JtilemapGetHeight(ulong tm)
+        {
+            return s_JtilemapGetHeight(tm);
+        }
+
+        internal static int JtilemapGetTilewidth(ulong tm)
+        {
+            return s_JtilemapGetTilewidth(tm);
+        }
+
+        internal static int JtilemapGetTileheight(ulong tm)
+        {
+            return s_JtilemapGetTileheight(tm);
+        }
+
+        internal static int JtilemapGetAnimTileid(ulong tm, int gid, uint time_ms)
+        {
+            return s_JtilemapGetAnimTileid(tm, gid, time_ms);
+        }
+
+        internal static ulong JtilemapFindTileLayer(ulong tm, string name)
+        {
+            byte* __p1 = NativeFuncs.Utf8(name);
+            try { return s_JtilemapFindTileLayer(tm, __p1); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static ulong JtilemapFindObjectLayer(ulong tm, string name)
+        {
+            byte* __p1 = NativeFuncs.Utf8(name);
+            try { return s_JtilemapFindObjectLayer(tm, __p1); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static int JtilemapGetTile(ulong layer, int tx, int ty)
+        {
+            return s_JtilemapGetTile(layer, tx, ty);
+        }
+
+        internal static void JtilemapRenderAll(ulong r, ulong tm, float camera_x, float camera_y, uint time_ms)
+        {
+            s_JtilemapRenderAll(r, tm, camera_x, camera_y, time_ms);
+        }
+
+        internal static void JtilemapRenderTiles(ulong r, ulong tm, float camera_x, float camera_y, uint time_ms)
+        {
+            s_JtilemapRenderTiles(r, tm, camera_x, camera_y, time_ms);
+        }
+
+        internal static void JtilemapRenderSetTilePx(ulong r, float px)
+        {
+            s_JtilemapRenderSetTilePx(r, px);
+        }
+
+        internal static bool JtilemapRenderLayer(ulong r, ulong tm, string layer_name, float camera_x, float camera_y, uint time_ms)
+        {
+            byte* __p2 = NativeFuncs.Utf8(layer_name);
+            try { return s_JtilemapRenderLayer(r, tm, __p2, camera_x, camera_y, time_ms) != 0; }
+            finally { NativeFuncs.FreeUtf8(__p2); }
+        }
+
+        internal static void JtilemapRenderDestroy(ulong r)
+        {
+            s_JtilemapRenderDestroy(r);
+        }
+
+        internal static int KcpserverDestroy(ulong ks)
+        {
+            return s_KcpserverDestroy(ks);
+        }
+
+        internal static void KcpserverSend(ulong ks, int conv, string data, int len)
+        {
+            byte* __p2 = NativeFuncs.Utf8(data);
+            try { s_KcpserverSend(ks, conv, __p2, len); }
+            finally { NativeFuncs.FreeUtf8(__p2); }
+        }
+
+        internal static void KcpserverBroadcast(ulong ks, string data, int len)
+        {
+            byte* __p1 = NativeFuncs.Utf8(data);
+            try { s_KcpserverBroadcast(ks, __p1, len); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void KcpserverOffline(ulong ks, int conv)
+        {
+            s_KcpserverOffline(ks, conv);
+        }
+
+        internal static void KcpserverUpdate(ulong ks)
+        {
+            s_KcpserverUpdate(ks);
+        }
+
+        internal static int KcpserverConnectionCount(ulong ks)
+        {
+            return s_KcpserverConnectionCount(ks);
+        }
+
+        internal static bool KcpserverPollMessage(ulong ks, ulong msg)
+        {
+            return s_KcpserverPollMessage(ks, msg) != 0;
+        }
+
+        internal static void KcpclientDestroy(ulong kc)
+        {
+            s_KcpclientDestroy(kc);
+        }
+
+        internal static int KcpclientSend(ulong kc, string data, int len)
+        {
+            byte* __p1 = NativeFuncs.Utf8(data);
+            try { return s_KcpclientSend(kc, __p1, len); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void KcpclientUpdate(ulong kc)
+        {
+            s_KcpclientUpdate(kc);
+        }
+
+        internal static bool KcpclientPollMessage(ulong kc, ulong msg)
+        {
+            return s_KcpclientPollMessage(kc, msg) != 0;
+        }
+
+        internal static int TcpserverDestroy(ulong tcpserver)
+        {
+            return s_TcpserverDestroy(tcpserver);
+        }
+
+        internal static void TcpserverSend(ulong tcpserver, int conv, string data, int len)
+        {
+            byte* __p2 = NativeFuncs.Utf8(data);
+            try { s_TcpserverSend(tcpserver, conv, __p2, len); }
+            finally { NativeFuncs.FreeUtf8(__p2); }
+        }
+
+        internal static void TcpserverBroadcast(ulong tcpserver, string data, int len)
+        {
+            byte* __p1 = NativeFuncs.Utf8(data);
+            try { s_TcpserverBroadcast(tcpserver, __p1, len); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void TcpserverOffline(ulong tcpserver, int conv)
+        {
+            s_TcpserverOffline(tcpserver, conv);
+        }
+
+        internal static void TcpserverUpdate(ulong tcpserver)
+        {
+            s_TcpserverUpdate(tcpserver);
+        }
+
+        internal static int TcpserverConnectionCount(ulong tcpserver)
+        {
+            return s_TcpserverConnectionCount(tcpserver);
+        }
+
+        internal static bool TcpserverPollMessage(ulong tcpserver, ulong msg)
+        {
+            return s_TcpserverPollMessage(tcpserver, msg) != 0;
+        }
+
+        internal static void TcpclientDestroy(ulong tcpclient)
+        {
+            s_TcpclientDestroy(tcpclient);
+        }
+
+        internal static int TcpclientSend(ulong tcpclient, string data, int len)
+        {
+            byte* __p1 = NativeFuncs.Utf8(data);
+            try { return s_TcpclientSend(tcpclient, __p1, len); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void TcpclientUpdate(ulong tcpclient)
+        {
+            s_TcpclientUpdate(tcpclient);
+        }
+
+        internal static bool TcpclientPollMessage(ulong tcpclient, ulong msg)
+        {
+            return s_TcpclientPollMessage(tcpclient, msg) != 0;
+        }
+
+        internal static int WsnetserverDestroy(ulong ws)
+        {
+            return s_WsnetserverDestroy(ws);
+        }
+
+        internal static void WsnetserverSend(ulong ws, int conv, string data, int len)
+        {
+            byte* __p2 = NativeFuncs.Utf8(data);
+            try { s_WsnetserverSend(ws, conv, __p2, len); }
+            finally { NativeFuncs.FreeUtf8(__p2); }
+        }
+
+        internal static void WsnetserverBroadcast(ulong ws, string data, int len)
+        {
+            byte* __p1 = NativeFuncs.Utf8(data);
+            try { s_WsnetserverBroadcast(ws, __p1, len); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void WsnetserverOffline(ulong ws, int conv)
+        {
+            s_WsnetserverOffline(ws, conv);
+        }
+
+        internal static void WsnetserverUpdate(ulong ws)
+        {
+            s_WsnetserverUpdate(ws);
+        }
+
+        internal static int WsnetserverConnectionCount(ulong ws)
+        {
+            return s_WsnetserverConnectionCount(ws);
+        }
+
+        internal static bool WsnetserverPollMessage(ulong ws, ulong msg)
+        {
+            return s_WsnetserverPollMessage(ws, msg) != 0;
+        }
+
+        internal static void WsnetclientDestroy(ulong wc)
+        {
+            s_WsnetclientDestroy(wc);
+        }
+
+        internal static int WsnetclientSend(ulong wc, string data, int len)
+        {
+            byte* __p1 = NativeFuncs.Utf8(data);
+            try { return s_WsnetclientSend(wc, __p1, len); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void WsnetclientUpdate(ulong wc)
+        {
+            s_WsnetclientUpdate(wc);
+        }
+
+        internal static bool WsnetclientPollMessage(ulong wc, ulong msg)
+        {
+            return s_WsnetclientPollMessage(wc, msg) != 0;
+        }
+
+        internal static void NetclientDestroy(ulong nc)
+        {
+            s_NetclientDestroy(nc);
+        }
+
+        internal static int NetclientSend(ulong nc, string data, int len)
+        {
+            byte* __p1 = NativeFuncs.Utf8(data);
+            try { return s_NetclientSend(nc, __p1, len); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void NetclientUpdate(ulong nc)
+        {
+            s_NetclientUpdate(nc);
+        }
+
+        internal static bool NetclientPollMessage(ulong nc, ulong msg)
+        {
+            return s_NetclientPollMessage(nc, msg) != 0;
+        }
+
+        internal static void NetserverDestroy(ulong ns)
+        {
+            s_NetserverDestroy(ns);
+        }
+
+        internal static void NetserverSend(ulong ns, int conv, string data, int len)
+        {
+            byte* __p2 = NativeFuncs.Utf8(data);
+            try { s_NetserverSend(ns, conv, __p2, len); }
+            finally { NativeFuncs.FreeUtf8(__p2); }
+        }
+
+        internal static void NetserverBroadcast(ulong ns, string data, int len)
+        {
+            byte* __p1 = NativeFuncs.Utf8(data);
+            try { s_NetserverBroadcast(ns, __p1, len); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void NetserverOffline(ulong ns, int conv)
+        {
+            s_NetserverOffline(ns, conv);
+        }
+
+        internal static void NetserverUpdate(ulong ns)
+        {
+            s_NetserverUpdate(ns);
+        }
+
+        internal static int NetserverConnectionCount(ulong ns)
+        {
+            return s_NetserverConnectionCount(ns);
+        }
+
+        internal static bool NetserverPollMessage(ulong ns, ulong msg)
+        {
+            return s_NetserverPollMessage(ns, msg) != 0;
+        }
+
+        internal static void NetmessageFreeData(ulong msg)
+        {
+            s_NetmessageFreeData(msg);
+        }
+
+        internal static void SceneNodeDestroy(ulong node)
+        {
+            s_SceneNodeDestroy(node);
+        }
+
+        internal static void SceneNodeAddChild(ulong parent, ulong child)
+        {
+            s_SceneNodeAddChild(parent, child);
+        }
+
+        internal static void SceneNodeRemoveChild(ulong parent, ulong child)
+        {
+            s_SceneNodeRemoveChild(parent, child);
+        }
+
+        internal static int SceneNodeGetChildCount(ulong node)
+        {
+            return s_SceneNodeGetChildCount(node);
+        }
+
+        internal static void SceneNodeSetPosition(ulong node, float x, float y)
+        {
+            s_SceneNodeSetPosition(node, x, y);
+        }
+
+        internal static void SceneNodeSetWorldPosition(ulong node, float x, float y)
+        {
+            s_SceneNodeSetWorldPosition(node, x, y);
+        }
+
+        internal static void SceneNodeSetRotation(ulong node, float radians)
+        {
+            s_SceneNodeSetRotation(node, radians);
+        }
+
+        internal static float SceneNodeGetRotation(ulong node)
+        {
+            return s_SceneNodeGetRotation(node);
+        }
+
+        internal static void SceneNodeSetScale(ulong node, float scale_x, float scale_y)
+        {
+            s_SceneNodeSetScale(node, scale_x, scale_y);
+        }
+
+        internal static void SceneNodeSetZorder(ulong node, int zorder)
+        {
+            s_SceneNodeSetZorder(node, zorder);
+        }
+
+        internal static int SceneNodeGetZorder(ulong node)
+        {
+            return s_SceneNodeGetZorder(node);
+        }
+
+        internal static void SceneNodeSetName(ulong node, string name)
+        {
+            byte* __p1 = NativeFuncs.Utf8(name);
+            try { s_SceneNodeSetName(node, __p1); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void SceneNodeSetTag(ulong node, string tag)
+        {
+            byte* __p1 = NativeFuncs.Utf8(tag);
+            try { s_SceneNodeSetTag(node, __p1); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static ulong SceneFindNodeByName(ulong root, string name)
+        {
+            byte* __p1 = NativeFuncs.Utf8(name);
+            try { return s_SceneFindNodeByName(root, __p1); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static ulong SceneFindNodeByNameDeep(ulong scene, string name)
+        {
+            byte* __p1 = NativeFuncs.Utf8(name);
+            try { return s_SceneFindNodeByNameDeep(scene, __p1); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static void SceneNodeUpdate(ulong node, float delta_time)
+        {
+            s_SceneNodeUpdate(node, delta_time);
+        }
+
+        internal static void SceneDestroy(ulong scene)
+        {
+            s_SceneDestroy(scene);
+        }
+
+        internal static void SceneAddRootNode(ulong scene, ulong root)
+        {
+            s_SceneAddRootNode(scene, root);
+        }
+
+        internal static void SceneRemoveRootNode(ulong scene, ulong root)
+        {
+            s_SceneRemoveRootNode(scene, root);
+        }
+
+        internal static int SceneGetRootCount(ulong scene)
+        {
+            return s_SceneGetRootCount(scene);
+        }
+
+        internal static ulong SceneGetRootAt(ulong scene, int index)
+        {
+            return s_SceneGetRootAt(scene, index);
+        }
+
+        internal static void SceneUpdate(ulong scene, float delta_time)
+        {
+            s_SceneUpdate(scene, delta_time);
+        }
+
+        internal static void SceneSetPopupNode(ulong scene, ulong node)
+        {
+            s_SceneSetPopupNode(scene, node);
+        }
+
+        internal static ulong SceneGetPopupNode(ulong scene)
+        {
+            return s_SceneGetPopupNode(scene);
+        }
+
+        internal static void SceneManagerDestroy(ulong mgr)
+        {
+            s_SceneManagerDestroy(mgr);
+        }
+
+        internal static void SceneManagerPush(ulong mgr, ulong scene)
+        {
+            s_SceneManagerPush(mgr, scene);
+        }
+
+        internal static void SceneManagerReplace(ulong mgr, ulong scene)
+        {
+            s_SceneManagerReplace(mgr, scene);
+        }
+
+        internal static void SceneManagerPop(ulong mgr)
+        {
+            s_SceneManagerPop(mgr);
+        }
+
+        internal static void SceneManagerUpdate(ulong mgr, float delta_time)
+        {
+            s_SceneManagerUpdate(mgr, delta_time);
+        }
+
+        internal static ulong SceneManagerGetCurrent(ulong mgr)
+        {
+            return s_SceneManagerGetCurrent(mgr);
+        }
+
+        internal static int SceneManagerGetCount(ulong mgr)
+        {
+            return s_SceneManagerGetCount(mgr);
+        }
+
+        internal static void JparticleDestroy(ulong p)
+        {
+            s_JparticleDestroy(p);
+        }
+
+        internal static void JparticleSetPosition(ulong p, float x, float y)
+        {
+            s_JparticleSetPosition(p, x, y);
+        }
+
+        internal static void JparticleEmit(ulong p)
+        {
+            s_JparticleEmit(p);
+        }
+
+        internal static void JparticleClear(ulong p)
+        {
+            s_JparticleClear(p);
+        }
+
+        internal static void JparticleUpdate(ulong p, float dt)
+        {
+            s_JparticleUpdate(p, dt);
+        }
+
+        internal static void JparticleRender(ulong p, ulong r2d)
+        {
+            s_JparticleRender(p, r2d);
+        }
+
+        internal static int JparticleCount(ulong p)
+        {
+            return s_JparticleCount(p);
+        }
+
+        internal static bool JparticleIsActive(ulong p)
+        {
+            return s_JparticleIsActive(p) != 0;
+        }
+
+        internal static void JlightSysDestroy(ulong sys)
+        {
+            s_JlightSysDestroy(sys);
+        }
+
+        internal static void JlightSysResize(ulong sys, int width, int height)
+        {
+            s_JlightSysResize(sys, width, height);
+        }
+
+        internal static void JlightRemove(ulong sys, int id)
+        {
+            s_JlightRemove(sys, id);
+        }
+
+        internal static void JlightClear(ulong sys)
+        {
+            s_JlightClear(sys);
+        }
+
+        internal static int JlightAddOccluder(ulong sys, float x1, float y1, float x2, float y2)
+        {
+            return s_JlightAddOccluder(sys, x1, y1, x2, y2);
+        }
+
+        internal static void JlightClearOccluders(ulong sys)
+        {
+            s_JlightClearOccluders(sys);
+        }
+
+        internal static void JlightSetAmbient(ulong sys, uint r, uint g, uint b)
+        {
+            s_JlightSetAmbient(sys, r, g, b);
+        }
+
+        internal static void JlightRender(ulong sys, ulong r2d)
+        {
+            s_JlightRender(sys, r2d);
+        }
+
+        internal static void JecsDestroy(ulong world)
+        {
+            s_JecsDestroy(world);
+        }
+
+        internal static void JecsProcess(ulong world, float dt)
+        {
+            s_JecsProcess(world, dt);
+        }
+
+        internal static void JecsDefine(ulong world, string name, ulong size)
+        {
+            byte* __p1 = NativeFuncs.Utf8(name);
+            try { s_JecsDefine(world, __p1, size); }
+            finally { NativeFuncs.FreeUtf8(__p1); }
+        }
+
+        internal static uint AudioOpenDevice()
+        {
+            return s_AudioOpenDevice();
+        }
+
+        internal static void AudioCloseDevice(uint device_id)
+        {
+            s_AudioCloseDevice(device_id);
+        }
+
+        internal static bool AudioCreateWav(string filepath, uint device_id)
+        {
+            byte* __p0 = NativeFuncs.Utf8(filepath);
+            try { return s_AudioCreateWav(__p0, device_id) != 0; }
+            finally { NativeFuncs.FreeUtf8(__p0); }
+        }
+
+        internal static bool AudioCreateMp3(string filepath, uint device_id)
+        {
+            byte* __p0 = NativeFuncs.Utf8(filepath);
+            try { return s_AudioCreateMp3(__p0, device_id) != 0; }
+            finally { NativeFuncs.FreeUtf8(__p0); }
+        }
+
+        internal static bool AudioCreateFlac(string filepath, uint device_id)
+        {
+            byte* __p0 = NativeFuncs.Utf8(filepath);
+            try { return s_AudioCreateFlac(__p0, device_id) != 0; }
+            finally { NativeFuncs.FreeUtf8(__p0); }
+        }
+
+        internal static bool AudioCreateOgg(string filepath, uint device_id)
+        {
+            byte* __p0 = NativeFuncs.Utf8(filepath);
+            try { return s_AudioCreateOgg(__p0, device_id) != 0; }
+            finally { NativeFuncs.FreeUtf8(__p0); }
+        }
+
+        internal static void AudioShotPlay(ulong shot)
+        {
+            s_AudioShotPlay(shot);
+        }
+
+        internal static void AudioShotSetGain(ulong shot, float gain)
+        {
+            s_AudioShotSetGain(shot, gain);
+        }
+
+        internal static void AudioShotDestroy(ulong shot)
+        {
+            s_AudioShotDestroy(shot);
+        }
+
+        internal static void AudioBgmStop(ulong bgm)
+        {
+            s_AudioBgmStop(bgm);
+        }
+
+        internal static void AudioBgmSetGain(ulong bgm, float gain)
+        {
+            s_AudioBgmSetGain(bgm, gain);
+        }
+
+        internal static void AudioBgmDestroy(ulong bgm)
+        {
+            s_AudioBgmDestroy(bgm);
+        }
+
+        internal static void ImageDrawRect(ulong r2d, ulong image, float x, float y, float w, float h)
+        {
+            s_ImageDrawRect(r2d, image, x, y, w, h);
+        }
+
+        internal static void JoyInputFeedKey(int scancode, bool down)
+        {
+            s_JoyInputFeedKey(scancode, (byte)(down ? 1 : 0));
+        }
+
+        internal static void JoyInputFeedMouseMove(float x, float y)
+        {
+            s_JoyInputFeedMouseMove(x, y);
+        }
+
+        internal static void JoyInputFeedMouseButton(int button, bool down)
+        {
+            s_JoyInputFeedMouseButton(button, (byte)(down ? 1 : 0));
+        }
+
+        internal static void JoyInputFeedWheel(float dy)
+        {
+            s_JoyInputFeedWheel(dy);
+        }
+
+        internal static void JoyInputEndFrame()
+        {
+            s_JoyInputEndFrame();
+        }
+
+        internal static void JoyInputReset()
+        {
+            s_JoyInputReset();
+        }
+
+        internal static bool JoyInputIsKeyDown(int scancode)
+        {
+            return s_JoyInputIsKeyDown(scancode) != 0;
+        }
+
+        internal static bool JoyInputIsMouseButtonDown(int button)
+        {
+            return s_JoyInputIsMouseButtonDown(button) != 0;
+        }
+
+        internal static float JoyInputGetMouseX()
+        {
+            return s_JoyInputGetMouseX();
+        }
+
+        internal static float JoyInputGetMouseY()
+        {
+            return s_JoyInputGetMouseY();
+        }
+
+        internal static float JoyInputGetWheel()
+        {
+            return s_JoyInputGetWheel();
+        }
+
+        internal static bool JoyInputWasKeyPressed(int scancode)
+        {
+            return s_JoyInputWasKeyPressed(scancode) != 0;
+        }
+
+        internal static bool JoyInputWasKeyReleased(int scancode)
+        {
+            return s_JoyInputWasKeyReleased(scancode) != 0;
+        }
+
+        internal static long JmathFpFromFloat(float a)
+        {
+            return s_JmathFpFromFloat(a);
+        }
+
+        internal static float JmathFpToFloat(long a)
+        {
+            return s_JmathFpToFloat(a);
+        }
+
+        internal static long JmathFpFromUint(uint a)
+        {
+            return s_JmathFpFromUint(a);
+        }
+
+        internal static long JmathFpFromInt(int a)
+        {
+            return s_JmathFpFromInt(a);
+        }
+
+        internal static long JmathFpFromFraction(uint a)
+        {
+            return s_JmathFpFromFraction(a);
+        }
+
+        internal static long JmathFpMinValue()
+        {
+            return s_JmathFpMinValue();
+        }
+
+        internal static long JmathFpMaxValue()
+        {
+            return s_JmathFpMaxValue();
+        }
+
+        internal static long JmathFpAdd(long a, long b)
+        {
+            return s_JmathFpAdd(a, b);
+        }
+
+        internal static long JmathFpSub(long a, long b)
+        {
+            return s_JmathFpSub(a, b);
+        }
+
+        internal static long JmathFpZero()
+        {
+            return s_JmathFpZero();
+        }
+
+        internal static long JmathFpHalf()
+        {
+            return s_JmathFpHalf();
+        }
+
+        internal static long JmathFpOne()
+        {
+            return s_JmathFpOne();
+        }
+
+        internal static long JmathFpPi()
+        {
+            return s_JmathFpPi();
+        }
+
+        internal static long JmathFpMax(long a, long b)
+        {
+            return s_JmathFpMax(a, b);
+        }
+
+        internal static long JmathFpMin(long a, long b)
+        {
+            return s_JmathFpMin(a, b);
+        }
+
+        internal static long JmathFpPow2(long x)
+        {
+            return s_JmathFpPow2(x);
+        }
+
+        internal static int JmathFpSign(long x)
+        {
+            return s_JmathFpSign(x);
+        }
+
+        internal static long JmathFpClamp(long a, long low, long high)
+        {
+            return s_JmathFpClamp(a, low, high);
+        }
+
+        internal static long JmathFpLerp(long a, long b, long t)
+        {
+            return s_JmathFpLerp(a, b, t);
+        }
+
+        internal static long JmathVec2fNegateX(long a_x, long a_y)
+        {
+            return s_JmathVec2fNegateX(a_x, a_y);
+        }
+
+        internal static long JmathVec2fNegateY(long a_x, long a_y)
+        {
+            return s_JmathVec2fNegateY(a_x, a_y);
+        }
+
+        internal static long JmathVec2fDot(long a_x, long a_y, long b_x, long b_y)
+        {
+            return s_JmathVec2fDot(a_x, a_y, b_x, b_y);
+        }
+
+        internal static long JmathVec2fCross(long a_x, long a_y, long b_x, long b_y)
+        {
+            return s_JmathVec2fCross(a_x, a_y, b_x, b_y);
+        }
+
+        internal static long JmathVec2fCross2X(long a_x, long a_y, long s)
+        {
+            return s_JmathVec2fCross2X(a_x, a_y, s);
+        }
+
+        internal static long JmathVec2fCross2Y(long a_x, long a_y, long s)
+        {
+            return s_JmathVec2fCross2Y(a_x, a_y, s);
+        }
+
+        internal static long JmathVec2fCross3X(long a_x, long a_y, long s)
+        {
+            return s_JmathVec2fCross3X(a_x, a_y, s);
+        }
+
+        internal static long JmathVec2fCross3Y(long a_x, long a_y, long s)
+        {
+            return s_JmathVec2fCross3Y(a_x, a_y, s);
+        }
+
+        internal static long JmathVec2fAddX(long a_x, long a_y, long b_x, long b_y)
+        {
+            return s_JmathVec2fAddX(a_x, a_y, b_x, b_y);
+        }
+
+        internal static long JmathVec2fAddY(long a_x, long a_y, long b_x, long b_y)
+        {
+            return s_JmathVec2fAddY(a_x, a_y, b_x, b_y);
+        }
+
+        internal static long JmathVec2fSubX(long a_x, long a_y, long b_x, long b_y)
+        {
+            return s_JmathVec2fSubX(a_x, a_y, b_x, b_y);
+        }
+
+        internal static long JmathVec2fSubY(long a_x, long a_y, long b_x, long b_y)
+        {
+            return s_JmathVec2fSubY(a_x, a_y, b_x, b_y);
+        }
+
+        internal static long JmathVec2fScaleX(long a_x, long a_y, long s)
+        {
+            return s_JmathVec2fScaleX(a_x, a_y, s);
+        }
+
+        internal static long JmathVec2fScaleY(long a_x, long a_y, long s)
+        {
+            return s_JmathVec2fScaleY(a_x, a_y, s);
+        }
+
+        internal static long JmathVec2fAbsX(long a_x, long a_y)
+        {
+            return s_JmathVec2fAbsX(a_x, a_y);
+        }
+
+        internal static long JmathVec2fAbsY(long a_x, long a_y)
+        {
+            return s_JmathVec2fAbsY(a_x, a_y);
+        }
+
+        internal static long JmathVec2fLengthSquared(long a_x, long a_y)
+        {
+            return s_JmathVec2fLengthSquared(a_x, a_y);
+        }
+
+        internal static long JmathVec2fLength(long a_x, long a_y)
+        {
+            return s_JmathVec2fLength(a_x, a_y);
+        }
+
+        internal static long JmathVec2fNormalizeX(long a_x, long a_y)
+        {
+            return s_JmathVec2fNormalizeX(a_x, a_y);
+        }
+
+        internal static long JmathVec2fNormalizeY(long a_x, long a_y)
+        {
+            return s_JmathVec2fNormalizeY(a_x, a_y);
+        }
+
+        internal static long JmathVec2fNormalX(long v_x, long v_y)
+        {
+            return s_JmathVec2fNormalX(v_x, v_y);
+        }
+
+        internal static long JmathVec2fNormalY(long v_x, long v_y)
+        {
+            return s_JmathVec2fNormalY(v_x, v_y);
+        }
+
+        internal static long JmathVec2fRotateX(long v_x, long v_y, long angle)
+        {
+            return s_JmathVec2fRotateX(v_x, v_y, angle);
+        }
+
+        internal static long JmathVec2fRotateY(long v_x, long v_y, long angle)
+        {
+            return s_JmathVec2fRotateY(v_x, v_y, angle);
+        }
+
+        internal static long JmathVec2fLerpX(long a_x, long a_y, long b_x, long b_y, long t)
+        {
+            return s_JmathVec2fLerpX(a_x, a_y, b_x, b_y, t);
+        }
+
+        internal static long JmathVec2fLerpY(long a_x, long a_y, long b_x, long b_y, long t)
+        {
+            return s_JmathVec2fLerpY(a_x, a_y, b_x, b_y, t);
+        }
+
+        internal static long JmathVec2fDistance(long a_x, long a_y, long b_x, long b_y)
+        {
+            return s_JmathVec2fDistance(a_x, a_y, b_x, b_y);
+        }
+
+        internal static long JmathVec3fNegateX(long a_x, long a_y, long a_z)
+        {
+            return s_JmathVec3fNegateX(a_x, a_y, a_z);
+        }
+
+        internal static long JmathVec3fNegateY(long a_x, long a_y, long a_z)
+        {
+            return s_JmathVec3fNegateY(a_x, a_y, a_z);
+        }
+
+        internal static long JmathVec3fNegateZ(long a_x, long a_y, long a_z)
+        {
+            return s_JmathVec3fNegateZ(a_x, a_y, a_z);
+        }
+
+        internal static long JmathVec3fAddX(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z)
+        {
+            return s_JmathVec3fAddX(a_x, a_y, a_z, b_x, b_y, b_z);
+        }
+
+        internal static long JmathVec3fAddY(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z)
+        {
+            return s_JmathVec3fAddY(a_x, a_y, a_z, b_x, b_y, b_z);
+        }
+
+        internal static long JmathVec3fAddZ(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z)
+        {
+            return s_JmathVec3fAddZ(a_x, a_y, a_z, b_x, b_y, b_z);
+        }
+
+        internal static long JmathVec3fSubX(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z)
+        {
+            return s_JmathVec3fSubX(a_x, a_y, a_z, b_x, b_y, b_z);
+        }
+
+        internal static long JmathVec3fSubY(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z)
+        {
+            return s_JmathVec3fSubY(a_x, a_y, a_z, b_x, b_y, b_z);
+        }
+
+        internal static long JmathVec3fSubZ(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z)
+        {
+            return s_JmathVec3fSubZ(a_x, a_y, a_z, b_x, b_y, b_z);
+        }
+
+        internal static long JmathVec3fScaleX(long a_x, long a_y, long a_z, long s)
+        {
+            return s_JmathVec3fScaleX(a_x, a_y, a_z, s);
+        }
+
+        internal static long JmathVec3fScaleY(long a_x, long a_y, long a_z, long s)
+        {
+            return s_JmathVec3fScaleY(a_x, a_y, a_z, s);
+        }
+
+        internal static long JmathVec3fScaleZ(long a_x, long a_y, long a_z, long s)
+        {
+            return s_JmathVec3fScaleZ(a_x, a_y, a_z, s);
+        }
+
+        internal static long JmathVec3fAbsX(long a_x, long a_y, long a_z)
+        {
+            return s_JmathVec3fAbsX(a_x, a_y, a_z);
+        }
+
+        internal static long JmathVec3fAbsY(long a_x, long a_y, long a_z)
+        {
+            return s_JmathVec3fAbsY(a_x, a_y, a_z);
+        }
+
+        internal static long JmathVec3fAbsZ(long a_x, long a_y, long a_z)
+        {
+            return s_JmathVec3fAbsZ(a_x, a_y, a_z);
+        }
+
+        internal static long JmathVec3fDot(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z)
+        {
+            return s_JmathVec3fDot(a_x, a_y, a_z, b_x, b_y, b_z);
+        }
+
+        internal static long JmathVec3fCrossX(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z)
+        {
+            return s_JmathVec3fCrossX(a_x, a_y, a_z, b_x, b_y, b_z);
+        }
+
+        internal static long JmathVec3fCrossY(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z)
+        {
+            return s_JmathVec3fCrossY(a_x, a_y, a_z, b_x, b_y, b_z);
+        }
+
+        internal static long JmathVec3fCrossZ(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z)
+        {
+            return s_JmathVec3fCrossZ(a_x, a_y, a_z, b_x, b_y, b_z);
+        }
+
+        internal static long JmathVec3fSquareLength(long a_x, long a_y, long a_z)
+        {
+            return s_JmathVec3fSquareLength(a_x, a_y, a_z);
+        }
+
+        internal static long JmathVec3fLength(long a_x, long a_y, long a_z)
+        {
+            return s_JmathVec3fLength(a_x, a_y, a_z);
+        }
+
+        internal static long JmathVec3fNormalizeX(long a_x, long a_y, long a_z)
+        {
+            return s_JmathVec3fNormalizeX(a_x, a_y, a_z);
+        }
+
+        internal static long JmathVec3fNormalizeY(long a_x, long a_y, long a_z)
+        {
+            return s_JmathVec3fNormalizeY(a_x, a_y, a_z);
+        }
+
+        internal static long JmathVec3fNormalizeZ(long a_x, long a_y, long a_z)
+        {
+            return s_JmathVec3fNormalizeZ(a_x, a_y, a_z);
+        }
+
+        internal static long JmathVec3fLerpX(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z, long t)
+        {
+            return s_JmathVec3fLerpX(a_x, a_y, a_z, b_x, b_y, b_z, t);
+        }
+
+        internal static long JmathVec3fLerpY(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z, long t)
+        {
+            return s_JmathVec3fLerpY(a_x, a_y, a_z, b_x, b_y, b_z, t);
+        }
+
+        internal static long JmathVec3fLerpZ(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z, long t)
+        {
+            return s_JmathVec3fLerpZ(a_x, a_y, a_z, b_x, b_y, b_z, t);
+        }
+
+        internal static long JmathVec3fDistance(long a_x, long a_y, long a_z, long b_x, long b_y, long b_z)
+        {
+            return s_JmathVec3fDistance(a_x, a_y, a_z, b_x, b_y, b_z);
+        }
+
+        internal static long JmathMat22fMulVec2fX(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y, long b_x, long b_y)
+        {
+            return s_JmathMat22fMulVec2fX(a_col1_x, a_col1_y, a_col2_x, a_col2_y, b_x, b_y);
+        }
+
+        internal static long JmathMat22fMulVec2fY(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y, long b_x, long b_y)
+        {
+            return s_JmathMat22fMulVec2fY(a_col1_x, a_col1_y, a_col2_x, a_col2_y, b_x, b_y);
+        }
+
+        internal static long JmathMat22fRotateCol1X(long angle)
+        {
+            return s_JmathMat22fRotateCol1X(angle);
+        }
+
+        internal static long JmathMat22fRotateCol1Y(long angle)
+        {
+            return s_JmathMat22fRotateCol1Y(angle);
+        }
+
+        internal static long JmathMat22fRotateCol2X(long angle)
+        {
+            return s_JmathMat22fRotateCol2X(angle);
+        }
+
+        internal static long JmathMat22fRotateCol2Y(long angle)
+        {
+            return s_JmathMat22fRotateCol2Y(angle);
+        }
+
+        internal static long JmathMat22fTransposeCol1X(long m_col1_x, long m_col1_y, long m_col2_x, long m_col2_y)
+        {
+            return s_JmathMat22fTransposeCol1X(m_col1_x, m_col1_y, m_col2_x, m_col2_y);
+        }
+
+        internal static long JmathMat22fTransposeCol1Y(long m_col1_x, long m_col1_y, long m_col2_x, long m_col2_y)
+        {
+            return s_JmathMat22fTransposeCol1Y(m_col1_x, m_col1_y, m_col2_x, m_col2_y);
+        }
+
+        internal static long JmathMat22fTransposeCol2X(long m_col1_x, long m_col1_y, long m_col2_x, long m_col2_y)
+        {
+            return s_JmathMat22fTransposeCol2X(m_col1_x, m_col1_y, m_col2_x, m_col2_y);
+        }
+
+        internal static long JmathMat22fTransposeCol2Y(long m_col1_x, long m_col1_y, long m_col2_x, long m_col2_y)
+        {
+            return s_JmathMat22fTransposeCol2Y(m_col1_x, m_col1_y, m_col2_x, m_col2_y);
+        }
+
+        internal static long JmathMat22fInvertCol1X(long m_col1_x, long m_col1_y, long m_col2_x, long m_col2_y)
+        {
+            return s_JmathMat22fInvertCol1X(m_col1_x, m_col1_y, m_col2_x, m_col2_y);
+        }
+
+        internal static long JmathMat22fInvertCol1Y(long m_col1_x, long m_col1_y, long m_col2_x, long m_col2_y)
+        {
+            return s_JmathMat22fInvertCol1Y(m_col1_x, m_col1_y, m_col2_x, m_col2_y);
+        }
+
+        internal static long JmathMat22fInvertCol2X(long m_col1_x, long m_col1_y, long m_col2_x, long m_col2_y)
+        {
+            return s_JmathMat22fInvertCol2X(m_col1_x, m_col1_y, m_col2_x, m_col2_y);
+        }
+
+        internal static long JmathMat22fInvertCol2Y(long m_col1_x, long m_col1_y, long m_col2_x, long m_col2_y)
+        {
+            return s_JmathMat22fInvertCol2Y(m_col1_x, m_col1_y, m_col2_x, m_col2_y);
+        }
+
+        internal static long JmathMat22fAddCol1X(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y, long b_col1_x, long b_col1_y, long b_col2_x, long b_col2_y)
+        {
+            return s_JmathMat22fAddCol1X(a_col1_x, a_col1_y, a_col2_x, a_col2_y, b_col1_x, b_col1_y, b_col2_x, b_col2_y);
+        }
+
+        internal static long JmathMat22fAddCol1Y(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y, long b_col1_x, long b_col1_y, long b_col2_x, long b_col2_y)
+        {
+            return s_JmathMat22fAddCol1Y(a_col1_x, a_col1_y, a_col2_x, a_col2_y, b_col1_x, b_col1_y, b_col2_x, b_col2_y);
+        }
+
+        internal static long JmathMat22fAddCol2X(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y, long b_col1_x, long b_col1_y, long b_col2_x, long b_col2_y)
+        {
+            return s_JmathMat22fAddCol2X(a_col1_x, a_col1_y, a_col2_x, a_col2_y, b_col1_x, b_col1_y, b_col2_x, b_col2_y);
+        }
+
+        internal static long JmathMat22fAddCol2Y(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y, long b_col1_x, long b_col1_y, long b_col2_x, long b_col2_y)
+        {
+            return s_JmathMat22fAddCol2Y(a_col1_x, a_col1_y, a_col2_x, a_col2_y, b_col1_x, b_col1_y, b_col2_x, b_col2_y);
+        }
+
+        internal static long JmathMat22fMulCol1X(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y, long b_col1_x, long b_col1_y, long b_col2_x, long b_col2_y)
+        {
+            return s_JmathMat22fMulCol1X(a_col1_x, a_col1_y, a_col2_x, a_col2_y, b_col1_x, b_col1_y, b_col2_x, b_col2_y);
+        }
+
+        internal static long JmathMat22fMulCol1Y(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y, long b_col1_x, long b_col1_y, long b_col2_x, long b_col2_y)
+        {
+            return s_JmathMat22fMulCol1Y(a_col1_x, a_col1_y, a_col2_x, a_col2_y, b_col1_x, b_col1_y, b_col2_x, b_col2_y);
+        }
+
+        internal static long JmathMat22fMulCol2X(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y, long b_col1_x, long b_col1_y, long b_col2_x, long b_col2_y)
+        {
+            return s_JmathMat22fMulCol2X(a_col1_x, a_col1_y, a_col2_x, a_col2_y, b_col1_x, b_col1_y, b_col2_x, b_col2_y);
+        }
+
+        internal static long JmathMat22fMulCol2Y(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y, long b_col1_x, long b_col1_y, long b_col2_x, long b_col2_y)
+        {
+            return s_JmathMat22fMulCol2Y(a_col1_x, a_col1_y, a_col2_x, a_col2_y, b_col1_x, b_col1_y, b_col2_x, b_col2_y);
+        }
+
+        internal static long JmathMat22fAbsCol1X(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y)
+        {
+            return s_JmathMat22fAbsCol1X(a_col1_x, a_col1_y, a_col2_x, a_col2_y);
+        }
+
+        internal static long JmathMat22fAbsCol1Y(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y)
+        {
+            return s_JmathMat22fAbsCol1Y(a_col1_x, a_col1_y, a_col2_x, a_col2_y);
+        }
+
+        internal static long JmathMat22fAbsCol2X(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y)
+        {
+            return s_JmathMat22fAbsCol2X(a_col1_x, a_col1_y, a_col2_x, a_col2_y);
+        }
+
+        internal static long JmathMat22fAbsCol2Y(long a_col1_x, long a_col1_y, long a_col2_x, long a_col2_y)
+        {
+            return s_JmathMat22fAbsCol2Y(a_col1_x, a_col1_y, a_col2_x, a_col2_y);
+        }
+
+        internal static float JmathFtFromFloat(float x)
+        {
+            return s_JmathFtFromFloat(x);
+        }
+
+        internal static float JmathFtToFloat(float x)
+        {
+            return s_JmathFtToFloat(x);
+        }
+
+        internal static float JmathFtMinValue()
+        {
+            return s_JmathFtMinValue();
+        }
+
+        internal static float JmathFtMaxValue()
+        {
+            return s_JmathFtMaxValue();
+        }
+
+        internal static float JmathFtAdd(float a, float b)
+        {
+            return s_JmathFtAdd(a, b);
+        }
+
+        internal static float JmathFtSub(float a, float b)
+        {
+            return s_JmathFtSub(a, b);
+        }
+
+        internal static float JmathFtMul(float a, float b)
+        {
+            return s_JmathFtMul(a, b);
+        }
+
+        internal static float JmathFtDiv(float a, float b)
+        {
+            return s_JmathFtDiv(a, b);
+        }
+
+        internal static float JmathFtAbs(float x)
+        {
+            return s_JmathFtAbs(x);
+        }
+
+        internal static float JmathFtSqrt(float x)
+        {
+            return s_JmathFtSqrt(x);
+        }
+
+        internal static float JmathFtSin(float x)
+        {
+            return s_JmathFtSin(x);
+        }
+
+        internal static float JmathFtCos(float x)
+        {
+            return s_JmathFtCos(x);
+        }
+
+        internal static float JmathFtAtan2(float y, float x)
+        {
+            return s_JmathFtAtan2(y, x);
+        }
+
+        internal static float JmathFtZero()
+        {
+            return s_JmathFtZero();
+        }
+
+        internal static float JmathFtHalf()
+        {
+            return s_JmathFtHalf();
+        }
+
+        internal static float JmathFtOne()
+        {
+            return s_JmathFtOne();
+        }
+
+        internal static float JmathFtPi()
+        {
+            return s_JmathFtPi();
+        }
+
+        internal static float JmathFtMax(float a, float b)
+        {
+            return s_JmathFtMax(a, b);
+        }
+
+        internal static float JmathFtMin(float a, float b)
+        {
+            return s_JmathFtMin(a, b);
+        }
+
+        internal static float JmathFtPow2(float x)
+        {
+            return s_JmathFtPow2(x);
+        }
+
+        internal static int JmathFtSign(float x)
+        {
+            return s_JmathFtSign(x);
+        }
+
+        internal static float JmathFtClamp(float a, float low, float high)
+        {
+            return s_JmathFtClamp(a, low, high);
+        }
+
+        internal static float JmathFtLerp(float a, float b, float t)
+        {
+            return s_JmathFtLerp(a, b, t);
+        }
+
+        internal static float JmathVec2NegateX(float v_x, float v_y)
+        {
+            return s_JmathVec2NegateX(v_x, v_y);
+        }
+
+        internal static float JmathVec2NegateY(float v_x, float v_y)
+        {
+            return s_JmathVec2NegateY(v_x, v_y);
+        }
+
+        internal static ulong JmathVec2Negate(float v_x, float v_y)
+        {
+            return s_JmathVec2Negate(v_x, v_y);
+        }
+
+        internal static float JmathVec2Dot(float a_x, float a_y, float b_x, float b_y)
+        {
+            return s_JmathVec2Dot(a_x, a_y, b_x, b_y);
+        }
+
+        internal static float JmathVec2Cross(float a_x, float a_y, float b_x, float b_y)
+        {
+            return s_JmathVec2Cross(a_x, a_y, b_x, b_y);
+        }
+
+        internal static float JmathVec2Cross2X(float a_x, float a_y, float s)
+        {
+            return s_JmathVec2Cross2X(a_x, a_y, s);
+        }
+
+        internal static float JmathVec2Cross2Y(float a_x, float a_y, float s)
+        {
+            return s_JmathVec2Cross2Y(a_x, a_y, s);
+        }
+
+        internal static ulong JmathVec2Cross2(float a_x, float a_y, float s)
+        {
+            return s_JmathVec2Cross2(a_x, a_y, s);
+        }
+
+        internal static float JmathVec2Cross3X(float s, float a_x, float a_y)
+        {
+            return s_JmathVec2Cross3X(s, a_x, a_y);
+        }
+
+        internal static float JmathVec2Cross3Y(float s, float a_x, float a_y)
+        {
+            return s_JmathVec2Cross3Y(s, a_x, a_y);
+        }
+
+        internal static ulong JmathVec2Cross3(float s, float a_x, float a_y)
+        {
+            return s_JmathVec2Cross3(s, a_x, a_y);
+        }
+
+        internal static float JmathVec2AddX(float a_x, float a_y, float b_x, float b_y)
+        {
+            return s_JmathVec2AddX(a_x, a_y, b_x, b_y);
+        }
+
+        internal static float JmathVec2AddY(float a_x, float a_y, float b_x, float b_y)
+        {
+            return s_JmathVec2AddY(a_x, a_y, b_x, b_y);
+        }
+
+        internal static ulong JmathVec2Add(float a_x, float a_y, float b_x, float b_y)
+        {
+            return s_JmathVec2Add(a_x, a_y, b_x, b_y);
+        }
+
+        internal static float JmathVec2SubX(float a_x, float a_y, float b_x, float b_y)
+        {
+            return s_JmathVec2SubX(a_x, a_y, b_x, b_y);
+        }
+
+        internal static float JmathVec2SubY(float a_x, float a_y, float b_x, float b_y)
+        {
+            return s_JmathVec2SubY(a_x, a_y, b_x, b_y);
+        }
+
+        internal static ulong JmathVec2Sub(float a_x, float a_y, float b_x, float b_y)
+        {
+            return s_JmathVec2Sub(a_x, a_y, b_x, b_y);
+        }
+
+        internal static float JmathVec2ScaleX(float a_x, float a_y, float s)
+        {
+            return s_JmathVec2ScaleX(a_x, a_y, s);
+        }
+
+        internal static float JmathVec2ScaleY(float a_x, float a_y, float s)
+        {
+            return s_JmathVec2ScaleY(a_x, a_y, s);
+        }
+
+        internal static ulong JmathVec2Scale(float a_x, float a_y, float s)
+        {
+            return s_JmathVec2Scale(a_x, a_y, s);
+        }
+
+        internal static float JmathVec2AbsX(float a_x, float a_y)
+        {
+            return s_JmathVec2AbsX(a_x, a_y);
+        }
+
+        internal static float JmathVec2AbsY(float a_x, float a_y)
+        {
+            return s_JmathVec2AbsY(a_x, a_y);
+        }
+
+        internal static ulong JmathVec2Abs(float a_x, float a_y)
+        {
+            return s_JmathVec2Abs(a_x, a_y);
+        }
+
+        internal static float JmathVec2LengthSquared(float a_x, float a_y)
+        {
+            return s_JmathVec2LengthSquared(a_x, a_y);
+        }
+
+        internal static float JmathVec2Length(float a_x, float a_y)
+        {
+            return s_JmathVec2Length(a_x, a_y);
+        }
+
+        internal static float JmathVec2NormalizeX(float a_x, float a_y)
+        {
+            return s_JmathVec2NormalizeX(a_x, a_y);
+        }
+
+        internal static float JmathVec2NormalizeY(float a_x, float a_y)
+        {
+            return s_JmathVec2NormalizeY(a_x, a_y);
+        }
+
+        internal static ulong JmathVec2Normalize(float a_x, float a_y)
+        {
+            return s_JmathVec2Normalize(a_x, a_y);
+        }
+
+        internal static float JmathVec2NormalX(float a_x, float a_y)
+        {
+            return s_JmathVec2NormalX(a_x, a_y);
+        }
+
+        internal static float JmathVec2NormalY(float a_x, float a_y)
+        {
+            return s_JmathVec2NormalY(a_x, a_y);
+        }
+
+        internal static ulong JmathVec2Normal(float a_x, float a_y)
+        {
+            return s_JmathVec2Normal(a_x, a_y);
+        }
+
+        internal static float JmathVec2RotateX(float a_x, float a_y, float angle)
+        {
+            return s_JmathVec2RotateX(a_x, a_y, angle);
+        }
+
+        internal static float JmathVec2RotateY(float a_x, float a_y, float angle)
+        {
+            return s_JmathVec2RotateY(a_x, a_y, angle);
+        }
+
+        internal static ulong JmathVec2Rotate(float a_x, float a_y, float angle)
+        {
+            return s_JmathVec2Rotate(a_x, a_y, angle);
+        }
+
+        internal static float JmathVec2LerpX(float a_x, float a_y, float b_x, float b_y, float t)
+        {
+            return s_JmathVec2LerpX(a_x, a_y, b_x, b_y, t);
+        }
+
+        internal static float JmathVec2LerpY(float a_x, float a_y, float b_x, float b_y, float t)
+        {
+            return s_JmathVec2LerpY(a_x, a_y, b_x, b_y, t);
+        }
+
+        internal static ulong JmathVec2Lerp(float a_x, float a_y, float b_x, float b_y, float t)
+        {
+            return s_JmathVec2Lerp(a_x, a_y, b_x, b_y, t);
+        }
+
+        internal static float JmathVec2Distance(float a_x, float a_y, float b_x, float b_y)
+        {
+            return s_JmathVec2Distance(a_x, a_y, b_x, b_y);
+        }
+
+        internal static float JmathVec3NegateX(float v_x, float v_y, float v_z)
+        {
+            return s_JmathVec3NegateX(v_x, v_y, v_z);
+        }
+
+        internal static float JmathVec3NegateY(float v_x, float v_y, float v_z)
+        {
+            return s_JmathVec3NegateY(v_x, v_y, v_z);
+        }
+
+        internal static float JmathVec3NegateZ(float v_x, float v_y, float v_z)
+        {
+            return s_JmathVec3NegateZ(v_x, v_y, v_z);
+        }
+
+        internal static float JmathVec3AddX(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z)
+        {
+            return s_JmathVec3AddX(a_x, a_y, a_z, b_x, b_y, b_z);
+        }
+
+        internal static float JmathVec3AddY(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z)
+        {
+            return s_JmathVec3AddY(a_x, a_y, a_z, b_x, b_y, b_z);
+        }
+
+        internal static float JmathVec3AddZ(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z)
+        {
+            return s_JmathVec3AddZ(a_x, a_y, a_z, b_x, b_y, b_z);
+        }
+
+        internal static float JmathVec3SubX(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z)
+        {
+            return s_JmathVec3SubX(a_x, a_y, a_z, b_x, b_y, b_z);
+        }
+
+        internal static float JmathVec3SubY(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z)
+        {
+            return s_JmathVec3SubY(a_x, a_y, a_z, b_x, b_y, b_z);
+        }
+
+        internal static float JmathVec3SubZ(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z)
+        {
+            return s_JmathVec3SubZ(a_x, a_y, a_z, b_x, b_y, b_z);
+        }
+
+        internal static float JmathVec3ScaleX(float a_x, float a_y, float a_z, float s)
+        {
+            return s_JmathVec3ScaleX(a_x, a_y, a_z, s);
+        }
+
+        internal static float JmathVec3ScaleY(float a_x, float a_y, float a_z, float s)
+        {
+            return s_JmathVec3ScaleY(a_x, a_y, a_z, s);
+        }
+
+        internal static float JmathVec3ScaleZ(float a_x, float a_y, float a_z, float s)
+        {
+            return s_JmathVec3ScaleZ(a_x, a_y, a_z, s);
+        }
+
+        internal static float JmathVec3AbsX(float a_x, float a_y, float a_z)
+        {
+            return s_JmathVec3AbsX(a_x, a_y, a_z);
+        }
+
+        internal static float JmathVec3AbsY(float a_x, float a_y, float a_z)
+        {
+            return s_JmathVec3AbsY(a_x, a_y, a_z);
+        }
+
+        internal static float JmathVec3AbsZ(float a_x, float a_y, float a_z)
+        {
+            return s_JmathVec3AbsZ(a_x, a_y, a_z);
+        }
+
+        internal static float JmathVec3Dot(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z)
+        {
+            return s_JmathVec3Dot(a_x, a_y, a_z, b_x, b_y, b_z);
+        }
+
+        internal static float JmathVec3CrossX(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z)
+        {
+            return s_JmathVec3CrossX(a_x, a_y, a_z, b_x, b_y, b_z);
+        }
+
+        internal static float JmathVec3CrossY(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z)
+        {
+            return s_JmathVec3CrossY(a_x, a_y, a_z, b_x, b_y, b_z);
+        }
+
+        internal static float JmathVec3CrossZ(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z)
+        {
+            return s_JmathVec3CrossZ(a_x, a_y, a_z, b_x, b_y, b_z);
+        }
+
+        internal static float JmathVec3SquareLength(float a_x, float a_y, float a_z)
+        {
+            return s_JmathVec3SquareLength(a_x, a_y, a_z);
+        }
+
+        internal static float JmathVec3Length(float a_x, float a_y, float a_z)
+        {
+            return s_JmathVec3Length(a_x, a_y, a_z);
+        }
+
+        internal static float JmathVec3NormalizeX(float a_x, float a_y, float a_z)
+        {
+            return s_JmathVec3NormalizeX(a_x, a_y, a_z);
+        }
+
+        internal static float JmathVec3NormalizeY(float a_x, float a_y, float a_z)
+        {
+            return s_JmathVec3NormalizeY(a_x, a_y, a_z);
+        }
+
+        internal static float JmathVec3NormalizeZ(float a_x, float a_y, float a_z)
+        {
+            return s_JmathVec3NormalizeZ(a_x, a_y, a_z);
+        }
+
+        internal static float JmathVec3LerpX(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z, float t)
+        {
+            return s_JmathVec3LerpX(a_x, a_y, a_z, b_x, b_y, b_z, t);
+        }
+
+        internal static float JmathVec3LerpY(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z, float t)
+        {
+            return s_JmathVec3LerpY(a_x, a_y, a_z, b_x, b_y, b_z, t);
+        }
+
+        internal static float JmathVec3LerpZ(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z, float t)
+        {
+            return s_JmathVec3LerpZ(a_x, a_y, a_z, b_x, b_y, b_z, t);
+        }
+
+        internal static float JmathVec3Distance(float a_x, float a_y, float a_z, float b_x, float b_y, float b_z)
+        {
+            return s_JmathVec3Distance(a_x, a_y, a_z, b_x, b_y, b_z);
+        }
+
+        internal static float JmathMat22MulVec2X(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y, float b_x, float b_y)
+        {
+            return s_JmathMat22MulVec2X(a_col1_x, a_col1_y, a_col2_x, a_col2_y, b_x, b_y);
+        }
+
+        internal static float JmathMat22MulVec2Y(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y, float b_x, float b_y)
+        {
+            return s_JmathMat22MulVec2Y(a_col1_x, a_col1_y, a_col2_x, a_col2_y, b_x, b_y);
+        }
+
+        internal static ulong JmathMat22MulVec2(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y, float b_x, float b_y)
+        {
+            return s_JmathMat22MulVec2(a_col1_x, a_col1_y, a_col2_x, a_col2_y, b_x, b_y);
+        }
+
+        internal static float JmathMat22RotateCol1X(float angle)
+        {
+            return s_JmathMat22RotateCol1X(angle);
+        }
+
+        internal static float JmathMat22RotateCol1Y(float angle)
+        {
+            return s_JmathMat22RotateCol1Y(angle);
+        }
+
+        internal static float JmathMat22RotateCol2X(float angle)
+        {
+            return s_JmathMat22RotateCol2X(angle);
+        }
+
+        internal static float JmathMat22RotateCol2Y(float angle)
+        {
+            return s_JmathMat22RotateCol2Y(angle);
+        }
+
+        internal static float JmathMat22TransposeCol1X(float m_col1_x, float m_col1_y, float m_col2_x, float m_col2_y)
+        {
+            return s_JmathMat22TransposeCol1X(m_col1_x, m_col1_y, m_col2_x, m_col2_y);
+        }
+
+        internal static float JmathMat22TransposeCol1Y(float m_col1_x, float m_col1_y, float m_col2_x, float m_col2_y)
+        {
+            return s_JmathMat22TransposeCol1Y(m_col1_x, m_col1_y, m_col2_x, m_col2_y);
+        }
+
+        internal static float JmathMat22TransposeCol2X(float m_col1_x, float m_col1_y, float m_col2_x, float m_col2_y)
+        {
+            return s_JmathMat22TransposeCol2X(m_col1_x, m_col1_y, m_col2_x, m_col2_y);
+        }
+
+        internal static float JmathMat22TransposeCol2Y(float m_col1_x, float m_col1_y, float m_col2_x, float m_col2_y)
+        {
+            return s_JmathMat22TransposeCol2Y(m_col1_x, m_col1_y, m_col2_x, m_col2_y);
+        }
+
+        internal static float JmathMat22InvertCol1X(float m_col1_x, float m_col1_y, float m_col2_x, float m_col2_y)
+        {
+            return s_JmathMat22InvertCol1X(m_col1_x, m_col1_y, m_col2_x, m_col2_y);
+        }
+
+        internal static float JmathMat22InvertCol1Y(float m_col1_x, float m_col1_y, float m_col2_x, float m_col2_y)
+        {
+            return s_JmathMat22InvertCol1Y(m_col1_x, m_col1_y, m_col2_x, m_col2_y);
+        }
+
+        internal static float JmathMat22InvertCol2X(float m_col1_x, float m_col1_y, float m_col2_x, float m_col2_y)
+        {
+            return s_JmathMat22InvertCol2X(m_col1_x, m_col1_y, m_col2_x, m_col2_y);
+        }
+
+        internal static float JmathMat22InvertCol2Y(float m_col1_x, float m_col1_y, float m_col2_x, float m_col2_y)
+        {
+            return s_JmathMat22InvertCol2Y(m_col1_x, m_col1_y, m_col2_x, m_col2_y);
+        }
+
+        internal static float JmathMat22AddCol1X(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y, float b_col1_x, float b_col1_y, float b_col2_x, float b_col2_y)
+        {
+            return s_JmathMat22AddCol1X(a_col1_x, a_col1_y, a_col2_x, a_col2_y, b_col1_x, b_col1_y, b_col2_x, b_col2_y);
+        }
+
+        internal static float JmathMat22AddCol1Y(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y, float b_col1_x, float b_col1_y, float b_col2_x, float b_col2_y)
+        {
+            return s_JmathMat22AddCol1Y(a_col1_x, a_col1_y, a_col2_x, a_col2_y, b_col1_x, b_col1_y, b_col2_x, b_col2_y);
+        }
+
+        internal static float JmathMat22AddCol2X(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y, float b_col1_x, float b_col1_y, float b_col2_x, float b_col2_y)
+        {
+            return s_JmathMat22AddCol2X(a_col1_x, a_col1_y, a_col2_x, a_col2_y, b_col1_x, b_col1_y, b_col2_x, b_col2_y);
+        }
+
+        internal static float JmathMat22AddCol2Y(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y, float b_col1_x, float b_col1_y, float b_col2_x, float b_col2_y)
+        {
+            return s_JmathMat22AddCol2Y(a_col1_x, a_col1_y, a_col2_x, a_col2_y, b_col1_x, b_col1_y, b_col2_x, b_col2_y);
+        }
+
+        internal static float JmathMat22MulCol1X(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y, float b_col1_x, float b_col1_y, float b_col2_x, float b_col2_y)
+        {
+            return s_JmathMat22MulCol1X(a_col1_x, a_col1_y, a_col2_x, a_col2_y, b_col1_x, b_col1_y, b_col2_x, b_col2_y);
+        }
+
+        internal static float JmathMat22MulCol1Y(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y, float b_col1_x, float b_col1_y, float b_col2_x, float b_col2_y)
+        {
+            return s_JmathMat22MulCol1Y(a_col1_x, a_col1_y, a_col2_x, a_col2_y, b_col1_x, b_col1_y, b_col2_x, b_col2_y);
+        }
+
+        internal static float JmathMat22MulCol2X(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y, float b_col1_x, float b_col1_y, float b_col2_x, float b_col2_y)
+        {
+            return s_JmathMat22MulCol2X(a_col1_x, a_col1_y, a_col2_x, a_col2_y, b_col1_x, b_col1_y, b_col2_x, b_col2_y);
+        }
+
+        internal static float JmathMat22MulCol2Y(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y, float b_col1_x, float b_col1_y, float b_col2_x, float b_col2_y)
+        {
+            return s_JmathMat22MulCol2Y(a_col1_x, a_col1_y, a_col2_x, a_col2_y, b_col1_x, b_col1_y, b_col2_x, b_col2_y);
+        }
+
+        internal static float JmathMat22AbsCol1X(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y)
+        {
+            return s_JmathMat22AbsCol1X(a_col1_x, a_col1_y, a_col2_x, a_col2_y);
+        }
+
+        internal static float JmathMat22AbsCol1Y(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y)
+        {
+            return s_JmathMat22AbsCol1Y(a_col1_x, a_col1_y, a_col2_x, a_col2_y);
+        }
+
+        internal static float JmathMat22AbsCol2X(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y)
+        {
+            return s_JmathMat22AbsCol2X(a_col1_x, a_col1_y, a_col2_x, a_col2_y);
+        }
+
+        internal static float JmathMat22AbsCol2Y(float a_col1_x, float a_col1_y, float a_col2_x, float a_col2_y)
+        {
+            return s_JmathMat22AbsCol2Y(a_col1_x, a_col1_y, a_col2_x, a_col2_y);
+        }
+
+        internal static float JmathVec3DivX(float a_x, float a_y, float a_z, float s)
+        {
+            return s_JmathVec3DivX(a_x, a_y, a_z, s);
+        }
+
+        internal static float JmathVec3DivY(float a_x, float a_y, float a_z, float s)
+        {
+            return s_JmathVec3DivY(a_x, a_y, a_z, s);
+        }
+
+        internal static float JmathVec3DivZ(float a_x, float a_y, float a_z, float s)
+        {
+            return s_JmathVec3DivZ(a_x, a_y, a_z, s);
+        }
+
+        internal static float JmathFtRadians(float degrees)
+        {
+            return s_JmathFtRadians(degrees);
+        }
+
+        internal static long JoyMathFpMul(long a, long b)
+        {
+            return s_JoyMathFpMul(a, b);
+        }
+
+        internal static long JoyMathFpDiv(long a, long b)
+        {
+            return s_JoyMathFpDiv(a, b);
+        }
+
+        internal static long JoyMathFpAbs(long x)
+        {
+            return s_JoyMathFpAbs(x);
+        }
+
+        internal static long JoyMathFpSqrt(long x)
+        {
+            return s_JoyMathFpSqrt(x);
+        }
+
+        internal static long JoyMathFpSin(long x)
+        {
+            return s_JoyMathFpSin(x);
+        }
+
+        internal static long JoyMathFpCos(long x)
+        {
+            return s_JoyMathFpCos(x);
+        }
+
+        internal static long JoyMathFpRound(long value)
+        {
+            return s_JoyMathFpRound(value);
+        }
+
+        internal static long JoyMathFpAtan(long z)
+        {
+            return s_JoyMathFpAtan(z);
+        }
+
+        internal static long JoyMathFpAtan2(long y, long x)
+        {
+            return s_JoyMathFpAtan2(y, x);
+        }
+
+        internal static long JoyMathFpExp(long x)
+        {
+            return s_JoyMathFpExp(x);
+        }
+
+        internal static long JoyMathFpLn(long x)
+        {
+            return s_JoyMathFpLn(x);
+        }
+
+        internal static long JoyMathFpPow(long b, long exp)
+        {
+            return s_JoyMathFpPow(b, exp);
+        }
+
+        internal static void Release(ulong handle)
+        {
+            s_Release(handle);
+        }
+
+        internal static uint DebugLiveCount()
+        {
+            return s_DebugLiveCount();
+        }
+
+        internal static uint DebugDestroyCount()
+        {
+            return s_DebugDestroyCount();
+        }
+
     }
 
     public static class Diagnostics

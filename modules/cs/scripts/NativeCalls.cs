@@ -1,39 +1,57 @@
 using System;
-using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
-// 手写的 C# → C internal call 声明；对应的 C 实现位于
-// modules/cs/bindings/host/csclib_{input,host,borrow}.c。
+// 手写的 C# → C internal call（CoreCLR 函数指针表绑定）。
+// 对应的 C 实现位于 modules/cs/bindings/host/csclib_{input,host}.c。
 // 这些 API 用标量参数，避免跨 ABI 传递结构体。
 // 绘制 / 字体 / 图片一律走生成链路 Joy.Api.Bindings，不在这里声明。
 //
-// 类必须是 public：业务程序集通过 ProjectReference 引用本程序集，
-// internal 声明跨程序集不可见。
+// 类必须是 public：业务程序集通过 ProjectReference 引用本程序集。
 namespace Joy
 {
-    public static class Input
+    public static unsafe class Input
     {
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        public static extern bool key_down(int scancode);
+        // C 侧签名：bool w_key_down(int)（C bool = 1 字节，用 byte 表达）
+        private static delegate* unmanaged[Cdecl]<int, byte> s_key_down;
+        private static delegate* unmanaged[Cdecl]<int, byte> s_mouse_button;
+        private static delegate* unmanaged[Cdecl]<float> s_mouse_x;
+        private static delegate* unmanaged[Cdecl]<float> s_mouse_y;
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        public static extern bool mouse_button(int button);
+        internal static void Init()
+        {
+            s_key_down = (delegate* unmanaged[Cdecl]<int, byte>)NativeFuncs.Lookup("Joy.Input::key_down");
+            s_mouse_button = (delegate* unmanaged[Cdecl]<int, byte>)NativeFuncs.Lookup("Joy.Input::mouse_button");
+            s_mouse_x = (delegate* unmanaged[Cdecl]<float>)NativeFuncs.Lookup("Joy.Input::mouse_x");
+            s_mouse_y = (delegate* unmanaged[Cdecl]<float>)NativeFuncs.Lookup("Joy.Input::mouse_y");
+        }
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        public static extern float mouse_x();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        public static extern float mouse_y();
+        public static bool key_down(int scancode) => s_key_down(scancode) != 0;
+        public static bool mouse_button(int button) => s_mouse_button(button) != 0;
+        public static float mouse_x() => s_mouse_x();
+        public static float mouse_y() => s_mouse_y();
     }
 
-    public static class Host
+    public static unsafe class Host
     {
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        public static extern void log(string message);
+        // C 侧签名：void w_log(const char*) / void w_quit() / void w_set_exit_code(int)
+        private static delegate* unmanaged[Cdecl]<byte*, void> s_log;
+        private static delegate* unmanaged[Cdecl]<void> s_quit;
+        private static delegate* unmanaged[Cdecl]<int, void> s_set_exit_code;
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        public static extern void quit();
+        internal static void Init()
+        {
+            s_log = (delegate* unmanaged[Cdecl]<byte*, void>)NativeFuncs.Lookup("Joy.Host::log");
+            s_quit = (delegate* unmanaged[Cdecl]<void>)NativeFuncs.Lookup("Joy.Host::quit");
+            s_set_exit_code = (delegate* unmanaged[Cdecl]<int, void>)NativeFuncs.Lookup("Joy.Host::set_exit_code");
+        }
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        public static extern void set_exit_code(int code);
+        public static void log(string message)
+        {
+            byte* p = NativeFuncs.Utf8(message ?? "(null)");
+            try { s_log(p); } finally { NativeFuncs.FreeUtf8(p); }
+        }
+
+        public static void quit() => s_quit();
+        public static void set_exit_code(int code) => s_set_exit_code(code);
     }
 }

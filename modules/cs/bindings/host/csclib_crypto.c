@@ -1,9 +1,12 @@
-/* C# -> joy glue: hand-written InternalCall for MD5 (crypto bridge).
+/* C# -> joy glue: hand-written native binding for MD5 (crypto bridge).
  *
  * joy_core_utils_md5x is level:X in the IDL (char* in/out, size_t) so the
  * generator skips it. This bridge exposes it as a simple string-in/string-out
- * InternalCall so C# can compute the exact same MD5 as the C++ frame-sync
+ * native call so C# can compute the exact same MD5 as the C++ frame-sync
  * checksum (utils_md5x), without reimplementing the algorithm in managed code.
+ *
+ * CoreCLR 函数指针表绑定：C# 侧传 UTF-8 的 const char*，返回 UTF-8 指针；
+ * C# 用 Marshal.PtrToStringUTF8 拷贝。不再用 MonoString/mono_string_new。
  *
  * ASCII-only comments: MSVC reads UTF-8-without-BOM as the local codepage.
  */
@@ -11,27 +14,20 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-#include <mono/metadata/object.h>
-#include <mono/metadata/appdomain.h>   /* mono_get_root_domain */
-#include <mono/utils/mono-publib.h>
 #include "joy_csharp.h"
 #include <joy/joy.h>
 
 /* md5x: input bytes -> 32-char lowercase hex (writes into out, returns 32).
- * Caller passes a C# string; checksum strings are ASCII (digits,:,-,letters). */
-static MonoString* w_md5_hex(MonoString* input)
+ * Caller passes a C# UTF-8 string; checksum strings are ASCII (digits,:,-,letters). */
+static const char* w_md5_hex(const char* input)
 {
+        static char out[64];
         if (!input) return NULL;
-        char* utf8 = mono_string_to_utf8(input);
-        if (!utf8) return NULL;
-        size_t len = strlen(utf8);
+        size_t len = strlen(input);
 
-        char out[64];
         memset(out, 0, sizeof(out));
-        joy_core_utils_md5x(utf8, len, out);
-        mono_free(utf8);
-
-        return mono_string_new(mono_get_root_domain(), out);
+        joy_core_utils_md5x(input, len, out);
+        return out;  /* C# 侧立即 Marshal.PtrToStringUTF8 拷贝，无需释放 */
 }
 
 void csopen_crypto(void)

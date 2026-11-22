@@ -12,7 +12,6 @@
  * 一个宿主对象只应登记一次（在 Host.OnInit 里），否则每帧都会占用一个槽位。
  */
 #include <stdint.h>
-#include <mono/metadata/object.h>
 #include "joy_csharp.h"
 #include <joy/joy.h>
 #include <joy/api/runtime/joy_obj.h>
