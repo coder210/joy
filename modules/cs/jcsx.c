@@ -336,9 +336,14 @@ static bool csx_init_android(csx_p csx)
         const char* vals[] = { tpa, libdir, libdir };
         void* host = NULL; unsigned int domain = 0;
         int rc = coreclr_init("joy", "joy", 3, keys, vals, &host, &domain);
-        JPROBE("P5 after coreclr_initialize");
-        if (rc < 0 || !host) {
-                JPROBE("P5-FAIL coreclr_initialize failed");
+        char _pb[256];
+        snprintf(_pb, sizeof(_pb), "P5 after coreclr_init rc=0x%x host=%p domain=%u", rc, host, domain);
+        JPROBE(_pb);
+        /* MonoVM 的 coreclr_initialize 成功时 host=NULL / domain=0（实测 rc=0），
+         * 它不像真 CoreCLR 那样返回 host handle。旧判断 `rc < 0 || !host` 会把
+         * 成功误判成失败（P5-FAIL）。这里只按 rc 判定。 */
+        if (rc < 0) {
+                JPROBE("P5-FAIL coreclr_initialize rc<0");
                 joy_core_log_error("coreclr_initialize failed: 0x%x", rc);
                 CSX_DL_CLOSE(lib);
                 return false;
@@ -426,10 +431,13 @@ bool csx_load_assembly(csx_p csx, const char* filename)
         }
 #else
         if (csx->create_delegate) {
+                char _pb[256];
                 JPROBE("P7 before create_delegate Bootstrap");
                 int rc = csx->create_delegate(csx->host_handle, csx->domain_id,
                                               "JoyGame", "JoyGame.GameApplication", "Bootstrap", &initialize_fn);
-                JPROBE("P8 after create_delegate Bootstrap");
+                snprintf(_pb, sizeof(_pb), "P8 after create_delegate Bootstrap rc=0x%x fn=%s",
+                         rc, initialize_fn ? "OK" : "NULL");
+                JPROBE(_pb);
                 if (rc < 0 || !initialize_fn) {
                         JPROBE("P8-FAIL create_delegate Bootstrap failed");
                         joy_core_log_error("create_delegate GameApplication.Bootstrap failed: 0x%x", rc);
