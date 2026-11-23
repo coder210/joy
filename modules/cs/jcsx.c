@@ -15,6 +15,7 @@
 #ifdef ENABLED_CS_SCRIPT
 #include "joy_csharp.h"
 #include <joy/joy.h>
+#include <SDL3/SDL_stdinc.h>   /* SDL_free：joy_core_utils_read_file 的返回缓冲归 SDL 分配器 */
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -108,6 +109,12 @@ typedef void (*csx_mono_set_assemblies_path_fn)(const char* path);
 typedef void (*csx_mono_set_dirs_fn)(const char* assembly_dir, const char* config_dir);
 typedef void* (*csx_mono_domain_assembly_open_fn)(void* domain, const char* name);
 typedef void* (*csx_mono_assembly_get_image_fn)(void* assembly);
+/* 从内存加载程序集：Android assets 不是文件系统，必须先用 joy_core_utils_read_file
+ * （走 SDL_IOStream → AAssetManager）读出字节，再由 mono 从数据创建 image/assembly。 */
+typedef void* (*csx_mono_image_open_from_data_fn)(char* data, unsigned int data_size,
+                                                  int need_copy, int* out_status);
+typedef void* (*csx_mono_assembly_load_from_full_fn)(void* image, const char* name,
+                                                     int* out_status, int refonly);
 typedef void* (*csx_mono_class_from_name_fn)(void* image, const char* ns, const char* name);
 typedef void* (*csx_mono_class_get_method_from_name_fn)(void* klass, const char* name, int param_count);
 typedef void* (*csx_mono_runtime_invoke_fn)(void* method, void* obj, void** params, void** exc);
@@ -162,6 +169,8 @@ struct joy_csx {
         csx_mono_thread_attach_fn mono_thread_attach;
         csx_mono_domain_assembly_open_fn mono_domain_assembly_open;
         csx_mono_assembly_get_image_fn mono_assembly_get_image;
+        csx_mono_image_open_from_data_fn mono_image_open_from_data;
+        csx_mono_assembly_load_from_full_fn mono_assembly_load_from_full;
         csx_mono_class_from_name_fn mono_class_from_name;
         csx_mono_class_get_method_from_name_fn mono_class_get_method;
         csx_mono_runtime_invoke_fn mono_runtime_invoke;
@@ -355,6 +364,8 @@ static bool csx_init_android(csx_p csx)
         CSX_MONO_SYM(csx->mono_thread_attach, lib, "mono_thread_attach");
         CSX_MONO_SYM(csx->mono_domain_assembly_open, lib, "mono_domain_assembly_open");
         CSX_MONO_SYM(csx->mono_assembly_get_image, lib, "mono_assembly_get_image");
+        CSX_MONO_SYM(csx->mono_image_open_from_data, lib, "mono_image_open_from_data");
+        CSX_MONO_SYM(csx->mono_assembly_load_from_full, lib, "mono_assembly_load_from_full");
         CSX_MONO_SYM(csx->mono_class_from_name, lib, "mono_class_from_name");
         CSX_MONO_SYM(csx->mono_class_get_method, lib, "mono_class_get_method_from_name");
         CSX_MONO_SYM(csx->mono_runtime_invoke, lib, "mono_runtime_invoke");
@@ -365,7 +376,7 @@ static bool csx_init_android(csx_p csx)
         JPROBE("P3 after dlsym mono embedding symbols");
         if (!mono_jit_init || !csx->mono_thread_attach || !csx->mono_runtime_invoke ||
             !csx->mono_class_from_name || !csx->mono_class_get_method ||
-            !csx->mono_domain_assembly_open || !csx->mono_assembly_get_image) {
+            !csx->mono_image_open_from_data || !csx->mono_assembly_load_from_full) {
                 JPROBE("P3-FAIL mono symbols missing");
                 joy_core_log_error("mono embedding symbols missing on Android libmonosgen");
                 CSX_DL_CLOSE(lib);
@@ -433,16 +444,43 @@ csx_p csx_create(void)
 }
 
 #if defined(__ANDROID__)
-/* 确保 JoyGame.dll 已加载并缓存其 MonoImage。迁移前的 csx_load_assembly 用
- * mono_image_open_from_data + mono_assembly_load_from_full；这里用更简单的
- * mono_domain_assembly_open（mono_set_assemblies_path 已指向解包目录）。 */
+/* 加载 JoyGame.dll。
+ * 关键：Android 的 assets 打包在 APK 内，不是文件系统路径，mono 的
+ * mono_domain_assembly_open("JoyGame.dll") 一定返回 NULL（P7-FAIL）。
+ * 必须先用 joy_core_utils_read_file（内部 SDL_LoadFile → AAssetManager）
+ * 把文件读进内存，再用 mono_image_open_from_data + mono_assembly_load_from_full
+ * 从内存加载——这正是迁移前验证过能跑的做法。 */
 static bool csx_mono_ensure_image(csx_p csx)
 {
         if (csx->mono_image) return true;
-        void* assembly = csx->mono_domain_assembly_open(csx->mono_domain, "JoyGame.dll");
-        if (!assembly) {
-                JPROBE("P7-FAIL mono_domain_assembly_open(JoyGame.dll) NULL");
-                joy_core_log_error("mono_domain_assembly_open(JoyGame.dll) failed");
+
+        size_t data_size = 0;
+        char* data = joy_core_utils_read_file("JoyGame.dll", &data_size);
+        if (!data || data_size == 0) {
+                JPROBE("P7-FAIL joy_core_utils_read_file(JoyGame.dll) NULL");
+                joy_core_log_error("read JoyGame.dll via SDL failed");
+                if (data) SDL_free(data);
+                return false;
+        }
+
+        int status = 0; /* MonoImageOpenStatus: 0 = MONO_IMAGE_OK */
+        /* need_copy=1：mono 自己复制字节，读完即可 SDL_free 原始缓冲。 */
+        void* image = csx->mono_image_open_from_data(data, (unsigned int)data_size, 1, &status);
+        SDL_free(data);
+        if (!image || status != 0) {
+                char pb[256];
+                snprintf(pb, sizeof(pb), "P7-FAIL mono_image_open_from_data status=%d", status);
+                JPROBE(pb);
+                joy_core_log_error("mono_image_open_from_data(JoyGame.dll) failed: status=%d", status);
+                return false;
+        }
+
+        void* assembly = csx->mono_assembly_load_from_full(image, "joy_asm", &status, 0);
+        if (!assembly || status != 0) {
+                char pb[256];
+                snprintf(pb, sizeof(pb), "P7-FAIL mono_assembly_load_from_full status=%d", status);
+                JPROBE(pb);
+                joy_core_log_error("mono_assembly_load_from_full failed: status=%d", status);
                 return false;
         }
         csx->mono_image = csx->mono_assembly_get_image(assembly);
@@ -450,7 +488,7 @@ static bool csx_mono_ensure_image(csx_p csx)
                 JPROBE("P7-FAIL mono_assembly_get_image NULL");
                 return false;
         }
-        JPROBE("P7 JoyGame.dll loaded via mono");
+        JPROBE("P7 JoyGame.dll loaded from memory via SDL + mono");
         return true;
 }
 
