@@ -137,7 +137,26 @@ jobs:
           else
             exe=example_csharp
           fi
+          set +e
           ( cd "$out" && SDL_VIDEODRIVER=dummy "./$exe" --smoke 20 ) 2>&1 | tee csharp-selfcontained.log
+          run_rc=${PIPESTATUS[0]}
+          set -e
+          if [ "$run_rc" -ne 0 ]; then
+            echo "::error::csharp smoke exited $run_rc (139=segfault)"
+            # 抓 native backtrace：segfault 定位用（managed 异常会被 catch，崩必在 native/函数指针）。
+            if [ "$RUNNER_OS" = "Linux" ] && command -v gdb >/dev/null 2>&1; then
+              echo "==== gdb backtrace ===="
+              ( cd "$out" && gdb -q -batch \
+                  -ex 'set env SDL_VIDEODRIVER=dummy' \
+                  -ex 'run --smoke 20' \
+                  -ex 'thread apply all bt 25' "./$exe" ) 2>&1 | tee csharp-gdb.log || true
+            elif [ "$RUNNER_OS" = "macOS" ] && command -v lldb >/dev/null 2>&1; then
+              echo "==== lldb backtrace ===="
+              ( cd "$out" && lldb -b -o 'env SDL_VIDEODRIVER=dummy' \
+                  -o 'run --smoke 20' -o 'bt all' "./$exe" ) 2>&1 | tee csharp-lldb.log || true
+            fi
+            exit "$run_rc"
+          fi
           grep -Fq 'command-line mode' csharp-selfcontained.log \
             || { echo "::error::csharp did not load self-contained CoreCLR"; exit 1; }
           grep -Fq 'smoke finished' csharp-selfcontained.log \

@@ -15,15 +15,14 @@ namespace JoyGame
     /// </summary>
     public static class GameApplication
     {
-        // 桌面：hostfxr 取 UCO 函数指针直调。
+        // 桌面 UCO 入口：逻辑内联，不转调普通方法。
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
         public static void Bootstrap(IntPtr lookupFn)
         {
-            BootstrapMono(lookupFn);
+            Joy.NativeFuncs.Initialize(lookupFn);
         }
 
-        // Android：mono_runtime_invoke 只能调普通 public static 方法
-        // （UCO 方法禁止反射调用），故提供普通入口，逻辑与桌面共用。
+        // Android 普通入口：mono_runtime_invoke 只能调普通 public static 方法。
         public static void BootstrapMono(IntPtr lookupFn)
         {
             Joy.NativeFuncs.Initialize(lookupFn);
