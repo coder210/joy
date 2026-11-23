@@ -537,13 +537,32 @@ bool csx_load_assembly(csx_p csx, const char* filename)
                 void* lookup = (void*)&csx_lookup_internal_call;
                 void* params[1] = { &lookup };
                 void* exc = NULL;
-                JPROBE("P9 before mono_runtime_invoke BootstrapMono");
+                {
+                        /* 决定性诊断：直接验证 C 侧注册表本身是否可用。
+                         * count=0 → csopen_* 没执行（架构/链接问题）；
+                         * lookup=NULL → 名字对不上；
+                         * 两者都 OK → 异常来自 C# 内部（BCL/类型解析）。 */
+                        void* probe = csx_lookup_internal_call("Joy.Api.Native::LcgRandomCreate");
+                        char pb[320];
+                        snprintf(pb, sizeof(pb),
+                                 "P9a C侧表 count=%d 首项lookup=%s asm_dir=%s",
+                                 s_icall_count, probe ? "OK" : "NULL", csx->asm_dir);
+                        JPROBE(pb);
+                }
                 csx->mono_runtime_invoke(bootstrap, NULL, params, &exc);
                 if (exc) {
-                        JPROBE("P9-FAIL exception in BootstrapMono");
-                        char* s = csx->mono_string_to_utf8(csx->mono_object_to_string(exc, NULL));
-                        joy_core_log_error("BootstrapMono exception: %s", s ? s : "?");
-                        if (s) csx->mono_free(s);
+                        /* 把托管异常全文弹出来：NativeFuncs.Lookup 缺失名字时抛
+                         * EntryPointNotFoundException("Joy internal call not registered: X")，
+                         * 消息里直接带缺失的绑定名，是定位的关键。 */
+                        char* msg = csx->mono_string_to_utf8
+                                        ? (char*)csx->mono_string_to_utf8(csx->mono_object_to_string(exc, NULL))
+                                        : NULL;
+                        char pb[1024];
+                        snprintf(pb, sizeof(pb), "P9-FAIL BootstrapMono 异常:\n%s",
+                                 msg ? msg : "(ToString 返回 NULL)");
+                        JPROBE(pb);
+                        joy_core_log_error("BootstrapMono exception: %s", msg ? msg : "?");
+                        if (msg) csx->mono_free(msg);
                         return false;
                 }
                 JPROBE("P10 after BootstrapMono (bindings registered)");
