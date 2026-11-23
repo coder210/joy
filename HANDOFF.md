@@ -487,19 +487,20 @@ API），`status:on` +18 条（这 13 条再加 §3 的 23 修复 `Uint8` 分类
 ## 4. 关键技术事实（最容易踩错的地方）
 
 ### CLR 的真实来源
-`runtimes/` 里的运行时来自微软**官方 NuGet** 的 MonoVM runtime pack
-`Microsoft.NETCore.App.Runtime.Mono.<rid>` **8.0.17**（曾误记为「自定义构建、
-非官方分发包」，已在 `runtimes/README.md` 更正）。
+运行时全部来自微软**官方 NuGet** 的 runtime pack，且**只以 `runtimes/nupkg/` 里的
+`.nupkg` 形式入库**——仓库里已经没有散装托管 DLL：
 
-- Windows 包的主 DLL 名就是 `coreclr.dll`（apphost 按此名查找），
-  Android 包是 `runtimes/android-arm64/native/libmonosgen-2.0.so`。
+- 桌面 CoreCLR：`Microsoft.NETCore.App.Runtime.<rid>` **8.0.11**，由
+  `dotnet publish --self-contained` 消费（附加 NuGet 源），再按白名单裁剪。
+- Android MonoVM：`Microsoft.NETCore.App.Runtime.Mono.android-arm64` **8.0.17**，
+  由 `cmake/JoyMonoVm.cmake` 在 configure 阶段解包暂存到 `<build>/_monovm/`。
+
+Android 包内的主库是 `runtimes/android-arm64/native/libmonosgen-2.0.so`
+（Windows 的 MonoVM 包内主库名恰好也叫 `coreclr.dll`，但那是 8.0.17 的 MonoVM，
+与桌面用的 8.0.11 CoreCLR 不是同一个东西，不能混用）。
+
 - 两者都导出 6 个 `coreclr_*` + 1300+ 个 `mono_*`（dynsym 各 1328 个），
   所以 `modules/cs/jcsx.c` 的 `csx_*` 嵌入代码跨平台不用改。
-- **仓库里 `windows-x64/coreclr.dll` 例外**：它内嵌
-  `C:\Users\liwei\Downloads\runtime-8.0.17\src\mono\...` 调试路径，是从
-  dotnet/runtime 8.0.17 源码在本机编译的那一份。官方包二进制只有相对路径
-  `src/mono/mono/mini` 与版本串 `8.0.1725.26602 @Commit: 77545d6fd5ca`。
-- `coreclr.import.lib` 是从该 DLL 生成的导入库，NuGet 包不附带。
 
 ### BCL 不能跨平台共用
 `System.Private.CoreLib.dll` 按 RID 构建，实测：
@@ -511,8 +512,9 @@ API），`status:on` +18 条（这 13 条再加 §3 的 23 修复 `Uint8` 分类
 | System.Runtime | 43,792 | 43,832 | 23.25% |
 | System.Collections | 102,168 | 102,176 | 46.33% |
 
-所以 `runtimes/` 结构是**每个平台目录自带 30 个 BCL（白名单）**，`examples/csharp_host/CMakeLists.txt`
-只取 `<MONO_LIBRARIES 所在目录>/libs/`，缺失就 `FATAL_ERROR`，**没有向其它平台回退**。
+所以 BCL 一律按目标 RID 自己取，白名单只有一份（`cmake/JoyBclWhitelist.cmake`，30 个）：
+桌面从 publish 产物裁剪，Android 从 MonoVM 包解包到 `<stage>/libs`。两边缺失都
+`FATAL_ERROR`，**没有向其它平台回退**。
 不要再加回退逻辑——曾经的根目录 `runtimes/libs/` 就是这么把 Windows 版静默拷给别的平台的。
 
 ### `_f` 是归一化，`_rect` 是像素
@@ -573,7 +575,8 @@ ctest --test-dir build -C Debug --output-on-failure --timeout 25   # 四语言�
 检查 Android 产物布局（本机无法编译，只能看文件）：
 
 ```powershell
-Get-ChildItem runtimes/android-arm64 -Recurse -File   # 主库 + 4 个 libSystem.*.so + 30 个 BCL
+Get-ChildItem runtimes/nupkg -File                     # 4 个 runtime pack（桌面 3 + Android 1）
+Get-ChildItem build-android/_monovm -Recurse -File     # Android 解包暂存：主库 + 4 shims + 30 BCL
 ```
 
 ## 6. 明确未验证 / 已知风险

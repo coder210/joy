@@ -105,6 +105,13 @@ if(JOY_BUILD_EXAMPLES)
             set(MONO_LIBRARIES "${_clr_plat}/libmonosgen-2.0.dylib")
         endif()
     endif()
+    # Android：从 runtimes/nupkg 解包暂存（与桌面同一套来源），并强制覆盖
+    # 可能过期的缓存 MONO_LIBRARIES。
+    if(ANDROID)
+        include("${CMAKE_CURRENT_LIST_DIR}/cmake/JoyMonoVm.cmake")
+        joy_monovm_stage(_joy_monovm_stage)
+        set(MONO_LIBRARIES "${_joy_monovm_stage}/libmonosgen-2.0.so")
+    endif()
 
     # 桌面只要求 mono 头文件（运行时由 runtimes/nupkg 自包含部署，不再需要
     # MONO_LIBRARIES 哨兵）；Android 仍要求 libmonosgen；wasm 不支持 MonoVM。

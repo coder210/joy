@@ -63,8 +63,8 @@ static const char* const kClrLibs[] = {
     "System.Runtime.dll", "System.Collections.dll", "mscorlib.dll",
     /* JoyGame / Joy.Bindings 实际用到的命名空间。只放 4 个核心程序集时，
      * BootstrapMono 里解析 Marshal/StringBuilder/LINQ 等类型会抛
-     * FileNotFoundException（P9-FAIL）。清单与 runtimes/android-arm64/libs
-     * 及 CMakeLists 部署到 assets/lib 的内容保持一致。 */
+     * FileNotFoundException（P9-FAIL）。清单必须与 cmake/JoyBclWhitelist.cmake
+     * 一致——Android 解包与桌面裁剪共用那一份（30 个）。 */
     "System.IO.dll", "System.IO.FileSystem.dll", "System.IO.FileSystem.Primitives.dll",
     "System.Reflection.dll", "System.Reflection.Extensions.dll", "System.Reflection.Primitives.dll",
     "System.Globalization.dll", "System.Globalization.Extensions.dll",
