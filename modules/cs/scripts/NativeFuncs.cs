@@ -58,6 +58,16 @@ namespace Joy
             }
         }
 
+        /// <summary>
+        /// 诊断用：按注册名返回 native 函数指针（0 表示未初始化或未注册）。
+        /// 用于确认崩溃点上的绑定指针是否为空；定位完成后可删除。
+        /// </summary>
+        public static unsafe ulong DebugPointer(string name)
+        {
+            try { return (ulong)(nuint)Lookup(name); }
+            catch (Exception) { return 0; }
+        }
+
         // ---- string / 数组 / 指针编组辅助 ----
 
         /// <summary>C# string -> UTF-8 (CoTaskMem)。调用方必须 FreeUtf8。</summary>

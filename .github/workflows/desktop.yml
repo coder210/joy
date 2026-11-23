@@ -145,8 +145,14 @@ jobs:
           else
             exe=example_csharp
           fi
+          # SDL3 的无头驱动叫 offscreen（"dummy" 是 SDL2 的名字）。Linux/macOS runner
+          # 没有显示会话，驱动名不对会让 SDL 视频子系统初始化失败；而 SDL_CreateWindow
+          # 在初始化失败后仍可能继续走空的驱动方法表（表现就是 call 0x0 / exit 139）。
+          # Windows runner 有真实桌面会话，会回退到真实驱动，所以这个坑只在 Linux 暴露。
+          if [ "$RUNNER_OS" = "Windows" ]; then drv=dummy; else drv=offscreen; fi
+          echo "SDL_VIDEODRIVER=$drv"
           set +e
-          ( cd "$out" && SDL_VIDEODRIVER=dummy "./$exe" --smoke 20 ) 2>&1 | tee csharp-selfcontained.log
+          ( cd "$out" && SDL_VIDEODRIVER="$drv" "./$exe" --smoke 20 ) 2>&1 | tee csharp-selfcontained.log
           run_rc=${PIPESTATUS[0]}
           set -e
           if [ "$run_rc" -ne 0 ]; then
@@ -156,7 +162,7 @@ jobs:
               echo "==== gdb backtrace ===="
               ( cd "$out" && gdb -q -batch \
                   -ex 'set pagination off' \
-                  -ex 'set env SDL_VIDEODRIVER=dummy' \
+                  -ex "set env SDL_VIDEODRIVER=$drv" \
                   -ex 'run --smoke 20' \
                   -ex 'echo \n==== fault ip ====\n' \
                   -ex 'info registers rip' \
@@ -167,7 +173,7 @@ jobs:
                   "./$exe" ) 2>&1 | tee csharp-gdb.log || true
             elif [ "$RUNNER_OS" = "macOS" ] && command -v lldb >/dev/null 2>&1; then
               echo "==== lldb backtrace ===="
-              ( cd "$out" && lldb -b -o 'env SDL_VIDEODRIVER=dummy' \
+              ( cd "$out" && lldb -b -o "env SDL_VIDEODRIVER=$drv" \
                   -o 'run --smoke 20' -o 'bt all' "./$exe" ) 2>&1 | tee csharp-lldb.log || true
             else
               echo "::warning::no gdb/lldb, native backtrace skipped"

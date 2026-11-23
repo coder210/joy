@@ -28,6 +28,19 @@ namespace JoyGame
             // 标记用于确认崩在哪一步。
             JoyProbe.Enabled = smokeFrames > 0;
             JoyProbe.Mark("OnInit:begin");
+            // SDL 子系统必须显式初始化：宿主不建窗口，窗口由托管侧经
+            // Joy.Api.Bindings 创建。不初始化时 SDL_CreateWindow 在无显示环境会
+            // 继续走空的驱动方法表（表现为 call 0x0 / exit 139）；Windows runner
+            // 有真实桌面会话，SDL 内部自动初始化能成功，所以这个缺口只在
+            // Linux/macOS CI 暴露。
+            if (!Joy.Api.Bindings.InitEnv())
+            {
+                // 只记录不早退：SDL 初始化失败时 SDL_CreateWindow 会干净地返回 NULL，
+                // 上层据此抛 InvalidOperationException，比改变控制流更容易定位。
+                Joy.Host.log("[host] SDL init failed, SDL_VIDEODRIVER=" +
+                             (Environment.GetEnvironmentVariable("SDL_VIDEODRIVER") ?? "<unset>"));
+            }
+            JoyProbe.Mark("OnInit:InitEnv OK");
             _app = new GameApp(width, height, smokeFrames);
             JoyProbe.Mark("OnInit:GameApp ctor OK");
             _smoke = smokeFrames > 0 ? new SmokeScript() : null;
