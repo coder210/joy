@@ -121,6 +121,38 @@ CI（`.github/workflows/android.yml`）只装 NDK、校验这些已入库文件�
 `libmain.so` 并上传 Artifacts，本机不装 NDK 也能拿到 Android 产物。
 打 APK 与真机冒烟仍需单独的 Android 工程，见下方部署说明。
 
+## 桌面离线构建：`runtimes/nupkg/`
+
+桌面自包含的 hostfxr / coreclr / BCL 由 `dotnet publish --self-contained` 从 NuGet 的
+runtime pack 解出。为了 clone 后不依赖网络，这里预置了 3 个平台的 runtime pack：
+
+| 文件 | 提供 |
+|---|---|
+| `microsoft.netcore.app.runtime.win-x64.8.0.11.nupkg` | Windows x64 运行时 + BCL |
+| `microsoft.netcore.app.runtime.linux-x64.8.0.11.nupkg` | Linux x64 运行时 + BCL |
+| `microsoft.netcore.app.runtime.osx-arm64.8.0.11.nupkg` | macOS arm64 运行时 + BCL |
+
+`cmake/JoySelfContained.cmake` 把它们作为**附加** NuGet 源
+（`-p:RestoreAdditionalProjectSources`，不替换 nuget.org），并打开两个开关：
+
+- `DisableTransitiveFrameworkReferenceDownloads=true`
+  否则 self-contained 会连 AspNetCore / WindowsDesktop 的 runtime pack 一起下载
+  （本项目根本不用），离线构建直接 NU1101 失败。
+- `UseAppHost=false`
+  游戏由 C++ 宿主经 hostfxr 加载 `JoyGame.dll`，不需要 .NET apphost；关掉可省掉
+  `Microsoft.NETCore.App.Host.<rid>` 这一层依赖（仓库里也没有任何地方用到它）。
+
+离线构建实际只需：目标 RID 的 runtime pack（上表 3 个之一）+ SDK 自带的
+`Microsoft.NETCore.App.Ref`、`Host.<本机 RID>` pack。
+
+**版本约束**：nupkg 版本要与 SDK 解析出的 runtime pack 版本一致（当前 8.0.11，
+对应 .NET 8.0.11 与 SDK 9.0.1xx 自带的 8.0.11 targeting pack）。升级 .NET 时：
+1. 取 `Microsoft.NETCore.App.Runtime.<rid>/<新版本>` 替换本目录 3 个 nupkg；
+2. 同步更新本节表格与版本说明。
+
+之所以用"附加源"而不是 `--source` 完全替换，是为了在线/CI 行为不变：本地源缺包时
+仍可从 nuget.org 补齐，不会因 SDK 版本差异把构建打挂。
+
 ## 部署
 
 > **桌面（Windows / Linux / macOS）迁移到 CoreCLR 自包含后已不再读取本目录的 libs**：

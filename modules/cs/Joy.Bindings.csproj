@@ -9,7 +9,7 @@
     <!-- CoreCLR 函数指针表绑定需要 delegate* / UnmanagedCallersOnly（.NET 5+）。 -->
     <TargetFramework>net8.0</TargetFramework>
     <!-- 自包含 publish (dotnet publish -r <rid>) 的 restore 需要 RID 清单 -->
-    <RuntimeIdentifiers>win-x64;linux-x64;osx-x64;osx-arm64</RuntimeIdentifiers>
+    <!-- RID 由 publish 时的 -r 指定，不预声明，避免 restore 为全部 RID 拉包。 -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>Joy.Bindings</AssemblyName>
     <RootNamespace>Joy</RootNamespace>

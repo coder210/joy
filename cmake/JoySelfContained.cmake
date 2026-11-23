@@ -85,11 +85,33 @@ function(joy_deploy_selfcontained _target _csproj _cs_out _runtime_dir _config)
     _joy_sc_rid_out(_rid)
     set(_publish_dir "${CMAKE_BINARY_DIR}/_selfcontained/${_rid}/${_config}")
 
+    # 仓库自带 runtime pack（runtimes/nupkg/*.nupkg），作为**附加** NuGet 源：
+    #   - 不替换 nuget.org，在线构建行为与之前完全一致（零回归）
+    #   - 离线时由本地 nupkg 提供 Microsoft.NETCore.App.Runtime.<rid>，
+    #     SDK 自带的 Ref/Host pack 提供其余部分，clone 后即可构建
+    # 版本必须与 SDK 选择的 runtime pack 一致（当前 8.0.11），升级 .NET 时
+    # 同步替换 runtimes/nupkg 里的 nupkg 即可。
+    set(_nupkg_dir "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../runtimes/nupkg")
+    set(_sc_src_args "")
+    if(EXISTS "${_nupkg_dir}")
+        set(_sc_src_args
+            "-p:RestoreAdditionalProjectSources=${_nupkg_dir}"
+            "--ignore-failed-sources")
+    endif()
+
     add_custom_target(${_target}_sc_publish
         COMMAND ${CMAKE_COMMAND} -E make_directory "${_publish_dir}"
         COMMAND dotnet publish "${_csproj}"
                 -c ${_config}
                 -r "${_rid}" --self-contained true -o "${_publish_dir}"
+                # 不下载 AspNetCore/WindowsDesktop 的 runtime pack：本项目只用到
+                # Microsoft.NETCore.App，缺这个开关时 self-contained 会为所有已知
+                # 框架引用拉包，离线构建必然失败（NU1101）。
+                -p:DisableTransitiveFrameworkReferenceDownloads=true
+                # 不需要 .NET apphost：游戏由 C++ 宿主经 hostfxr 加载 JoyGame.dll，
+                # 关掉可省掉 Microsoft.NETCore.App.Host.<rid>（离线更少依赖）。
+                -p:UseAppHost=false
+                ${_sc_src_args}
         COMMENT "dotnet publish self-contained runtime for ${_target} (${_rid})"
         VERBATIM)
 

@@ -2,8 +2,10 @@
   <PropertyGroup>
     <!-- CoreCLR 宿主：与 Joy.Bindings 一致用 net8.0 -->
     <TargetFramework>net8.0</TargetFramework>
-    <!-- 自包含 publish 需要 RID 清单；函数指针表绑定需要 unsafe。 -->
-    <RuntimeIdentifiers>win-x64;linux-x64;osx-x64;osx-arm64</RuntimeIdentifiers>
+    <!-- RID 由 publish 时的 `-r <rid>` 显式指定，这里不预先声明 RuntimeIdentifiers：
+     * 声明了会让 restore 为全部 RID 解析 runtime/host pack，离线构建（本地 nupkg 源）
+     * 就必须为每个 RID 都备包。改为按需解析，离线只需目标 RID 的包。
+     * 函数指针表绑定需要 unsafe。 -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>JoyGame</AssemblyName>
     <RootNamespace>JoyGame</RootNamespace>
