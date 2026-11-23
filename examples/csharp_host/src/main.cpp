@@ -58,8 +58,24 @@ static int find_arg(int argc, char* argv[], const char* name)
  * SDL_GetPrefPath() 指向的内部存储，再把 MONO_LIB_DIR 指过去。
  * 清单与 ../CMakeLists.txt 部署到 lib/ 的文件保持一致。 */
 static const char* const kClrLibs[] = {
+    /* 核心（缺任一 mono_jit_init 直接 abort） */
     "System.Private.CoreLib.dll", "netstandard.dll",
-    "System.Runtime.dll", "System.Collections.dll",
+    "System.Runtime.dll", "System.Collections.dll", "mscorlib.dll",
+    /* JoyGame / Joy.Bindings 实际用到的命名空间。只放 4 个核心程序集时，
+     * BootstrapMono 里解析 Marshal/StringBuilder/LINQ 等类型会抛
+     * FileNotFoundException（P9-FAIL）。清单与 runtimes/android-arm64/libs
+     * 及 CMakeLists 部署到 assets/lib 的内容保持一致。 */
+    "System.IO.dll", "System.IO.FileSystem.dll", "System.IO.FileSystem.Primitives.dll",
+    "System.Reflection.dll", "System.Reflection.Extensions.dll", "System.Reflection.Primitives.dll",
+    "System.Globalization.dll", "System.Globalization.Extensions.dll",
+    "System.Text.Encoding.dll", "System.Text.Encoding.Extensions.dll",
+    "System.Runtime.InteropServices.dll", "System.Runtime.Extensions.dll",
+    "System.Linq.dll", "System.Linq.Expressions.dll",
+    "System.Threading.dll", "System.Threading.Tasks.dll", "System.Threading.Thread.dll",
+    "System.Diagnostics.Debug.dll", "System.Diagnostics.Tools.dll",
+    "System.Memory.dll", "System.Collections.Concurrent.dll",
+    "System.Runtime.Serialization.Primitives.dll", "System.ComponentModel.Primitives.dll",
+    "System.Runtime.CompilerServices.Unsafe.dll", "System.Console.dll",
     "Joy.Bindings.dll", "JoyGame.dll", NULL   /* TPA 也需要 JoyGame.dll 本体 */
 };
 
