@@ -1,17 +1,16 @@
 # 桌面自包含 .NET 运行时部署（Godot 4 导出版的做法）
 #
 # hostfxr_initialize_for_dotnet_command_line 从 exe 目录加载完整 CoreCLR，
-# 玩家机器无需安装 .NET。dotnet publish --self-contained 默认产出 161 个
-# System.* BCL（约 71MB），但 CLR 按需加载——只有代码真正用到的程序集才读盘。
-# 本模块把 BCL 收敛到一份白名单（实测覆盖全部 smoke/parity/文件IO/反射路径），
-# 把发布包从 ~88MB 降到 ~48MB，同时保留断点所需的 PDB。
+# 玩家机器无需安装 .NET。dotnet publish --self-contained 产出完整运行时
+# （约 71MB），本模块把它整体铺到 exe 目录，并覆盖 JoyGame.dll / pdb。
+#
+# **不要重新引入 BCL 白名单裁剪**：曾按 30 个程序集的清单裁剪到 48.6MB，
+# 但缺口只在特定平台的特定路径上暴露（Linux 的 Console 要
+# Microsoft.Win32.Primitives，Windows 走不到），只能靠 CI 反复试。
+# 22MB 换不来这份维护负担。Android 侧仍用白名单（APK 体积敏感，且有真机验证）。
 #
 # 用法：在定义 target 后 include 本文件，调用：
 #   joy_deploy_selfcontained(<target> <csproj> <cs_out_dir> <runtime_out_dir> <config>)
-
-# BCL 白名单与 Android 共用一份（cmake/JoyBclWhitelist.cmake）：
-# 桌面按它裁剪 publish 产物，Android 按它从 MonoVM nupkg 解包。
-include("${CMAKE_CURRENT_LIST_DIR}/JoyBclWhitelist.cmake")
 
 # RID：与 CMake 平台对应。Android 不调用本函数（走 libmonosgen）。
 function(_joy_sc_rid_out out)
@@ -28,24 +27,12 @@ function(_joy_sc_rid_out out)
     endif()
 endfunction()
 
-# 生成"删除白名单外 BCL"的 POST_BUILD 命令列表，写到 _out 变量。
-function(_joy_sc_prune_cmds _publish_dir _runtime_dir _out)
-    set(_cmds)
-    file(GLOB _all_bcl LIST_DIRECTORIES false
-        "${_publish_dir}/System.*.dll" "${_publish_dir}/Microsoft.*.dll")
-    foreach(_bcl IN LISTS _all_bcl)
-        get_filename_component(_name "${_bcl}" NAME)
-        if(NOT _name IN_LIST JOY_SELFCONTAINED_BCL_KEEP)
-            list(APPEND _cmds COMMAND ${CMAKE_COMMAND} -E rm -f "${_runtime_dir}/${_name}")
-        endif()
-    endforeach()
-    set(${_out} ${_cmds} PARENT_SCOPE)
-endfunction()
+
 
 # joy_deploy_selfcontained(target csproj cs_out runtime_out config)
 # 创建两个自定义目标：
 #   <target>_sc_publish  : dotnet publish --self-contained 到缓存目录
-#   <target>_sc_deploy   : 部署运行时 + 裁剪 BCL + 覆盖游戏 DLL/PDB（单实例，保断点）
+#   <target>_sc_deploy   : 部署完整运行时 + 覆盖游戏 DLL/PDB（单实例，保断点）
 # 调用方需把 <target>_sc_deploy 加进 <target> 的 add_dependencies。
 function(joy_deploy_selfcontained _target _csproj _cs_out _runtime_dir _config)
     _joy_sc_rid_out(_rid)
@@ -81,30 +68,21 @@ function(joy_deploy_selfcontained _target _csproj _cs_out _runtime_dir _config)
         COMMENT "dotnet publish self-contained runtime for ${_target} (${_rid})"
         VERBATIM)
 
-    # file(GLOB) 在 configure 时 publish 目录还不存在，拿不到 BCL 清单。
-    # 改为部署时用一个 cmake -P 脚本按白名单裁剪（脚本在 build 时读取真实目录）。
-    #
-    # 白名单通过文件传递而非 -DKEEP=a;b;c：分号列表在 -D 参数里会被 shell
-    # 当成命令分隔符（等价于 `System.Runtime.dll: command not found`），
-    # 即使加 VERBATIM 在不同 CMake/shell 组合下也不可靠。写成 .cmake 文件
-    # 由 -P 脚本 include，路径不含分号，跨平台安全。
-    set(_prune_script "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/JoySelfContainedPrune.cmake")
-    set(_keep_file "${CMAKE_BINARY_DIR}/_bcl_keep_${_target}.cmake")
-    file(WRITE "${_keep_file}"
-         "set(JOY_BCL_KEEP \"${JOY_SELFCONTAINED_BCL_KEEP}\")\n")
+    # 桌面**不再按白名单裁剪 BCL**（2024-11 决策，有实测依据）：
+    #   裁剪只省 22MB（70.9MB -> 48.6MB），却需要手工维护一份"够用"的程序集清单。
+    #   而 CoreLib 的 AssemblyRef 闭包有 115 个（大量是类型转发，按需才加载），
+    #   真正的缺口只在特定平台的特定代码路径上暴露：Linux 的 Console 初始化要
+    #   Microsoft.Win32.Primitives，Windows 走不到那段代码，本机永远测不出来。
+    # 结果就是 CI 一轮轮试错（Android 曾因只放 4 个 BCL 出过 P9-FAIL）。
+    # 既然代价只有 22MB，直接部署完整运行时，让三个平台行为一致。
     add_custom_target(${_target}_sc_deploy
         COMMAND ${CMAKE_COMMAND} -E make_directory "${_runtime_dir}"
         COMMAND ${CMAKE_COMMAND} -E copy_directory "${_publish_dir}" "${_runtime_dir}"
-        COMMAND ${CMAKE_COMMAND}
-                "-DPublishDir=${_publish_dir}"
-                "-DRuntimeDir=${_runtime_dir}"
-                "-DKeepFile=${_keep_file}"
-                -P "${_prune_script}"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "${_cs_out}/JoyGame.dll" "${_runtime_dir}/JoyGame.dll"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "${_cs_out}/JoyGame.pdb" "${_runtime_dir}/JoyGame.pdb"
         DEPENDS ${_target}_sc_publish
-        COMMENT "Deploying self-contained runtime (BCL pruned) + JoyGame.dll/pdb for ${_target}"
+        COMMENT "Deploying self-contained runtime + JoyGame.dll/pdb for ${_target}"
         VERBATIM)
 endfunction()

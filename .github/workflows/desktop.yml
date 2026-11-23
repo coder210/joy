@@ -130,9 +130,15 @@ jobs:
           for f in "$fxr" "$policy" "$clr" JoyGame.runtimeconfig.json JoyGame.deps.json; do
             test -e "$out/$f" || { echo "::error::self-contained runtime missing: $f"; exit 1; }
           done
+          # 桌面部署**完整**运行时：曾按 30 个白名单裁剪到 48.6MB，但缺口只在
+          # 特定平台的特定路径上暴露（Linux 的 Console 需要
+          # Microsoft.Win32.Primitives，Windows 走不到那段代码），只能靠 CI 试。
           bcl=$(find "$out" -maxdepth 1 -name 'System.*.dll' | wc -l)
-          echo "deployed BCL count: $bcl (whitelist ~29, not full 161)"
-          [ "$bcl" -lt 60 ] || { echo "::error::BCL not pruned (found $bcl)"; exit 1; }
+          echo "deployed BCL count: $bcl (expect >= 100; desktop is not pruned)"
+          [ "$bcl" -ge 100 ] || { echo "::error::BCL incomplete ($bcl) — pruning must stay disabled"; exit 1; }
+          # 防裁剪回归：少了它，Linux 第一次 Console 调用就 FileNotFoundException。
+          test -e "$out/Microsoft.Win32.Primitives.dll" \
+            || { echo "::error::missing Microsoft.Win32.Primitives.dll (BCL pruned again?)"; exit 1; }
           # 已经 cd 到 $out，这里只放文件名（带路径会拼成 out/out/...）。
           if [ "$RUNNER_OS" = "Windows" ]; then
             exe=example_csharp.exe

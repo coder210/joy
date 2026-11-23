@@ -1,22 +1,22 @@
-# 托管程序集白名单 —— 桌面（CoreCLR 自包含）与 Android（MonoVM）共用一份
+# Android 的托管程序集白名单（桌面已不用裁剪，见 JoySelfContained.cmake）
 #
-# 为什么必须共用：两边的运行时实现不同，但 JoyGame/Joy.Bindings 用到的 BCL 面
-# 是同一套。分两处维护出过一次事——Android 只放了 4 个核心程序集，
-# BootstrapMono 解析 Marshal/StringBuilder/LINQ 时抛 FileNotFoundException
-# （表现为 P9-FAIL）。统一到本文件后，桌面裁剪与 Android 解包同源，
-# 不会再出现"一边补了、另一边忘了"。
+# 为什么只有 Android 用：APK 体积敏感，且 Android 有真机/CI 验证；
+# 桌面曾经共用这份清单，结果反复踩坑——CoreLib 的 AssemblyRef 闭包有 115 个
+# （大量是类型转发，按需才加载），缺口只在特定平台路径上暴露：
+#   * Android 只放 4 个核心程序集 → BootstrapMono 解析 Marshal/LINQ 抛
+#     FileNotFoundException（P9-FAIL）
+#   * Linux 的 Console 初始化要 Microsoft.Win32.Primitives → 桌面裁剪后崩
+# 桌面因此改为部署完整运行时（+22MB），不再维护白名单。
 #
-# 规则：
-#   - 桌面：publish 产出 161 个 BCL，按本表裁剪（见 JoySelfContainedPrune.cmake）
-#   - Android：按本表从 MonoVM runtime pack 的 nupkg 里解包（见 JoyMonoVm.cmake）
-# 缺失任意一个会在首次用到时抛 FileNotFoundException（0x80070002，很难定位），
-# 所以宁可略多不可遗漏。
+# 使用方：cmake/JoyMonoVm.cmake 按本表从 MonoVM runtime pack 里解包。
+# 规则：Console 在白名单里，就必须连它的依赖一起放（Microsoft.Win32.Primitives），
+# 否则第一次 Console 调用就 FileNotFoundException（0x80070002，很难定位）。
 
-if(DEFINED JOY_SELFCONTAINED_BCL_KEEP)
+if(DEFINED JOY_BCL_KEEP)
     return()   # 已被 include 过（多个 CMakeLists 都会 include）
 endif()
 
-set(JOY_SELFCONTAINED_BCL_KEEP
+set(JOY_BCL_KEEP
     # 核心（缺任一直接起不来）
     System.Private.CoreLib.dll
     System.Runtime.dll
@@ -50,4 +50,7 @@ set(JOY_SELFCONTAINED_BCL_KEEP
     System.Runtime.CompilerServices.Unsafe.dll
     System.Threading.Thread.dll
     System.Console.dll
+    # Console 的依赖：Unix 的 ConsolePal.EnsureInitializedCore 会加载它。
+    # 少了它在桌面 Linux 上直接 FileNotFoundException（CI 实测）。
+    Microsoft.Win32.Primitives.dll
 )

@@ -491,7 +491,8 @@ API），`status:on` +18 条（这 13 条再加 §3 的 23 修复 `Uint8` 分类
 `.nupkg` 形式入库**——仓库里已经没有散装托管 DLL：
 
 - 桌面 CoreCLR：`Microsoft.NETCore.App.Runtime.<rid>` **8.0.11**，由
-  `dotnet publish --self-contained` 消费（附加 NuGet 源），再按白名单裁剪。
+  `dotnet publish --self-contained` 消费（附加 NuGet 源），**部署完整运行时、不裁剪**
+  （裁剪只省 22MB，缺口却只在特定平台路径上暴露，见下方「BCL 不能跨平台共用」）。
 - Android MonoVM：`Microsoft.NETCore.App.Runtime.Mono.android-arm64` **8.0.17**，
   由 `cmake/JoyMonoVm.cmake` 在 configure 阶段解包暂存到 `<build>/_monovm/`。
 
@@ -512,9 +513,9 @@ Android 包内的主库是 `runtimes/android-arm64/native/libmonosgen-2.0.so`
 | System.Runtime | 43,792 | 43,832 | 23.25% |
 | System.Collections | 102,168 | 102,176 | 46.33% |
 
-所以 BCL 一律按目标 RID 自己取，白名单只有一份（`cmake/JoyBclWhitelist.cmake`，30 个）：
-桌面从 publish 产物裁剪，Android 从 MonoVM 包解包到 `<stage>/libs`。两边缺失都
-`FATAL_ERROR`，**没有向其它平台回退**。
+所以 BCL 一律按目标 RID 自己取：桌面部署 publish 的**完整**运行时（不裁剪），
+Android 按 `cmake/JoyBclWhitelist.cmake`（31 个）从 MonoVM 包解包到 `<stage>/libs`。
+Android 缺任一条都 `FATAL_ERROR`，**没有向其它平台回退**。
 不要再加回退逻辑——曾经的根目录 `runtimes/libs/` 就是这么把 Windows 版静默拷给别的平台的。
 
 ### `_f` 是归一化，`_rect` 是像素
@@ -576,7 +577,7 @@ ctest --test-dir build -C Debug --output-on-failure --timeout 25   # 四语言�
 
 ```powershell
 Get-ChildItem runtimes/nupkg -File                     # 4 个 runtime pack（桌面 3 + Android 1）
-Get-ChildItem build-android/_monovm -Recurse -File     # Android 解包暂存：主库 + 4 shims + 30 BCL
+Get-ChildItem build-android/_monovm -Recurse -File     # Android 解包暂存：主库 + 4 shims + 31 BCL
 ```
 
 ## 6. 明确未验证 / 已知风险

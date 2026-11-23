@@ -1,10 +1,10 @@
 # Android 的 MonoVM 运行时：从 runtimes/nupkg 里的官方 runtime pack 解包暂存
 #
-# 与桌面统一成同一套处理方式：
-#   桌面（CoreCLR）  : dotnet publish 直接消费 runtimes/nupkg（见 JoySelfContained.cmake）
-#   Android（MonoVM）: 本文件在 configure 阶段解包 + 按**同一份**白名单暂存
-# 两边都不再入库散装托管 DLL；升级只需替换 runtimes/nupkg 里的包（版本见下方变量），
-# 不会出现"主库换了、BCL 忘了换"这种漂移（Android 曾因只放 4 个 BCL 出过 P9-FAIL）。
+# 两个平台的共同点：都只认 runtimes/nupkg 里的官方包，不再入库散装托管 DLL。
+#   桌面（CoreCLR）  : dotnet publish 直接消费，且**部署完整运行时不做裁剪**
+#   Android（MonoVM）: 本文件在 configure 阶段解包 + 按白名单暂存（APK 体积敏感）
+# 升级只需替换 runtimes/nupkg 里的包（版本见下方变量），不会出现
+# "主库换了、BCL 忘了换"这种漂移（Android 曾因只放 4 个 BCL 出过 P9-FAIL）。
 #
 # 暂存布局刻意与历史上手工入库的 runtimes/<platform>/ 保持一致，
 # 下游（assets/lib 拷贝、APK lib/<abi> 打包）一行都不用改：
@@ -65,7 +65,7 @@ function(joy_monovm_stage _out_var)
     endif()
 
     file(MAKE_DIRECTORY "${_stage}/libs")
-    foreach(_name IN LISTS JOY_SELFCONTAINED_BCL_KEEP)
+    foreach(_name IN LISTS JOY_BCL_KEEP)
         # CoreLib 按 RID 构建，只存在于 native/；其余程序集在 lib/net8.0/。
         if(EXISTS "${_src}/native/${_name}")
             set(_from "${_src}/native/${_name}")

@@ -7,15 +7,16 @@
 | `include/mono-2.0/` | Mono 嵌入 API 头文件（88 个 `.h`，保持 SDK 原始目录布局，`<mono/metadata/...>` include 依赖这个结构） | 编译 cs 模块（跨平台共享；runtime pack 里不含头文件）|
 | `nupkg/` | 官方 runtime pack：桌面 CoreCLR 3 个 RID（8.0.11）+ Android MonoVM 1 个（8.0.17） | 桌面 publish 与 Android 解包 |
 
-> **仓库里不再有任何散装托管 DLL。** 两个平台统一为"读 `nupkg/`"：
-> - 桌面（CoreCLR）：`dotnet publish --self-contained` 直接消费，再按白名单裁剪；
+> **仓库里不再有任何散装托管 DLL。** 两个平台都只认 `nupkg/`：
+> - 桌面（CoreCLR）：`dotnet publish --self-contained` 直接消费，**部署完整运行时**；
 > - Android（MonoVM）：`cmake/JoyMonoVm.cmake` 在 configure 阶段解包，
->   按**同一份**白名单暂存到构建树。
+>   按白名单 `cmake/JoyBclWhitelist.cmake` 暂存（APK 体积敏感，且有真机验证）。
 >
-> 白名单只有一份：`cmake/JoyBclWhitelist.cmake`。历史上分两处维护出过事——
-> Android 只放 4 个核心程序集，`BootstrapMono` 解析 `Marshal`/LINQ 时抛
-> `FileNotFoundException`（P9-FAIL）。桌面平台目录 `windows-x64/`、`linux-x64/`、
-> `macos-arm64/` 已删除（-33MB），Android 的 `android-arm64/` 也已删除。
+> **桌面刻意不裁剪 BCL**：曾按 30 个白名单裁到 48.6MB，但 CoreLib 的 AssemblyRef
+> 闭包有 115 个，真正的缺口只在特定平台的特定路径上暴露——Linux 的 Console 要
+> `Microsoft.Win32.Primitives`，Windows 走不到那段代码，本机永远测不出来，
+> 只能靠 CI 一轮轮试。22MB 换不来这份维护负担。
+> 桌面平台目录 `windows-x64/`、`linux-x64/`、`macos-arm64/` 已删除（-33MB）。
 
 ## Android 的运行时
 
@@ -29,7 +30,7 @@
 
 | 暂存产物 | 包内来源 |
 |---|---|
-| `<stage>/libs/*.dll`（白名单 30 个） | `native/System.Private.CoreLib.dll` + `lib/net8.0/<其余 29 个>` |
+| `<stage>/libs/*.dll`（白名单 31 个） | `native/System.Private.CoreLib.dll` + `lib/net8.0/<其余 30 个>` |
 | `<stage>/libmonosgen-2.0.so` | `native/libmonosgen-2.0.so` |
 | `<stage>/libSystem.*.so`（4 个） | `native/libSystem.*.so` |
 
@@ -55,7 +56,7 @@ BCL 不能跨平台共用：`System.Private.CoreLib.dll` 按 RID 构建，Androi
 
 CI 的 macOS job 必须固定 `-DCMAKE_OSX_ARCHITECTURES=arm64`。
 
-**为什么白名单是 30 个而不是 4 个**：`Joy.Bindings.dll` 会解析
+**为什么 Android 白名单是 31 个而不是 4 个**：`Joy.Bindings.dll` 会解析
 `Marshal` / 反射 / LINQ / `StringBuilder` 等类型，实测只放 4 个核心程序集时
 `BootstrapMono` 抛 `FileNotFoundException`（Android 上表现为 P9-FAIL）。
 再减体积只能靠 IL trimming 或重建 CoreLib。
@@ -123,14 +124,16 @@ Artifacts，本机不装 NDK 也能拿到 Android 产物。
 
 ## 部署
 
-> 两个平台的运行时都从 `nupkg/` 取：桌面 `dotnet publish` 后按白名单裁剪铺到
-> exe 目录（hostfxr 命令行模式），Android 在 configure 阶段解包暂存后进 APK
-> （MonoVM）。仓库里已经没有任何平台目录，只剩 `include/`（头文件）与 `nupkg/`。
+> 两个平台的运行时都从 `nupkg/` 取：桌面 `dotnet publish` 后**整体**铺到 exe 目录
+> （hostfxr 命令行模式），Android 在 configure 阶段解包暂存后进 APK（MonoVM）。
+> 仓库里已经没有任何平台目录，只剩 `include/`（头文件）与 `nupkg/`。
 
 - **桌面（Windows / Linux / macOS）**：`joy_deploy_selfcontained()` 负责
-  publish → 按白名单裁剪 → 覆盖 `JoyGame.dll`/`pdb`；`JoyGame.runtimeconfig.json`
+  publish → 复制完整运行时 → 覆盖 `JoyGame.dll`/`pdb`；`JoyGame.runtimeconfig.json`
   （无 framework 节点）由各 CMakeLists 的 POST_BUILD 单独拷入。Linux/macOS 只额外
   设置 `BUILD_RPATH`（`$ORIGIN` / `@loader_path`）供 SDL3 等共享库解析。
+  **不要改回白名单裁剪**：`desktop.yml` 有两条断言（`System.*.dll` ≥100、
+  `Microsoft.Win32.Primitives.dll` 必须存在）专门防这个回归。
   **不要再改回从 `runtimes/` 拷 `libcoreclr` / `libSystem.*`**：那会把自包含的
   真 CoreCLR 覆盖成 MonoVM 版本，hostfxr 加载后直接 segfault。
 - **Android**：`libmonosgen-2.0.so` 与 4 个 `libSystem.*.so` 由
