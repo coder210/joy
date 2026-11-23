@@ -8,14 +8,14 @@
 |---|---|---|
 | `include/mono-2.0/` | Mono 嵌入 API 头文件（88 个 `.h`，保持 SDK 原始目录布局，`<mono/metadata/...>` include 依赖这个结构） | 跨平台共享 |
 | `windows-x64/coreclr.dll`、`coreclr.import.lib` | Windows x64 的 MonoVM 运行时（官方包内即叫 `coreclr.dll`）与导入库 | 平台相关 |
-| `windows-x64/libs/` | Windows 版 4 个 BCL | 平台相关 |
+| `windows-x64/libs/` | Windows 版 30 个 BCL（白名单） | 平台相关 |
 | `android-arm64/libmonosgen-2.0.so` | Android arm64 的 MonoVM 运行时 | 平台相关 |
 | `android-arm64/libSystem.*.so` | Android 版 CoreLib 的 4 个原生 shim（P/Invoke 目标） | 平台相关 |
-| `android-arm64/libs/` | Android 版 4 个 BCL | 平台相关 |
+| `android-arm64/libs/` | Android 版 30 个 BCL（白名单） | 平台相关 |
 | `linux-x64/libcoreclr.so`、`libSystem.*.so` | Linux x64 的 MonoVM 运行时与 5 个原生 shim | 平台相关 |
-| `linux-x64/libs/` | Linux 版 4 个 BCL | 平台相关 |
+| `linux-x64/libs/` | Linux 版 30 个 BCL（白名单） | 平台相关 |
 | `macos-arm64/libcoreclr.dylib`、`libSystem.*.dylib` | macOS arm64 的 MonoVM 运行时与 6 个原生 shim | 平台相关 |
-| `macos-arm64/libs/` | macOS 版 4 个 BCL | 平台相关 |
+| `macos-arm64/libs/` | macOS 版 30 个 BCL（白名单） | 平台相关 |
 
 ## 平台目录命名
 
@@ -33,7 +33,8 @@ BCL 不做跨平台共享：`System.Private.CoreLib.dll` 按 RID 构建，Window
 `kernel32` 等 Win32 P/Invoke、Android 版含 `liblog`，两者字节差异 91%、体积差
 115 KB（4,476,416 vs 4,361,480），混用会在原生化调用上直接失败。
 
-因此每个 `<platform>/libs/` 自带该平台 runtime pack 的 4 个 BCL，
+因此每个 `<platform>/libs/` 自带该平台 runtime pack 的 30 个 BCL（白名单，见
+`cmake/JoySelfContained.cmake` 的 `JOY_SELFCONTAINED_BCL_KEEP`），
 `examples/csharp_host/CMakeLists.txt` 只取 `<MONO_LIBRARIES 所在目录>/libs/`，
 缺失时在 configure 阶段报错，不回退到别的平台。
 
@@ -78,9 +79,12 @@ CI 的 macOS job 必须固定 `-DCMAKE_OSX_ARCHITECTURES=arm64`：本目录只�
 官方 NuGet 包里的同名 DLL 替换。`coreclr.import.lib` 是从该 DLL 生成的导入库，
 NuGet 包不附带。
 
-每个 `<platform>/libs/` 只保留 4 个文件约 4.5 MB，是 netstandard2.0 编译目标下的
-下限：CoreLib 独占 4.48 MB（基础类型、集合、委托、字符串），其余 3 个是 facade，
-逐个移出都会导致运行时加载失败。再减体积只能靠 IL trimming 或重建 CoreLib。
+每个 `<platform>/libs/` 放 30 个文件约 6 MB。**曾经只放 4 个核心程序集**
+（CoreLib + netstandard + System.Runtime + System.Collections），在只用基础类型的
+极简程序里够用；但 `Joy.Bindings.dll` 会解析 `Marshal` / 反射 / LINQ /
+`StringBuilder` 等类型，实测只放 4 个时 `BootstrapMono` 抛 `FileNotFoundException`
+（Android 上表现为 P9-FAIL），因此改为按 29 个 BCL 白名单 + CoreLib 补齐。
+再减体积只能靠 IL trimming 或重建 CoreLib。
 
 ## Android 运行时（已入库）
 
@@ -119,9 +123,17 @@ CI（`.github/workflows/android.yml`）只装 NDK、校验这些已入库文件�
 
 ## 部署
 
-- **Windows**：post-build 把 `coreclr.dll` 拷到 exe 旁、`windows-x64/libs/` 拷成
-  `lib/`，宿主用 `MONO_LIB_DIR` 指向它，让 `mono_set_dirs()` 解析依赖程序集。
-- **Linux / macOS**：`joy_examples_deploy_clr()` 的 `UNIX` 分支把主库与全部
+> **桌面（Windows / Linux / macOS）迁移到 CoreCLR 自包含后已不再读取本目录的 libs**：
+> `dotnet publish --self-contained` 会把官方 BCL 放进构建产物并按白名单裁剪，宿主走
+> hostfxr，与 `runtimes/<platform>/libs/` 无任何关系。本目录的 libs 现在服务于：
+> (a) Android APK（MonoVM 嵌入，仍在用）；(b) `tools/coreclr_host_smoke` 等本地 spike；
+> (c) 将来若回退到 MonoVM 嵌入方式可直接复用。三个桌面平台仍与 Android 保持同一份
+> 30 个白名单，避免再被"4 个就够"误导。
+
+- **Windows（MonoVM 嵌入 / spike 场景）**：post-build 把 `coreclr.dll` 拷到 exe 旁、
+  `windows-x64/libs/` 拷成 `lib/`，宿主用 `MONO_LIB_DIR` 指向它，让 `mono_set_dirs()`
+  解析依赖程序集。桌面正式产物走 `dotnet publish`，不走这条路径。
+- **Linux / macOS（MonoVM 嵌入 / spike 场景）**：`joy_examples_deploy_clr()` 的 `UNIX` 分支把主库与全部
   `libSystem.*` 一次性拷到 exe 同目录，并给 target 追加 `BUILD_RPATH` /
   `INSTALL_RPATH`（Linux `$ORIGIN`、macOS `@loader_path`）；宿主在
   `setup_clr_dirs()` 的 Unix 分支预加载这些 shim，`MONO_LIB_DIR` 仍指向

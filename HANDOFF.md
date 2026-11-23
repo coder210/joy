@@ -511,7 +511,7 @@ API），`status:on` +18 条（这 13 条再加 §3 的 23 修复 `Uint8` 分类
 | System.Runtime | 43,792 | 43,832 | 23.25% |
 | System.Collections | 102,168 | 102,176 | 46.33% |
 
-所以 `runtimes/` 结构是**每个平台目录自带 4 个 BCL**，`examples/csharp_host/CMakeLists.txt`
+所以 `runtimes/` 结构是**每个平台目录自带 30 个 BCL（白名单）**，`examples/csharp_host/CMakeLists.txt`
 只取 `<MONO_LIBRARIES 所在目录>/libs/`，缺失就 `FATAL_ERROR`，**没有向其它平台回退**。
 不要再加回退逻辑——曾经的根目录 `runtimes/libs/` 就是这么把 Windows 版静默拷给别的平台的。
 
@@ -573,7 +573,7 @@ ctest --test-dir build -C Debug --output-on-failure --timeout 25   # 四语言�
 检查 Android 产物布局（本机无法编译，只能看文件）：
 
 ```powershell
-Get-ChildItem runtimes/android-arm64 -Recurse -File   # 主库 + 4 个 libSystem.*.so + 4 个 BCL
+Get-ChildItem runtimes/android-arm64 -Recurse -File   # 主库 + 4 个 libSystem.*.so + 30 个 BCL
 ```
 
 ## 6. 明确未验证 / 已知风险

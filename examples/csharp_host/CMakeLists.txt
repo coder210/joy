@@ -99,13 +99,15 @@ add_custom_command(TARGET example_csharp POST_BUILD
     COMMENT "Copying C# example assets + JoyGame.dll")
 
 if(ANDROID)
-    # Android：4 个 BCL 按 RID 特化，放 lib/；Joy.Bindings.dll 同目录，
+    # Android：30 个 BCL（白名单）按 RID 特化，放 lib/；Joy.Bindings.dll 同目录，
     # 宿主把 MONO_LIB_DIR 指向 lib（见 main.cpp 的 setup_clr_dirs）。
+    # 注意：只放 4 个核心程序集不够——Joy.Bindings 解析 Marshal/反射/LINQ 等
+    # 类型时会抛 FileNotFoundException（表现为 BootstrapMono 异常）。
     if(NOT EXISTS "${_clr_libs}/System.Private.CoreLib.dll")
         message(FATAL_ERROR
             "缺平台 BCL: ${_clr_libs}/System.Private.CoreLib.dll\n"
-            "把 Microsoft.NETCore.App.Runtime.Mono.<rid> 同版本的 4 个 BCL 放进\n"
-            "${_clr_bin}/libs/ 。CoreLib 按 RID 构建，不能复用其它平台的那份。")
+            "把 Microsoft.NETCore.App.Runtime.Mono.<rid> 同版本的 30 个 BCL（白名单）\n"
+            "放进 ${_clr_bin}/libs/ 。CoreLib 按 RID 构建，不能复用其它平台的那份。")
     endif()
     add_custom_command(TARGET example_csharp POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E remove_directory "${JOY_EXAMPLE_ASSET_ROOT}/lib"
