@@ -236,7 +236,11 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         int h = APP_H;
         int smoke = g_smoke_frames;
         void* args[3] = { &w, &h, &smoke };
+        /* Linux/macOS 的 segfault 就发生在这一行附近。这两个标记让日志能区分
+         * 「进入 OnInit 之前挂」和「OnInit 内部挂」，不依赖 gdb 是否可用。 */
+        SDL_Log("[host] calling C# Host.OnInit(w=%d,h=%d,smoke=%d)", w, h, smoke);
         csx_invoke_method(g_csx, g_on_init, args);
+        SDL_Log("[host] C# Host.OnInit returned");
     }
     JPROBE("H11 after C# Host.OnInit returned");
 
@@ -292,7 +296,9 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 
     {
         void* args[1] = { &dt };
+        if (g_frame < 3) SDL_Log("[host] calling C# Host.OnFrame(%d)", g_frame);
         csx_invoke_method(g_csx, g_on_frame, args);
+        if (g_frame < 3) SDL_Log("[host] C# Host.OnFrame(%d) returned", g_frame);
     }
     csx_input_end_frame();
 

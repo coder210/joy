@@ -53,7 +53,9 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt update
-          sudo apt install -y --no-install-recommends build-essential git cmake ninja-build \
+          # gdb：csharp smoke 若 segfault，Verify 步骤要打印 native backtrace。
+          # ubuntu runner 默认**不带** gdb，之前那个 backtrace 分支从未执行过。
+          sudo apt install -y --no-install-recommends build-essential git cmake ninja-build gdb \
             gnome-desktop-testing libasound2-dev libpulse-dev libaudio-dev libjack-dev \
             libsndio-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev \
             libxi-dev libxss-dev libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev \
@@ -147,13 +149,22 @@ jobs:
             if [ "$RUNNER_OS" = "Linux" ] && command -v gdb >/dev/null 2>&1; then
               echo "==== gdb backtrace ===="
               ( cd "$out" && gdb -q -batch \
+                  -ex 'set pagination off' \
                   -ex 'set env SDL_VIDEODRIVER=dummy' \
                   -ex 'run --smoke 20' \
-                  -ex 'thread apply all bt 25' "./$exe" ) 2>&1 | tee csharp-gdb.log || true
+                  -ex 'echo \n==== fault ip ====\n' \
+                  -ex 'info registers rip' \
+                  -ex 'echo \n==== backtrace ====\n' \
+                  -ex 'thread apply all bt 30' \
+                  -ex 'echo \n==== shared libs ====\n' \
+                  -ex 'info sharedlibrary' \
+                  "./$exe" ) 2>&1 | tee csharp-gdb.log || true
             elif [ "$RUNNER_OS" = "macOS" ] && command -v lldb >/dev/null 2>&1; then
               echo "==== lldb backtrace ===="
               ( cd "$out" && lldb -b -o 'env SDL_VIDEODRIVER=dummy' \
                   -o 'run --smoke 20' -o 'bt all' "./$exe" ) 2>&1 | tee csharp-lldb.log || true
+            else
+              echo "::warning::no gdb/lldb, native backtrace skipped"
             fi
             exit "$run_rc"
           fi
