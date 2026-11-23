@@ -18,8 +18,27 @@ namespace JoyGame
         /// 宿主只传尺寸与冒烟帧数：窗口与渲染器由 GameApp 自己用生成链路创建，
         /// 不再由 C 宿主建好再传裸指针过来（裸指针不在生成链路的句柄表里）。
         /// </summary>
+        // 桌面：UCO 函数指针直调；逻辑在 *Mono 普通方法里，两端共用。
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
         public static void OnInit(int width, int height, int smokeFrames)
+        {
+            OnInitMono(width, height, smokeFrames);
+        }
+
+        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
+        public static void OnFrame(float dt)
+        {
+            OnFrameMono(dt);
+        }
+
+        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
+        public static void OnShutdown()
+        {
+            OnShutdownMono();
+        }
+
+        // Android：mono_runtime_invoke 只能调普通 public static 方法。
+        public static void OnInitMono(int width, int height, int smokeFrames)
         {
             _app = new GameApp(width, height, smokeFrames);
             _smoke = smokeFrames > 0 ? new SmokeScript() : null;
@@ -29,8 +48,7 @@ namespace JoyGame
                          (smokeFrames > 0 ? " smoke=" + smokeFrames : ""));
         }
 
-        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
-        public static void OnFrame(float dt)
+        public static void OnFrameMono(float dt)
         {
             if (_app == null) return;
             _smoke?.BeforeTick(_app);
@@ -38,8 +56,7 @@ namespace JoyGame
             _smoke?.AfterTick(_app);
         }
 
-        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
-        public static void OnShutdown()
+        public static void OnShutdownMono()
         {
             Joy.Host.log("[host] shutdown frames=" + (_app != null ? _app.Frame : 0));
         }

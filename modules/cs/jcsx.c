@@ -90,14 +90,31 @@ typedef int (*csx_load_asm_get_fp_fn)(
  * com_register=3, com_unregister=4, load_assembly_and_get_function_pointer=5）。 */
 #define CSX_HDT_LOAD_ASM_GET_FP 5
 
-/* coreclr_initialize / coreclr_create_delegate（Android fallback）复用上面的 CSX_CC */
+/* coreclr_initialize / coreclr_execute_assembly（Android）复用上面的 CSX_CC */
 typedef int (CSX_CC *csx_coreclr_init_fn)(
     const char* exe_path, const char* friendly_name, int prop_count,
     const char** keys, const char** values, void** out_host, unsigned int* out_domain);
-typedef int (CSX_CC *csx_coreclr_create_delegate_fn)(
-    void* host, unsigned int domain, const char* asm_name,
-    const char* type_name, const char* method_name, void** out_delegate);
 typedef int (CSX_CC *csx_coreclr_shutdown_fn)(void* host, unsigned int domain);
+
+/* ---- Android: mono embedding API（迁移前验证过能跑的路径）----
+ * monovm_create_delegate 在 Android 上因程序集/包装器问题返回 E_FAIL，
+ * 因此 Android 改用 mono_jit_init + mono_runtime_invoke 直接调用普通
+ * public static 入口（UCO 方法不能被反射调用，故 C# 另提供 *Mono 普通入口）。
+ * 桌面仍走 hostfxr + UCO，完全不受影响。所有 typedef 用 void* 占位，不依赖 mono 头。 */
+typedef void* (*csx_mono_jit_init_fn)(const char* name);
+typedef void* (*csx_mono_get_root_domain_fn)(void);
+typedef void* (*csx_mono_thread_attach_fn)(void* domain);
+typedef void (*csx_mono_set_assemblies_path_fn)(const char* path);
+typedef void (*csx_mono_set_dirs_fn)(const char* assembly_dir, const char* config_dir);
+typedef void* (*csx_mono_domain_assembly_open_fn)(void* domain, const char* name);
+typedef void* (*csx_mono_assembly_get_image_fn)(void* assembly);
+typedef void* (*csx_mono_class_from_name_fn)(void* image, const char* ns, const char* name);
+typedef void* (*csx_mono_class_get_method_from_name_fn)(void* klass, const char* name, int param_count);
+typedef void* (*csx_mono_runtime_invoke_fn)(void* method, void* obj, void** params, void** exc);
+typedef void* (*csx_mono_object_to_string_fn)(void* obj, void* method);
+typedef char* (*csx_mono_string_to_utf8_fn)(void* str);
+typedef void (*csx_mono_free_fn)(void* ptr);
+typedef void (*csx_mono_jit_cleanup_fn)(void* domain);
 
 /* ---- internal call 函数指针表（name -> fn）---- */
 #define CSX_MAX_ICALLS 1024
@@ -131,22 +148,35 @@ static void* CSX_CDECL csx_lookup_internal_call(const char* name)
 
 /* ---- 宿主状态 ---- */
 struct joy_csx {
-        void* host_handle;        /* coreclr host handle（Android）*/
-        unsigned int domain_id;   /* coreclr domain id（Android）*/
+        void* host_handle;        /* 未用（保留 ABI）*/
+        unsigned int domain_id;   /* 未用（保留 ABI）*/
         void* fxr_ctx;            /* hostfxr context（桌面）*/
-        void* runtime_lib;        /* hostfxr / coreclr 动态库句柄 */
-        csx_load_asm_get_fp_fn load_asm_get_fp;  /* load_assembly_and_get_function_pointer */
-        csx_coreclr_create_delegate_fn create_delegate; /* coreclr_create_delegate（Android）*/
-        csx_coreclr_shutdown_fn shutdown;              /* coreclr_shutdown（Android）*/
-        csx_close_fn fxr_close;                        /* hostfxr_close（桌面）*/
+        void* runtime_lib;        /* hostfxr / coreclr / libmonosgen 动态库句柄 */
+        csx_load_asm_get_fp_fn load_asm_get_fp;  /* load_assembly_and_get_function_pointer（桌面）*/
+        csx_close_fn fxr_close;                  /* hostfxr_close（桌面）*/
         bool android;
         char asm_dir[1024];       /* 程序集所在目录（绝对路径，用于拼接 dll）*/
+        /* Android mono embedding 状态 */
+        void* mono_domain;
+        void* mono_image;         /* JoyGame.dll 的 MonoImage */
+        csx_mono_thread_attach_fn mono_thread_attach;
+        csx_mono_domain_assembly_open_fn mono_domain_assembly_open;
+        csx_mono_assembly_get_image_fn mono_assembly_get_image;
+        csx_mono_class_from_name_fn mono_class_from_name;
+        csx_mono_class_get_method_from_name_fn mono_class_get_method;
+        csx_mono_runtime_invoke_fn mono_runtime_invoke;
+        csx_mono_object_to_string_fn mono_object_to_string;
+        csx_mono_string_to_utf8_fn mono_string_to_utf8;
+        csx_mono_free_fn mono_free;
+        csx_mono_jit_cleanup_fn mono_jit_cleanup;
 };
 
-/* 缓存的入口函数指针。UCO 方法的函数指针就是可直接调用的地址。 */
+/* 桌面：UCO 方法的函数指针可直接调用。
+ * Android：fn 存 MonoMethod*，由 csx_invoke_method 用 mono_runtime_invoke 调用。 */
 struct joy_csx_method {
         void* fn;
         int param_count;
+        void* mono_klass;         /* Android: 方法所属 MonoClass（诊断用）*/
 };
 
 /* ---- 工具：取 exe 所在目录（CWD 已被 clr_host 对齐到 exe 目录）---- */
@@ -296,11 +326,16 @@ static bool csx_init_desktop(csx_p csx)
 }
 #endif
 
-/* ---- Android：libmonosgen 的 coreclr_initialize + coreclr_create_delegate ---- */
+/* ---- Android：libmonosgen 的 mono embedding API（迁移前验证过的路径）----
+ * 不用 coreclr_create_delegate：MonoVM 的实现在 Android 上取 UCO 入口
+ * 返回 E_FAIL（dotnet/runtime#59815，移动端 hosting API 仍不完整）。
+ * 改用 mono_jit_init + mono_runtime_invoke 调 C# 的普通 public static 入口。 */
 #if defined(__ANDROID__)
+#define CSX_MONO_SYM(m, h, n)  (m = (typeof(m))CSX_DL_SYM(h, n))
+
 static bool csx_init_android(csx_p csx)
 {
-        JPROBE("P1 enter csx_init_android");
+        JPROBE("P1 enter csx_init_android (mono embedding)");
         void* lib = CSX_DL_LOAD("libmonosgen-2.0.so");
         JPROBE("P2 after dlopen libmonosgen");
         if (!lib) {
@@ -308,55 +343,63 @@ static bool csx_init_android(csx_p csx)
                 joy_core_log_error("load libmonosgen failed");
                 return false;
         }
-        csx_coreclr_init_fn coreclr_init =
-                (csx_coreclr_init_fn)CSX_DL_SYM(lib, "coreclr_initialize");
-        csx_coreclr_create_delegate_fn create_delegate =
-                (csx_coreclr_create_delegate_fn)CSX_DL_SYM(lib, "coreclr_create_delegate");
-        csx_coreclr_shutdown_fn shutdown_fn =
-                (csx_coreclr_shutdown_fn)CSX_DL_SYM(lib, "coreclr_shutdown");
-        JPROBE("P3 after dlsym coreclr_initialize/create_delegate/shutdown");
-        if (!coreclr_init || !create_delegate || !shutdown_fn) {
-                JPROBE("P3-FAIL coreclr symbols missing");
-                joy_core_log_error("coreclr symbols missing on Android libmonosgen");
+
+        csx_mono_jit_init_fn mono_jit_init = NULL;
+        csx_mono_get_root_domain_fn mono_get_root_domain = NULL;
+        csx_mono_set_assemblies_path_fn mono_set_assemblies_path = NULL;
+        csx_mono_set_dirs_fn mono_set_dirs = NULL;
+        CSX_MONO_SYM(mono_jit_init, lib, "mono_jit_init");
+        CSX_MONO_SYM(mono_get_root_domain, lib, "mono_get_root_domain");
+        CSX_MONO_SYM(mono_set_assemblies_path, lib, "mono_set_assemblies_path");
+        CSX_MONO_SYM(mono_set_dirs, lib, "mono_set_dirs");
+        CSX_MONO_SYM(csx->mono_thread_attach, lib, "mono_thread_attach");
+        CSX_MONO_SYM(csx->mono_domain_assembly_open, lib, "mono_domain_assembly_open");
+        CSX_MONO_SYM(csx->mono_assembly_get_image, lib, "mono_assembly_get_image");
+        CSX_MONO_SYM(csx->mono_class_from_name, lib, "mono_class_from_name");
+        CSX_MONO_SYM(csx->mono_class_get_method, lib, "mono_class_get_method_from_name");
+        CSX_MONO_SYM(csx->mono_runtime_invoke, lib, "mono_runtime_invoke");
+        CSX_MONO_SYM(csx->mono_object_to_string, lib, "mono_object_to_string");
+        CSX_MONO_SYM(csx->mono_string_to_utf8, lib, "mono_string_to_utf8");
+        CSX_MONO_SYM(csx->mono_free, lib, "mono_free");
+        CSX_MONO_SYM(csx->mono_jit_cleanup, lib, "mono_jit_cleanup");
+        JPROBE("P3 after dlsym mono embedding symbols");
+        if (!mono_jit_init || !csx->mono_thread_attach || !csx->mono_runtime_invoke ||
+            !csx->mono_class_from_name || !csx->mono_class_get_method ||
+            !csx->mono_domain_assembly_open || !csx->mono_assembly_get_image) {
+                JPROBE("P3-FAIL mono symbols missing");
+                joy_core_log_error("mono embedding symbols missing on Android libmonosgen");
                 CSX_DL_CLOSE(lib);
                 return false;
         }
 
-        /* TPA：解包目录下的 BCL + JoyGame.dll + Joy.Bindings.dll。
-         * clr_host.cpp 已把它们解到 SDL_GetPrefPath 并把路径放进 JOY_CLR_LIB_DIR。 */
+        /* 程序集目录：main.cpp 已把 BCL + JoyGame.dll + Joy.Bindings.dll
+         * 解到 SDL_GetPrefPath，并把路径放进 JOY_CLR_LIB_DIR。
+         * 迁移前经验：必须显式 mono_set_assemblies_path，否则 mono 只按 CWD("/")
+         * 找 CoreLib，mono_jit_init 直接 abort（Android 启动闪退）。 */
         const char* libdir = getenv("JOY_CLR_LIB_DIR");
         if (!libdir || !*libdir) libdir = ".";
-        char tpa[4096];
-        snprintf(tpa, sizeof(tpa),
-                 "%s/System.Private.CoreLib.dll:%s/System.Runtime.dll:%s/netstandard.dll:"
-                 "%s/System.Collections.dll:%s/Joy.Bindings.dll:%s/JoyGame.dll",
-                 libdir, libdir, libdir, libdir, libdir, libdir);
-        JPROBE("P4 before coreclr_initialize");
-        const char* keys[] = { "TRUSTED_PLATFORM_ASSEMBLIES", "APP_PATHS", "NATIVE_DLL_SEARCH_DIRECTORIES" };
-        const char* vals[] = { tpa, libdir, libdir };
-        void* host = NULL; unsigned int domain = 0;
-        int rc = coreclr_init("joy", "joy", 3, keys, vals, &host, &domain);
-        char _pb[256];
-        snprintf(_pb, sizeof(_pb), "P5 after coreclr_init rc=0x%x host=%p domain=%u", rc, host, domain);
+        if (mono_set_dirs) mono_set_dirs(libdir, libdir);
+        if (mono_set_assemblies_path) mono_set_assemblies_path(libdir);
+        char _pb[512];
+        snprintf(_pb, sizeof(_pb), "P4 before mono_jit_init dir=%s", libdir);
         JPROBE(_pb);
-        /* MonoVM 的 coreclr_initialize 成功时 host=NULL / domain=0（实测 rc=0），
-         * 它不像真 CoreCLR 那样返回 host handle。旧判断 `rc < 0 || !host` 会把
-         * 成功误判成失败（P5-FAIL）。这里只按 rc 判定。 */
-        if (rc < 0) {
-                JPROBE("P5-FAIL coreclr_initialize rc<0");
-                joy_core_log_error("coreclr_initialize failed: 0x%x", rc);
+
+        void* domain = mono_jit_init("joy");
+        JPROBE("P5 after mono_jit_init");
+        if (!domain) {
+                JPROBE("P5-FAIL mono_jit_init returned NULL");
+                joy_core_log_error("mono_jit_init failed (Android)");
                 CSX_DL_CLOSE(lib);
                 return false;
         }
+        csx->mono_domain = domain;
+        csx->mono_thread_attach(domain);
         csx->runtime_lib = lib;
-        csx->host_handle = host;
-        csx->domain_id = domain;
-        csx->create_delegate = create_delegate;
-        csx->shutdown = shutdown_fn;
         csx->android = true;
         snprintf(csx->asm_dir, sizeof(csx->asm_dir), "%s", libdir);
-        joy_core_log_info("CoreCLR initialized via libmonosgen (Android)");
-        JPROBE("P6 csx_init_android OK");
+        (void)mono_get_root_domain;
+        joy_core_log_info("MonoVM initialized via mono_jit_init (Android)");
+        JPROBE("P6 mono embedding init OK");
         return true;
 }
 #endif
@@ -389,6 +432,52 @@ csx_p csx_create(void)
         return csx;
 }
 
+#if defined(__ANDROID__)
+/* 确保 JoyGame.dll 已加载并缓存其 MonoImage。迁移前的 csx_load_assembly 用
+ * mono_image_open_from_data + mono_assembly_load_from_full；这里用更简单的
+ * mono_domain_assembly_open（mono_set_assemblies_path 已指向解包目录）。 */
+static bool csx_mono_ensure_image(csx_p csx)
+{
+        if (csx->mono_image) return true;
+        void* assembly = csx->mono_domain_assembly_open(csx->mono_domain, "JoyGame.dll");
+        if (!assembly) {
+                JPROBE("P7-FAIL mono_domain_assembly_open(JoyGame.dll) NULL");
+                joy_core_log_error("mono_domain_assembly_open(JoyGame.dll) failed");
+                return false;
+        }
+        csx->mono_image = csx->mono_assembly_get_image(assembly);
+        if (!csx->mono_image) {
+                JPROBE("P7-FAIL mono_assembly_get_image NULL");
+                return false;
+        }
+        JPROBE("P7 JoyGame.dll loaded via mono");
+        return true;
+}
+
+/* 在 JoyGame.dll 的 namespace.class 中按名字找方法，返回 MonoMethod*。 */
+static void* csx_mono_find_method(csx_p csx, const char* ns, const char* klass,
+                                  const char* method, int param_count)
+{
+        if (!csx_mono_ensure_image(csx)) return NULL;
+        void* k = csx->mono_class_from_name(csx->mono_image, ns, klass);
+        if (!k) {
+                char pb[256];
+                snprintf(pb, sizeof(pb), "mono class not found: %s.%s", ns, klass);
+                JPROBE(pb);
+                joy_core_log_error("mono class not found: %s.%s", ns, klass);
+                return NULL;
+        }
+        void* m = csx->mono_class_get_method(k, method, param_count);
+        if (!m) {
+                char pb[256];
+                snprintf(pb, sizeof(pb), "mono method not found: %s.%s::%s", ns, klass, method);
+                JPROBE(pb);
+                joy_core_log_error("mono method not found: %s.%s::%s", ns, klass, method);
+        }
+        return m;
+}
+#endif
+
 bool csx_load_assembly(csx_p csx, const char* filename)
 {
         if (!csx) return false;
@@ -398,7 +487,32 @@ bool csx_load_assembly(csx_p csx, const char* filename)
          * 让它内部的 NativeFuncs.Initialize 与 Initialize/Update/Shutdown 落在同一个
          * AssemblyLoadContext 实例上——否则绑定填在 A、业务调用落在 B（函数指针全 NULL）。 */
         void* initialize_fn = NULL;
-#if !defined(__ANDROID__)
+#if defined(__ANDROID__)
+        /* Android：从 JoyGame.dll 找普通方法 BootstrapMono(IntPtr) 并用
+         * mono_runtime_invoke 调用，把 lookup 函数指针交给 C# 建立绑定表。 */
+        {
+                void* bootstrap = csx_mono_find_method(csx, "JoyGame", "GameApplication", "BootstrapMono", 1);
+                if (!bootstrap) {
+                        JPROBE("P8-FAIL BootstrapMono not found");
+                        return false;
+                }
+                void* lookup = (void*)&csx_lookup_internal_call;
+                void* params[1] = { &lookup };
+                void* exc = NULL;
+                JPROBE("P9 before mono_runtime_invoke BootstrapMono");
+                csx->mono_runtime_invoke(bootstrap, NULL, params, &exc);
+                if (exc) {
+                        JPROBE("P9-FAIL exception in BootstrapMono");
+                        char* s = csx->mono_string_to_utf8(csx->mono_object_to_string(exc, NULL));
+                        joy_core_log_error("BootstrapMono exception: %s", s ? s : "?");
+                        if (s) csx->mono_free(s);
+                        return false;
+                }
+                JPROBE("P10 after BootstrapMono (bindings registered)");
+        }
+        joy_core_log_info("Managed bindings initialized (mono), %d native calls registered", s_icall_count);
+        return true;
+#else
         if (csx->load_asm_get_fp) {
                 char bindings_path[1200];
                 csx_get_cwd(bindings_path, sizeof(bindings_path));
@@ -428,21 +542,6 @@ bool csx_load_assembly(csx_p csx, const char* filename)
                         return false;
                 }
 #endif
-        }
-#else
-        if (csx->create_delegate) {
-                char _pb[256];
-                JPROBE("P7 before create_delegate Bootstrap");
-                int rc = csx->create_delegate(csx->host_handle, csx->domain_id,
-                                              "JoyGame", "JoyGame.GameApplication", "Bootstrap", &initialize_fn);
-                snprintf(_pb, sizeof(_pb), "P8 after create_delegate Bootstrap rc=0x%x fn=%s",
-                         rc, initialize_fn ? "OK" : "NULL");
-                JPROBE(_pb);
-                if (rc < 0 || !initialize_fn) {
-                        JPROBE("P8-FAIL create_delegate Bootstrap failed");
-                        joy_core_log_error("create_delegate GameApplication.Bootstrap failed: 0x%x", rc);
-                        return false;
-                }
         }
 #endif
         if (!initialize_fn) {
@@ -477,19 +576,28 @@ MonoObject* csx_invoke_static_method(csx_p csx, const char* namespace_name,
 static void* csx_load_entry(csx_p csx, const char* asm_file, const char* type_name, const char* method_name)
 {
         void* fn = NULL;
+#if defined(__ANDROID__)
         if (csx->android) {
-                char _pb[256];
-                snprintf(_pb, sizeof(_pb), "P11 before create_delegate entry: %s", method_name);
-                JPROBE(_pb);
-                int rc = csx->create_delegate(csx->host_handle, csx->domain_id,
-                                              "JoyGame", type_name, method_name, &fn);
-                snprintf(_pb, sizeof(_pb), "P12 after create_delegate entry %s: rc=0x%x fn=%s",
-                         method_name, rc, fn ? "OK" : "NULL");
-                JPROBE(_pb);
-                if (rc < 0 || !fn)
-                        joy_core_log_error("create_delegate %s failed: 0x%x", method_name, rc);
+                /* Android：找 C# 的普通入口 <Name>Mono（UCO 入口不能被反射调用）。
+                 * type_name 形如 "JoyGame.Host, JoyGame"，从中取 namespace/class。 */
+                char pb[256];
+                snprintf(pb, sizeof(pb), "P11 mono find entry %s", method_name);
+                JPROBE(pb);
+                /* type_name = "Namespace.Class, Assembly" */
+                char q[256]; snprintf(q, sizeof(q), "%s", type_name);
+                char* comma = strchr(q, ','); if (comma) *comma = '\0';
+                char* dot = strrchr(q, '.');
+                const char* ns = "JoyGame";
+                const char* klass = q;
+                if (dot) { *dot = '\0'; ns = q; klass = dot + 1; }
+                char mono_name[128];
+                snprintf(mono_name, sizeof(mono_name), "%sMono", method_name);
+                fn = csx_mono_find_method(csx, ns, klass, mono_name, -1);
+                snprintf(pb, sizeof(pb), "P12 mono find entry %s: %s", mono_name, fn ? "OK" : "NULL");
+                JPROBE(pb);
                 return fn;
         }
+#endif
 #if defined(_WIN32)
         char asm_path[1200];
         csx_get_cwd(asm_path, sizeof(asm_path));
@@ -535,8 +643,20 @@ csx_method_p csx_find_method(csx_p csx, const char* namespace_name, const char* 
 
 MonoObject* csx_invoke_method(csx_p csx, csx_method_p method, void** args)
 {
-        (void)csx;
         if (!method || !method->fn) return NULL;
+        if (csx && csx->android) {
+                /* Android：method->fn 是 MonoMethod*，用 mono_runtime_invoke 调用。
+                 * args[] 已由调用方按 param_count 排好，每个元素指向参数值，
+                 * 正好符合 mono_runtime_invoke 的 void** params 约定。 */
+                void* exc = NULL;
+                csx->mono_runtime_invoke(method->fn, NULL, args, &exc);
+                if (exc) {
+                        char* s = csx->mono_string_to_utf8(csx->mono_object_to_string(exc, NULL));
+                        joy_core_log_error("mono entry exception: %s", s ? s : "?");
+                        if (s) csx->mono_free(s);
+                }
+                return NULL;
+        }
         switch (method->param_count) {
         case 0:
                 ((void (CSX_CDECL *)(void))method->fn)();
@@ -561,13 +681,19 @@ MonoObject* csx_invoke_method(csx_p csx, csx_method_p method, void** args)
 
 void csx_method_free(csx_method_p method) { free(method); }
 
-void csx_thread_attach(csx_p csx) { (void)csx; /* CoreCLR 宿主管理的线程无需手动 attach */ }
+void csx_thread_attach(csx_p csx)
+{
+        if (csx && csx->android && csx->mono_domain && csx->mono_thread_attach)
+                csx->mono_thread_attach(csx->mono_domain);
+        /* 桌面：CoreCLR 宿主管理的线程无需手动 attach */
+}
 
 void csx_release(csx_p csx)
 {
         if (!csx) return;
         if (csx->fxr_ctx && csx->fxr_close) csx->fxr_close(csx->fxr_ctx);
-        if (csx->android && csx->shutdown) csx->shutdown(csx->host_handle, csx->domain_id);
+        if (csx->android && csx->mono_domain && csx->mono_jit_cleanup)
+                csx->mono_jit_cleanup(csx->mono_domain);
         if (csx->runtime_lib) CSX_DL_CLOSE(csx->runtime_lib);
         free(csx);
 }
