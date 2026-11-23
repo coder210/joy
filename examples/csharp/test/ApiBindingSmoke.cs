@@ -31,15 +31,18 @@ namespace JoyGame
         private static bool CheckRealCalls()
         {
             // joy_scene_procmap_wave_seed(base, wave) = base + wave * 1000003（jprocmap.c:285）
+            JoyProbe.Mark("real:JpmWaveSeed");
             uint seed = Joy.Api.Bindings.JpmWaveSeed(12345u, 2);
             bool seedOk = seed == 2012351u;
 
+            JoyProbe.Mark("real:Murmur3Hash");
             ulong h1 = Joy.Api.Bindings.Murmur3Hash("joy");
             ulong h2 = Joy.Api.Bindings.Murmur3Hash("joy");
             ulong h3 = Joy.Api.Bindings.Murmur3Hash("Joy");
             bool hashOk = h1 != 0 && h1 == h2 && h1 != h3;
 
             // jmath.h 的 vec2_add / vec2_dot：{1,2} + {3,4} == {4,6}，点积 11
+            JoyProbe.Mark("real:JmathVec2");
             float vx = Joy.Api.Bindings.JmathVec2AddX(1f, 2f, 3f, 4f);
             float vy = Joy.Api.Bindings.JmathVec2AddY(1f, 2f, 3f, 4f);
             float dot = Joy.Api.Bindings.JmathVec2Dot(1f, 2f, 3f, 4f);
@@ -49,9 +52,11 @@ namespace JoyGame
                        && System.Math.Abs(dot - 11f) < 0.001f;
 
             // r3d L3 手写适配：7 个 internal call 用空句柄跑通（headless 安全，不碰 GPU）
+            JoyProbe.Mark("real:R3dExt.SelfTest");
             bool r3dOk = Joy.Api.R3dExt.SelfTest(out _r3dDetail);
 
             // r3d L3/L2 手写适配第二批：18 个 internal call 空句柄自检
+            JoyProbe.Mark("real:R3dExtPlus.SelfTest");
             string r3dPlusDetail;
             bool r3dPlusOk = Joy.Api.R3dExtPlus.SelfTest(out r3dPlusDetail);
             _r3dDetail += " | plus=" + r3dPlusDetail;
@@ -79,12 +84,16 @@ namespace JoyGame
         {
             try
             {
+                JoyProbe.Mark("smoke:Diagnostics.LiveCount");
                 uint live0 = Joy.Api.Diagnostics.LiveCount;
                 uint dead0 = Joy.Api.Diagnostics.DestroyCount;
 
+                JoyProbe.Mark("smoke:Bindings.GetTicks");
                 ulong ticks = Joy.Api.Bindings.GetTicks();
+                JoyProbe.Mark("smoke:Bindings.JtextCacheGetCount");
                 int cached = Joy.Api.Bindings.JtextCacheGetCount();
 
+                JoyProbe.Mark("smoke:CreateAndDrop");
                 CreateAndDrop(12345UL);
                 uint liveAfter = Joy.Api.Diagnostics.LiveCount;
 
@@ -92,10 +101,13 @@ namespace JoyGame
                 GC.WaitForPendingFinalizers();
                 GC.Collect();
 
+                JoyProbe.Mark("smoke:liveNow/deadNow");
                 uint liveNow = Joy.Api.Diagnostics.LiveCount;
                 uint deadNow = Joy.Api.Diagnostics.DestroyCount;
 
+                JoyProbe.Mark("smoke:CheckRealCalls");
                 bool realOk = CheckRealCalls();
+                JoyProbe.Mark("smoke:PublicApiHasNoRawPointers");
                 bool opaqueOk = PublicApiHasNoRawPointers();
 
                 Passed = liveAfter == live0 + 1

@@ -24,10 +24,18 @@ namespace JoyGame
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
         public static void OnInit(int width, int height, int smokeFrames)
         {
+            // 临时诊断（--smoke 时开启）：Linux/macOS 在这里面 segfault，
+            // 标记用于确认崩在哪一步。
+            JoyProbe.Enabled = smokeFrames > 0;
+            JoyProbe.Mark("OnInit:begin");
             _app = new GameApp(width, height, smokeFrames);
+            JoyProbe.Mark("OnInit:GameApp ctor OK");
             _smoke = smokeFrames > 0 ? new SmokeScript() : null;
+            JoyProbe.Mark("OnInit:SmokeScript OK");
             if (smokeFrames > 0) ApiBindingSmoke.Run();
+            JoyProbe.Mark("OnInit:ApiBindingSmoke OK");
             _app.Start();
+            JoyProbe.Mark("OnInit:Start OK");
             Joy.Host.log("[host] init " + width + "x" + height +
                          (smokeFrames > 0 ? " smoke=" + smokeFrames : ""));
         }
