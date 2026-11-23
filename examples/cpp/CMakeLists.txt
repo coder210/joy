@@ -115,8 +115,7 @@ add_custom_command(TARGET example_cpp POST_BUILD
             "${JOY_EXAMPLE_ASSETS}" "${JOY_EXAMPLE_ASSET_ROOT}"
     COMMENT "Copying shared assets for example_cpp")
 
-# joy::all 含 cs 模块时 exe 会导入 coreclr.dll，必须一起部署
-joy_examples_deploy_clr(example_cpp)
+# cs 模块已不链接 mono_*（jcsx.c 动态加载），cpp 示例也不需要 CLR 运行时。
 
 add_test(NAME example_cpp_smoke COMMAND example_cpp --smoke 180)
 set_tests_properties(example_cpp_smoke PROPERTIES

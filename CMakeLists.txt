@@ -106,7 +106,10 @@ if(JOY_BUILD_EXAMPLES)
         endif()
     endif()
 
-    if(MONO_INCLUDE_DIR AND MONO_LIBRARIES AND EXISTS "${MONO_INCLUDE_DIR}")
+    # 桌面只要求 mono 头文件（运行时由 runtimes/nupkg 自包含部署，不再需要
+    # MONO_LIBRARIES 哨兵）；Android 仍要求 libmonosgen；wasm 不支持 MonoVM。
+    if(MONO_INCLUDE_DIR AND EXISTS "${MONO_INCLUDE_DIR}"
+       AND NOT EMSCRIPTEN AND (NOT ANDROID OR MONO_LIBRARIES))
         set(_joy_modules cs lua js)
         message(STATUS "joy: 开启 cs / lua / js 三个后端（examples）")
     else()

@@ -35,8 +35,7 @@ add_custom_command(TARGET example_js POST_BUILD
             "${JOY_EXAMPLE_ASSET_ROOT}/scripts/main.js"
     COMMENT "Copying js example assets + scripts")
 
-# joy::all 含 cs 模块时 exe 会导入 coreclr.dll，必须一起部署
-joy_examples_deploy_clr(example_js)
+# cs 模块已不链接 mono_*（jcsx.c 动态加载），js 示例也不需要 CLR 运行时。
 
 add_test(NAME example_js_smoke COMMAND example_js --smoke 180)
 set_tests_properties(example_js_smoke PROPERTIES

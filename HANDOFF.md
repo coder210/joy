@@ -587,7 +587,7 @@ Get-ChildItem runtimes/android-arm64 -Recurse -File   # 主库 + 4 个 libSystem
 | Android 真机冒烟 | 未做。桌面 `--smoke` 走 dummy 驱动，不能替代 |
 | iOS / wasm（C++/lua/js） | `JOY_GAME_STATIC` 静态形态只在桌面验证过，两平台工具链都没跑 |
 | C# 在 iOS / wasm | iOS 禁 JIT。wasm 不是「.NET 8 不支持」：.NET 8 正式支持 `browser-wasm`，但那是 SDK 托管的 interpreter 应用；joy 的 C# 后端是嵌入 MonoVM 的宿主 + `InternalCall` 绑定，宿主模型不兼容。Web 已定方案 A：只发 cpp / lua / js，见 `examples/README.md` 平台矩阵 |
-| `runtimes/windows-x64/coreclr.dll` | 是本地编译版，可考虑换成官方包同名 DLL |
+| 桌面 `runtimes/<platform>/`（已删除） | 迁移到 CoreCLR 自包含后不再需要：MonoVM 的桌面运行时 + BCL 已移除，桌面运行时改由 `runtimes/nupkg`（CoreCLR 8.0.11）提供 |
 | `src/jgltf.c` | 句柄 typedef 缺失的预存语法错误**已修**（2026-11-13，见 §3 的 31）；但 `JOY_ENABLE_GLTF=ON` 实建在链接期仍缺 3 个从未实现的 `r3d_*_skinned*` 符号，属新功能缺口而非改名遗漏，见 `NEXT_SESSION.md` P0-b。默认 OFF，不影响现有构建 |
 
 ## 7. 项目收口（2026-11-11）

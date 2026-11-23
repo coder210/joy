@@ -38,9 +38,11 @@ set(JOY_BINDINGS_CSPROJ "${CMAKE_CURRENT_LIST_DIR}/Joy.Bindings.csproj"
     CACHE FILEPATH "joy 提供的 C# 绑定工程" FORCE)
 
 if(JOY_MODULE_CS)
-    if(NOT MONO_INCLUDE_DIR OR NOT MONO_LIBRARIES)
+    # 桌面只需要头文件（模块不再链接 MONO_LIBRARIES）；Android 还需要主库用于打包。
+    if(NOT MONO_INCLUDE_DIR OR (ANDROID AND NOT MONO_LIBRARIES))
         message(FATAL_ERROR
-            "joy 模块 cs 需要 Mono/CoreCLR 开发包：请设置 MONO_INCLUDE_DIR 与 MONO_LIBRARIES")
+            "joy 模块 cs 需要 CLR 开发包：请设置 MONO_INCLUDE_DIR"
+            "（Android 另需 MONO_LIBRARIES 指向 libmonosgen-2.0.so）")
     endif()
 
     file(GLOB _glue CONFIGURE_DEPENDS

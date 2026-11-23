@@ -111,7 +111,10 @@ if(NOT TARGET joy::all)
         endif()
     endif()
 
-    if(MONO_INCLUDE_DIR AND MONO_LIBRARIES AND EXISTS "${MONO_INCLUDE_DIR}")
+    # 桌面只要求 mono 头文件（运行时由 runtimes/nupkg 自包含部署）；Android 仍需
+    # libmonosgen 主库；wasm 没有 MonoVM 运行时，必须排除，否则会误开 cs 模块。
+    if(MONO_INCLUDE_DIR AND EXISTS "${MONO_INCLUDE_DIR}"
+       AND NOT EMSCRIPTEN AND (NOT ANDROID OR MONO_LIBRARIES))
         set(_joy_modules cs lua js)
         message(STATUS "joy examples: 开启 cs / lua / js 三个后端")
     else()
@@ -144,12 +147,10 @@ else()
     set(JOY_EXAMPLE_ASSET_ROOT "${CMAKE_BINARY_DIR}/$<CONFIG>")
 endif()
 
-# ---- 部署 coreclr.dll（各子目录调用；必须在 add_subdirectory 之前定义） ----
-# joy::all 是「所有已启用模块的源码合集」，只要开了 cs 模块，**每个**示例的
-# 导入表里都会有 coreclr.dll 的符号（mono_free 等），哪怕 cpp/lua/js 从不调用
-# csx_*。只给 example_csharp 部署时，单独构建 example_js 会报
-# 「无法定位程序输入点 mono_free 于动态链接库 example_js.exe 上」。
-# BCL(lib/) 不需要跟着走：不走 CLR 初始化的进程不会加载它。
+# ---- Android：把 MonoVM 主库 + CoreLib shim 放进 APK 的 lib/<abi> ----
+# 只有 Android 需要这一步（系统加载器只从 lib/<abi> 解压加载 .so）。
+# 桌面示例不再需要：cs 模块已不链接 mono_*（jcsx.c 动态加载 hostfxr），
+# csharp 示例的运行时由 runtimes/nupkg 自包含部署，cpp/lua/js 从不初始化 CLR。
 #
 # 必须做成函数让子目录自己调用：add_custom_command(TARGET) 只能在创建该
 # target 的同一目录里调用，父目录调用会报
@@ -174,28 +175,11 @@ function(joy_examples_deploy_clr _target)
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                     "${MONO_LIBRARIES}" ${_clr_shims} "${_apk_lib}/"
             COMMENT "Deploying ${_clr_file} + CoreLib shims into APK lib/${ANDROID_ABI}/")
-    elseif(EXISTS "${_clr_bin}/coreclr.dll")
-        add_custom_command(TARGET ${_target} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${_clr_bin}/coreclr.dll"
-                    "$<TARGET_FILE_DIR:${_target}>/coreclr.dll"
-            COMMENT "Deploying coreclr.dll for ${_target} (joy::all 含 cs 模块)")
     elseif(UNIX)
-        # Linux/macOS runtime pack 把主库与 libSystem.* shim 拆成多个文件；
-        # 主库无 DT_RUNPATH：exe 靠下面的 BUILD_RPATH 找主库，shim 由宿主在
-        # csx_create() 之前按绝对路径预加载（见 csharp_host/src/main.cpp）。
-        file(GLOB _clr_native_libs
-            "${_clr_bin}/libcoreclr.so" "${_clr_bin}/libcoreclr.dylib"
-            "${_clr_bin}/libmonosgen-2.0.so" "${_clr_bin}/libmonosgen-2.0.dylib"
-            "${_clr_bin}/libSystem.*.so" "${_clr_bin}/libSystem.*.dylib")
-        list(LENGTH _clr_native_libs _clr_native_count)
-        if(_clr_native_count GREATER 0)
-            add_custom_command(TARGET ${_target} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                        ${_clr_native_libs} "$<TARGET_FILE_DIR:${_target}>"
-                COMMENT "Deploying MonoVM native libs for ${_target}")
-        endif()
-        # joy::all 含 cs 模块，四个示例的导入表里都有 mono_*，exe 必须能找到主库。
+        # 桌面：cs 模块已不链接 mono_*（jcsx.c 动态加载 hostfxr），csharp 示例的
+        # CLR 运行时由 runtimes/nupkg 自包含部署，lua/js/cpp 示例从不初始化 CLR。
+        # 因此这里不再拷 runtimes/ 下的 MonoVM 主库与 shim——那会覆盖自包含的
+        # 真 CoreCLR（Linux/macOS segfault 的根因）。只保留 rpath 供 SDL3 解析。
         if(APPLE)
             set_property(TARGET ${_target} APPEND PROPERTY BUILD_RPATH "@loader_path")
             set_property(TARGET ${_target} APPEND PROPERTY INSTALL_RPATH "@loader_path")
