@@ -525,6 +525,20 @@ Android 缺任一条都 `FATAL_ERROR`，**没有向其它平台回退**。
 ### `SDL_GetBasePath()` 不能 free
 SDL3 返回内部静态缓存，`SDL_free` 会在退出时堆损坏（0xC0000374）。
 
+### 不要覆盖平台/驱动默认（项目约定）
+程序里**不要**用 `SDL_SetHint` 之类去指定视频驱动、渲染后端这类"运行环境属性"。
+默认行为由 SDL 按平台决定，无头/特殊需求由**调用方**用环境变量
+（`SDL_VIDEODRIVER` / `SDL_RENDER_DRIVER`）指定，CI 里显式写一行即可。
+
+反面教材（2026-11，Linux CI 反复 segfault 的真凶）：四份示例在 smoke 分支写了
+`SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "dummy")`，而 SDL3 的 dummy 视频驱动只实现
+framebuffer（`SDL_nullvideo.c` 没有 `CreateSDLWindow`），`SDL_CreateWindow` 于是调用
+空函数指针（`rip=0x0`）。`DUMMY_Available()` 又只在 hint 含 `dummy` 时返回可用，
+等于强制选中。Windows 上没暴露，只是因为那份 SDL 构建没编入该驱动、hint 被忽略。
+
+判断标准：**同一份二进制换台机器就该跑得起来**。若一行设置让"有显示的开发机"和
+"无头的 CI"必须走不同代码路径，那它就不该写在程序里。
+
 ### 生成链路的正确操作顺序
 1. 改所属域的配套头 `src/j<域>.h`（声明按域归属，`japi.h` 只做聚合；
    `source` 行号由 `--scan` 刷新，无需再靠「放文件末尾」规避漂移）

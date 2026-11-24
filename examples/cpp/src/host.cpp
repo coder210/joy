@@ -134,13 +134,12 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     if (i >= 0 && i + 1 < argc) g_smoke_frames = atoi(argv[i + 1]);
     g_smoke = g_smoke_frames > 0;
 
-    /* hint 必须在游戏侧创建窗口之前设置 */
-    if (g_smoke) {
-        /* 不设 SDL_HINT_VIDEO_DRIVER：驱动由 SDL_VIDEODRIVER 决定。
-         * dummy 驱动没有 CreateSDLWindow，强制选中会让 SDL_CreateWindow
-         * 调用空函数指针（Linux 无头 CI segfault 的根因），无头请用 offscreen。 */
-        SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
-    } else {
+    /* 不覆盖任何平台/驱动默认：视频与渲染后端都由 SDL 默认或
+     * SDL_VIDEODRIVER / SDL_RENDER_DRIVER 环境变量决定。无头环境（CI）
+     * 由调用方设 SDL_VIDEODRIVER=offscreen。
+     * 曾经在这里写死 SDL_HINT_VIDEO_DRIVER="dummy"，而 SDL3 的 dummy 驱动
+     * 没有 CreateSDLWindow，SDL_CreateWindow 会跳到空指针（Linux CI segfault）。 */
+    if (!g_smoke) {
         SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, "60");
     }
 

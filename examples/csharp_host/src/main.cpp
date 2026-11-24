@@ -189,16 +189,13 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     i = find_arg(argc, argv, "--assembly");
     if (i >= 0 && i + 1 < argc) g_assembly = argv[i + 1];
 
-    if (g_smoke_frames > 0) {
-        /* 不设 SDL_HINT_VIDEO_DRIVER：视频驱动属于运行环境，由 SDL_VIDEODRIVER
-         * 或 SDL 的平台默认决定，程序不该替用户选。
-         * 旧代码在这里写死 "dummy"，而 SDL3 的 dummy 视频驱动只实现 framebuffer
-         * （SDL_nullvideo.c 没有 CreateSDLWindow），选到它就让 SDL_CreateWindow
-         * 调用空函数指针——Linux CI 的 rip=0x0 就是这么来的。
-         * 无头环境请由调用方设 SDL_VIDEODRIVER=offscreen（CI 已如此）。
-         * 渲染器仍固定 software：smoke 不该依赖 GPU 后端。 */
-        SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
-    } else {
+    /* 不覆盖任何平台/驱动默认：视频与渲染后端都由 SDL 默认或
+     * SDL_VIDEODRIVER / SDL_RENDER_DRIVER 环境变量决定。无头环境（CI）
+     * 由调用方设 SDL_VIDEODRIVER=offscreen。
+     * 旧代码在这里写死 SDL_HINT_VIDEO_DRIVER="dummy"，而 SDL3 的 dummy 驱动
+     * 只实现 framebuffer、没有 CreateSDLWindow，SDL_CreateWindow 于是调到
+     * 空函数指针——Linux CI 的 rip=0x0 就是这么来的。 */
+    if (g_smoke_frames <= 0) {
         SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, "60");
     }
 

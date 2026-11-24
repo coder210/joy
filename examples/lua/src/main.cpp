@@ -79,13 +79,11 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     int i = find_arg(argc, argv, "--smoke");
     if (i >= 0 && i + 1 < argc) g_smoke_frames = atoi(argv[i + 1]);
 
-    /* dummy / 软件渲染的 hint 必须早于脚本建窗口（joy.init 里 joy_core_create_window） */
-    if (g_smoke_frames > 0) {
-        /* 不设 SDL_HINT_VIDEO_DRIVER：驱动由 SDL_VIDEODRIVER 决定。
-         * dummy 驱动没有 CreateSDLWindow，强制选中会让 SDL_CreateWindow
-         * 调用空函数指针（Linux 无头 CI segfault 的根因），无头请用 offscreen。 */
-        SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
-    } else {
+    /* 不覆盖任何平台/驱动默认：视频与渲染后端都由 SDL 默认或
+     * SDL_VIDEODRIVER / SDL_RENDER_DRIVER 环境变量决定。无头环境（CI）
+     * 由调用方设 SDL_VIDEODRIVER=offscreen。
+     * 脚本里的 joy.init 会建窗口，所以这些设置必须在它之前生效。 */
+    if (g_smoke_frames <= 0) {
         SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, "60");
     }
 
