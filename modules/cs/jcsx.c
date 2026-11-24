@@ -655,7 +655,12 @@ static void* csx_load_entry(csx_p csx, const char* asm_file, const char* type_na
                 return fn;
         }
 #endif
-#if defined(_WIN32)
+        /* 路径必须与 csx_load_assembly() 里加载 Bootstrap 时**完全一致**。
+         * hostfxr 按传入的程序集路径区分实例：Bootstrap 用 cwd 绝对路径加载，
+         * 这里若只传裸文件名 "JoyGame.dll"，Linux/macOS 上会被当成另一个程序集，
+         * 两层各有独立的静态字段——Bootstrap 把 800 个函数指针填进 A，
+         * OnInit 从 B 读到的全是 NULL，于是第一次 delegate* 调用就 rip=0x0。
+         * Windows 分支原本就拼了绝对路径，所以这个坑只在 Linux 暴露。 */
         char asm_path[1200];
         csx_get_cwd(asm_path, sizeof(asm_path));
         if (asm_path[0]) {
@@ -663,18 +668,18 @@ static void* csx_load_entry(csx_p csx, const char* asm_file, const char* type_na
                 if (asm_path[n - 1] != '/' && asm_path[n - 1] != '\\') strcat(asm_path, "/");
         }
         strcat(asm_path, asm_file);
+#if defined(_WIN32)
         wchar_t wpath[1200], wtype[256], wmethod[128];
         MultiByteToWideChar(CP_ACP, 0, asm_path, -1, wpath, 1200);
         MultiByteToWideChar(CP_ACP, 0, type_name, -1, wtype, 256);
         MultiByteToWideChar(CP_ACP, 0, method_name, -1, wmethod, 128);
         int rc = csx->load_asm_get_fp((csx_char_t*)wpath, (csx_char_t*)wtype,
                                      (csx_char_t*)wmethod, CSX_UCO_METHOD, NULL, &fn);
-        if (rc < 0 || !fn) joy_core_log_error("load entry %s failed: 0x%x", method_name, rc);
 #else
-        int rc = csx->load_asm_get_fp((csx_char_t*)asm_file, (csx_char_t*)type_name,
+        int rc = csx->load_asm_get_fp((csx_char_t*)asm_path, (csx_char_t*)type_name,
                                      (csx_char_t*)method_name, CSX_UCO_METHOD, NULL, &fn);
-        if (rc < 0 || !fn) joy_core_log_error("load entry %s failed: 0x%x", method_name, rc);
 #endif
+        if (rc < 0 || !fn) joy_core_log_error("load entry %s failed: 0x%x", method_name, rc);
         return fn;
 }
 

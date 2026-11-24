@@ -53,11 +53,5 @@ namespace Joy
 
         public static void quit() => s_quit();
         public static void set_exit_code(int code) => s_set_exit_code(code);
-
-        /// <summary>[临时诊断] 直接读出 s_log 的 native 指针值（只读静态字段，不做
-        /// delegate* 调用，因此即使调用本身会崩也能安全取值）。用于判断崩溃时
-        /// s_log 在当前 ALC 里到底是 0（=绑定表没填到这里）还是非 0（=调用约定问题）。
-        /// 定位完成后删除。</summary>
-        public static unsafe ulong PtrLog() => (ulong)(nuint)s_log;
     }
 }

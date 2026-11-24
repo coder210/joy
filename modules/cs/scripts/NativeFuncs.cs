@@ -38,11 +38,6 @@ namespace Joy
             Api.CryptoExt.Init();
             Api.CollisionExt.Init();
 
-            // [临时诊断] 在 Initialize 的上下文里立即调一次宿主日志，验证 delegate*
-            // 与 s_log 在这里是否可用。若这里能打印、而 OnInit 里却崩，则锁定 ALC 分裂；
-            // 若这里也崩，说明 delegate* 调用本身坏了（与 s_lookup 正常矛盾，极有信息量）。
-            Host.log("[self-test] NativeFuncs.Initialize done, host log reachable");
-
             s_inited = true;
         }
 
@@ -61,16 +56,6 @@ namespace Joy
             {
                 Marshal.FreeCoTaskMem((IntPtr)p);
             }
-        }
-
-        /// <summary>
-        /// 诊断用：按注册名返回 native 函数指针（0 表示未初始化或未注册）。
-        /// 用于确认崩溃点上的绑定指针是否为空；定位完成后可删除。
-        /// </summary>
-        public static unsafe ulong DebugPointer(string name)
-        {
-            try { return (ulong)(nuint)Lookup(name); }
-            catch (Exception) { return 0; }
         }
 
         // ---- string / 数组 / 指针编组辅助 ----

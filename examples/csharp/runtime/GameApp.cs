@@ -34,18 +34,8 @@ namespace JoyGame
             Height = height;
             SmokeFrames = smokeFrames;
 
-            // 临时诊断：Linux/macOS 崩在构造函数里（call 0x0）。打印每条绑定的
-            // native 指针 + 语句标记，用来区分「绑定指针为空」还是「C 侧内部崩」。
-            JoyProbe.Mark("ctor:CreateWindow ptr=0x" +
-                Joy.NativeFuncs.DebugPointer("Joy.Api.Native::CreateWindow").ToString("x"));
             Window = Bindings.CreateWindow("Joy C# Topdown", width, height);
-            JoyProbe.Mark("ctor:CreateWindow OK");
-            JoyProbe.Mark("ctor:R2dCreate ptr=0x" +
-                Joy.NativeFuncs.DebugPointer("Joy.Api.Native::R2dCreate").ToString("x"));
             R2d = Bindings.R2dCreate(Window);
-            JoyProbe.Mark("ctor:R2dCreate OK");
-            JoyProbe.Mark("ctor:SetLogicalPresentation ptr=0x" +
-                Joy.NativeFuncs.DebugPointer("Joy.Api.Native::R2dSetLogicalPresentationMode").ToString("x"));
             // 对齐 joy_topdown_template/logical_presentation.h 的 presentation_set_design：
             // joy_r2d_create 默认用窗口物理尺寸 + STRETCH，Android 全屏下 480x320 只占一角；
             // 覆盖为固定设计分辨率 + LETTERBOX（等比缩放居中、不拉伸）。
