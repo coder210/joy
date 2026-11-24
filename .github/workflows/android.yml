@@ -166,6 +166,23 @@ jobs:
           cp -a SDL/android-project/. build-apk/
           cp android/app.build.gradle build-apk/app/build.gradle
 
+          # AGP 的传递依赖应优先走 Google Maven。vendored 的 SDL 根 build.gradle
+          # 把 mavenCentral() 写在 google() 前面，Gradle 会先打 Maven Central，
+          # GitHub Actions 共享出口 IP 很容易被 429 Too Many Requests 限流。
+          # 只改拷贝出来的副本，不动 SDL 上游文件。
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('build-apk/build.gradle')
+          s = p.read_text(encoding='utf-8')
+          old = '        mavenCentral()\n        google()\n'
+          new = '        google()\n        mavenCentral()\n'
+          n = s.count(old)
+          if n != 2:
+              raise SystemExit(f'::error::expected 2 repository blocks (buildscript+allprojects), found {n}')
+          p.write_text(s.replace(old, new), encoding='utf-8')
+          print('Gradle repositories: google() first')
+          PY
+
           sdl3="$(find build-android -name 'libSDL3.so' -type f -print -quit)"
           mono="build-android/lib/$ANDROID_ABI/libmonosgen-2.0.so"
           cpp_game="build-android/lib/$ANDROID_ABI/libJoyGameCpp.so"
@@ -255,7 +272,18 @@ jobs:
 
           cd build-apk
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon 2>&1 | tee ../gradle-apk.log
+          # Maven Central 偶发 429：失败时清掉部分缓存重试一次，避免整个 job 白跑。
+          # 只有真的拿到 APK 才算成功，重试失败仍由后面的文件校验拦住。
+          for attempt in 1 2; do
+            echo "--- gradlew assembleDebug (attempt $attempt) ---"
+            ./gradlew assembleDebug --no-daemon 2>&1 | tee "../gradle-apk.log"
+            rc=${PIPESTATUS[0]}
+            [ "$rc" -eq 0 ] && break
+            if [ "$attempt" -eq 1 ]; then
+              echo "::warning::gradlew failed ($rc), retrying once after 20s"
+              sleep 20
+            fi
+          done
           cd ..
 
           for backend in cpp lua js csharp; do
