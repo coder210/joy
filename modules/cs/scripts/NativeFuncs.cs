@@ -38,6 +38,11 @@ namespace Joy
             Api.CryptoExt.Init();
             Api.CollisionExt.Init();
 
+            // [临时诊断] 在 Initialize 的上下文里立即调一次宿主日志，验证 delegate*
+            // 与 s_log 在这里是否可用。若这里能打印、而 OnInit 里却崩，则锁定 ALC 分裂；
+            // 若这里也崩，说明 delegate* 调用本身坏了（与 s_lookup 正常矛盾，极有信息量）。
+            Host.log("[self-test] NativeFuncs.Initialize done, host log reachable");
+
             s_inited = true;
         }
 

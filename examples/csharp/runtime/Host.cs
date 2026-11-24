@@ -28,8 +28,14 @@ namespace JoyGame
             // 标记用于确认崩在哪一步。
             JoyProbe.Enabled = smokeFrames > 0;
             // 版本号用于确认 CI 部署的 JoyGame.dll 确实来自最新源码
-            // （标记里没带 v8 就说明部署物是旧的，别再顺着日志猜）。
-            JoyProbe.Mark("OnInit:begin v8");
+            // （标记里没带 v9 就说明部署物是旧的，别再顺着日志猜）。
+            JoyProbe.Mark("OnInit:begin v9");
+            // [临时诊断] 只读静态字段，不做 delegate* 调用，调用崩也不会影响它。
+            // 0 => 绑定表没填到当前 ALC（Bootstrap 与 OnInit 落在不同
+            //     AssemblyLoadContext，函数指针全空）；
+            // 非 0 仍崩 => delegate* 调用约定问题。定位后删除。
+            Console.Error.WriteLine("[diag] OnInit s_log=0x" +
+                Joy.Host.PtrLog().ToString("x16"));
             // SDL 子系统必须显式初始化：宿主不建窗口，窗口由托管侧经
             // Joy.Api.Bindings 创建。不初始化时 SDL_CreateWindow 在无显示环境会
             // 继续走空的驱动方法表（表现为 call 0x0 / exit 139）；Windows runner
