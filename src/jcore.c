@@ -81,10 +81,16 @@ struct joy_simple_fps_counter {
 
 bool joy_core_init_env()
 {
-	return SDL_Init(SDL_INIT_AUDIO
+	/* [临时诊断] 托管侧第一次调用就 rip=0x0，用来确认是否真的进到这个函数、
+	 * 以及是不是 SDL_Init 内部崩。定位完成后删除。 */
+	bool ok;
+	SDL_Log("[core] joy_core_init_env enter");
+	ok = SDL_Init(SDL_INIT_AUDIO
 		| SDL_INIT_VIDEO
 		| SDL_INIT_EVENTS
 		| SDL_INIT_JOYSTICK);
+	SDL_Log("[core] joy_core_init_env leave ok=%d", (int)ok);
+	return ok;
 }
 
 void joy_core_quit_env(void)
