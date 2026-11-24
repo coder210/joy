@@ -124,7 +124,10 @@ else()
     include(${JOY_ROOT}/cmake/JoySelfContained.cmake)
     joy_deploy_selfcontained(example_csharp "${_cs_proj}" "${_cs_out}"
                              "${JOY_EXAMPLE_ASSET_ROOT}" "$<IF:$<CONFIG:Debug>,Debug,Release>")
-    # sc_deploy 最后一步用 _cs_out 的 DLL/PDB 覆盖 publish 版，必须先有 dotnet build 产物
+    # sc_deploy 最后一步用 _cs_out 的 DLL/PDB 覆盖 publish 版，必须先有 dotnet build 产物。
+    # sc_publish 也要排在 managed 之后：publish 与 dotnet build/VS 外部 C# 项目若并行，
+    # 会同时编译 Joy.Bindings.csproj 并抢写 modules/cs/obj/<cfg>/net8.0/*.dll（CS2012/MSB8066）。
+    add_dependencies(example_csharp_sc_publish example_csharp_managed)
     add_dependencies(example_csharp_sc_deploy example_csharp_managed)
     add_dependencies(example_csharp example_csharp_sc_deploy)
 
@@ -134,6 +137,15 @@ else()
                 "${CMAKE_CURRENT_LIST_DIR}/../csharp/JoyGame.runtimeconfig.json"
                 "${JOY_EXAMPLE_ASSET_ROOT}/JoyGame.runtimeconfig.json"
         COMMENT "Deploying self-contained JoyGame.runtimeconfig.json")
+endif()
+
+# VS 默认用 native-only 调试器启动本 native 宿主，JoyGame.dll 的托管断点不会绑定。
+# 生成 .vcxproj.user，把启动调试类型固定为“混合(.NET Core)”，工作目录对齐 exe。
+if(CMAKE_GENERATOR MATCHES "Visual Studio" AND NOT ANDROID)
+    configure_file(
+        "${CMAKE_CURRENT_LIST_DIR}/example_csharp.vcxproj.user.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/example_csharp.vcxproj.user"
+        @ONLY)
 endif()
 
 enable_testing()
