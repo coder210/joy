@@ -136,7 +136,9 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
     /* hint 必须在游戏侧创建窗口之前设置 */
     if (g_smoke) {
-        SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "dummy");
+        /* 不设 SDL_HINT_VIDEO_DRIVER：驱动由 SDL_VIDEODRIVER 决定。
+         * dummy 驱动没有 CreateSDLWindow，强制选中会让 SDL_CreateWindow
+         * 调用空函数指针（Linux 无头 CI segfault 的根因），无头请用 offscreen。 */
         SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
     } else {
         SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, "60");

@@ -206,7 +206,8 @@ jobs:
           else
             exe="$out/example_cpp"
           fi
-          ( cd "$GITHUB_WORKSPACE" && "./$exe" --smoke 3 ) 2>&1 | tee foreign-cwd.log
+          # 示例不再自己选视频驱动，无头跑必须由这里给 offscreen。
+          ( cd "$GITHUB_WORKSPACE" && SDL_VIDEODRIVER=offscreen "./$exe" --smoke 3 ) 2>&1 | tee foreign-cwd.log
           grep -Fq '[host] smoke finished' foreign-cwd.log \
             || { echo "::error::example_cpp smoke did not finish from foreign CWD"; exit 1; }
           if grep -Fq 'missing sprites/player.png' foreign-cwd.log; then
