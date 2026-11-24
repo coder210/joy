@@ -190,10 +190,45 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     if (i >= 0 && i + 1 < argc) g_assembly = argv[i + 1];
 
     if (g_smoke_frames > 0) {
-        SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "dummy");
+        /* 不能用 "dummy"：SDL3 的 dummy 视频驱动只实现 framebuffer
+         * （SDL_nullvideo.c 只设 CreateWindowFramebuffer，没有 CreateSDLWindow），
+         * 一旦选到它，SDL_CreateWindow 就是调用空函数指针——Linux CI 上
+         * 表现为 rip=0x0 的 SIGSEGV。能建窗口的无头驱动是 "offscreen"。
+         * 调用方已用 SDL_VIDEODRIVER 指定驱动时不要覆盖。 */
+        if (SDL_getenv("SDL_VIDEODRIVER") == NULL) {
+            SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "offscreen");
+        }
         SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
     } else {
         SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, "60");
+    }
+
+    /* SDL 子系统由宿主显式初始化，并逐个子系统打日志。
+     * 之前完全没人调用 SDL_Init（窗口由托管侧创建，靠 SDL 隐式初始化），
+     * 无头环境下出问题时只能看到「崩了」，看不出是哪个子系统。 */
+    {
+        static const struct {
+            const char  *name;
+            SDL_InitFlags flag;
+            bool         required;
+        } kSteps[] = {
+            { "VIDEO",    SDL_INIT_VIDEO,    true  },
+            { "EVENTS",   SDL_INIT_EVENTS,   true  },
+            { "AUDIO",    SDL_INIT_AUDIO,    false },
+            { "JOYSTICK", SDL_INIT_JOYSTICK, false },
+        };
+        for (size_t k = 0; k < SDL_arraysize(kSteps); ++k) {
+            SDL_Log("[host] SDL init %s ...", kSteps[k].name);
+            if (!SDL_InitSubSystem(kSteps[k].flag)) {
+                SDL_Log("[host] SDL init %s FAILED: %s",
+                        kSteps[k].name, SDL_GetError());
+                if (kSteps[k].required) {
+                    return SDL_APP_FAILURE;
+                }
+            } else {
+                SDL_Log("[host] SDL init %s ok", kSteps[k].name);
+            }
+        }
     }
 
     /* stderr 在 Android 上不稳定，全部走 SDL_Log → logcat，闪退时能定位到
