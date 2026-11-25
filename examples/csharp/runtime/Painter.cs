@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using Joy.Api;
 
 namespace JoyGame
@@ -39,7 +40,8 @@ namespace JoyGame
                                 int r = 232, int g = 236, int b = 245)
         {
             if (app.Assets.FontSmall == null) return;
-            Bindings.JtextPrintx(app.R2d, app.Assets.FontSmall, text, text.Length,
+            Bindings.JtextPrintx(app.R2d, app.Assets.FontSmall, text,
+                                 Encoding.UTF8.GetByteCount(text),
                                  (uint)r, (uint)g, (uint)b, 255u, x, y);
         }
 
@@ -50,8 +52,9 @@ namespace JoyGame
             if (font == null) return;
 
             int size = big ? 22 : 12;
-            float w = text.Length * size * 0.58f;
-            Bindings.JtextPrintx(app.R2d, font, text, text.Length,
+            float w = TextWidthEstimate(text, size);
+            Bindings.JtextPrintx(app.R2d, font, text,
+                                 Encoding.UTF8.GetByteCount(text),
                                  (uint)r, (uint)g, (uint)b, 255u,
                                  cx - w * 0.5f, cy - size * 0.5f);
         }
@@ -59,7 +62,14 @@ namespace JoyGame
         public static int TextWidth(GameApp app, string text)
         {
             if (app.Assets.FontSmall == null) return 0;
-            return (int)(text.Length * 12 * 0.58f);
+            return (int)TextWidthEstimate(text, 12);
+        }
+
+        private static float TextWidthEstimate(string text, int size)
+        {
+            float w = 0f;
+            foreach (char c in text) w += c > 127 ? size : size * 0.58f;
+            return w;
         }
 
         /// <summary>

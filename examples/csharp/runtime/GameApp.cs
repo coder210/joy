@@ -5,7 +5,7 @@ namespace JoyGame
 {
     /// <summary>
     /// 应用外壳：持有窗口/渲染句柄、资源、输入快照与当前场景。
-    /// 每帧由宿主的 C# 入口 Host.OnFrame 驱动 Tick。
+    /// 每帧由宿主的 C# 入口 JoyEntry.OnFrame 驱动 Tick。
     ///
     /// 窗口与渲染器由本类自己通过生成链路（Joy.Api.Bindings）创建，
     /// 宿主不再建——生成链路用句柄表管理对象，宿主的裸指针不在表里。

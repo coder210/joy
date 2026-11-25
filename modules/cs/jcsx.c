@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "joy_cs_entry.h"
 #include "jprobe.h"   /* Android 启动阶段弹窗诊断；桌面编译为空 */
 
 /* ---- 动态库加载（跨平台）---- */
@@ -291,7 +292,7 @@ static bool csx_init_desktop(csx_p csx)
                         size_t n = strlen(main_asm);
                         if (main_asm[n - 1] != '/' && main_asm[n - 1] != '\\') strcat(main_asm, "/");
                 }
-                strcat(main_asm, "JoyGame.dll");
+                strcat(main_asm, JOY_CS_ASSEMBLY_FILE);
                 CSX_WSTR(wasm, main_asm, 1200);
                 const csx_char_t* argv[1] = { (const csx_char_t*)wasm };
                 rc = init_for_cmdline(1, argv, NULL, &ctx);
@@ -455,7 +456,7 @@ static bool csx_mono_ensure_image(csx_p csx)
         if (csx->mono_image) return true;
 
         size_t data_size = 0;
-        char* data = joy_core_utils_read_file("JoyGame.dll", &data_size);
+        char* data = joy_core_utils_read_file(JOY_CS_ASSEMBLY_FILE, &data_size);
         if (!data || data_size == 0) {
                 JPROBE("P7-FAIL joy_core_utils_read_file(JoyGame.dll) NULL");
                 joy_core_log_error("read JoyGame.dll via SDL failed");
@@ -521,7 +522,7 @@ bool csx_load_assembly(csx_p csx, const char* filename)
         if (!csx) return false;
         (void)filename; /* 入口在 csx_find_method 里按固定程序集名加载，这里只用 filename 建路径 */
 
-        /* 取绑定初始化入口并调用。必须从 JoyGame.dll 取 GameApplication.Bootstrap，
+        /* 取绑定初始化入口并调用。必须从 JoyGame.dll 取 JoyEntry.Bootstrap，
          * 让它内部的 NativeFuncs.Initialize 与 Initialize/Update/Shutdown 落在同一个
          * AssemblyLoadContext 实例上——否则绑定填在 A、业务调用落在 B（函数指针全 NULL）。 */
         void* initialize_fn = NULL;
@@ -529,7 +530,8 @@ bool csx_load_assembly(csx_p csx, const char* filename)
         /* Android：从 JoyGame.dll 找普通方法 BootstrapMono(IntPtr) 并用
          * mono_runtime_invoke 调用，把 lookup 函数指针交给 C# 建立绑定表。 */
         {
-                void* bootstrap = csx_mono_find_method(csx, "JoyGame", "GameApplication", "BootstrapMono", 1);
+                void* bootstrap = csx_mono_find_method(csx, JOY_CS_NAMESPACE, JOY_CS_ENTRY_CLASS,
+                                                       JOY_CS_BOOTSTRAP_MONO, 1);
                 if (!bootstrap) {
                         JPROBE("P8-FAIL BootstrapMono not found");
                         return false;
@@ -578,24 +580,24 @@ bool csx_load_assembly(csx_p csx, const char* filename)
                         if (bindings_path[n - 1] != '/' && bindings_path[n - 1] != '\\')
                                 strcat(bindings_path, "/");
                 }
-                strcat(bindings_path, "JoyGame.dll");
+                strcat(bindings_path, JOY_CS_ASSEMBLY_FILE);
 #if defined(_WIN32)
                 wchar_t wpath[1200], wtype[256], wmethod[128];
                 MultiByteToWideChar(CP_ACP, 0, bindings_path, -1, wpath, 1200);
-                MultiByteToWideChar(CP_ACP, 0, "JoyGame.GameApplication, JoyGame", -1, wtype, 256);
-                MultiByteToWideChar(CP_ACP, 0, "Bootstrap", -1, wmethod, 128);
+                MultiByteToWideChar(CP_ACP, 0, JOY_CS_ENTRY_QUALIFIED, -1, wtype, 256);
+                MultiByteToWideChar(CP_ACP, 0, JOY_CS_BOOTSTRAP, -1, wmethod, 128);
                 int rc = csx->load_asm_get_fp((csx_char_t*)wpath, (csx_char_t*)wtype,
                                              (csx_char_t*)wmethod, CSX_UCO_METHOD, NULL, &initialize_fn);
                 if (rc < 0 || !initialize_fn) {
-                        joy_core_log_error("load GameApplication.Bootstrap from %s failed: 0x%x", bindings_path, rc);
+                        joy_core_log_error("load JoyEntry.Bootstrap from %s failed: 0x%x", bindings_path, rc);
                         return false;
                 }
 #else
                 int rc = csx->load_asm_get_fp((csx_char_t*)bindings_path,
-                                             (csx_char_t*)"JoyGame.GameApplication, JoyGame",
-                                             (csx_char_t*)"Bootstrap", CSX_UCO_METHOD, NULL, &initialize_fn);
+                                             (csx_char_t*)JOY_CS_ENTRY_QUALIFIED,
+                                             (csx_char_t*)JOY_CS_BOOTSTRAP, CSX_UCO_METHOD, NULL, &initialize_fn);
                 if (rc < 0 || !initialize_fn) {
-                        joy_core_log_error("load GameApplication.Bootstrap from %s failed: 0x%x", bindings_path, rc);
+                        joy_core_log_error("load JoyEntry.Bootstrap from %s failed: 0x%x", bindings_path, rc);
                         return false;
                 }
 #endif
@@ -636,7 +638,7 @@ static void* csx_load_entry(csx_p csx, const char* asm_file, const char* type_na
 #if defined(__ANDROID__)
         if (csx->android) {
                 /* Android：找 C# 的普通入口 <Name>Mono（UCO 入口不能被反射调用）。
-                 * type_name 形如 "JoyGame.Host, JoyGame"，从中取 namespace/class。 */
+                 * type_name 形如 "JoyGame.JoyEntry, JoyGame"，从中取 namespace/class。 */
                 char pb[256];
                 snprintf(pb, sizeof(pb), "P11 mono find entry %s", method_name);
                 JPROBE(pb);
@@ -644,7 +646,7 @@ static void* csx_load_entry(csx_p csx, const char* asm_file, const char* type_na
                 char q[256]; snprintf(q, sizeof(q), "%s", type_name);
                 char* comma = strchr(q, ','); if (comma) *comma = '\0';
                 char* dot = strrchr(q, '.');
-                const char* ns = "JoyGame";
+                const char* ns = JOY_CS_NAMESPACE;
                 const char* klass = q;
                 if (dot) { *dot = '\0'; ns = q; klass = dot + 1; }
                 char mono_name[128];
@@ -690,11 +692,11 @@ csx_method_p csx_find_method(csx_p csx, const char* namespace_name, const char* 
         (void)namespace_name;
         /* load_assembly_and_get_function_pointer 要求 assembly-qualified 类型名：
          * "Namespace.Type, AssemblyName"（与 spike 的 "ManagedSmoke.Entry, ManagedSmoke" 一致）。
-         * class_name 形如 "GameApplication"，namespace_name 形如 "JoyGame"。 */
+         * class_name 形如 "JoyEntry"，namespace_name 形如 "JoyGame"。 */
         char type_name[256];
         snprintf(type_name, sizeof(type_name), "%s.%s, %s",
                  namespace_name, class_name, namespace_name);
-        void* fn = csx_load_entry(csx, "JoyGame.dll", type_name, method_name);
+        void* fn = csx_load_entry(csx, JOY_CS_ASSEMBLY_FILE, type_name, method_name);
         if (!fn) return NULL;
         csx_method_p m = (csx_method_p)malloc(sizeof(csx_method_t));
         if (!m) return NULL;

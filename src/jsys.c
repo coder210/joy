@@ -15,7 +15,7 @@
 #include "joy.h"
 #include <string.h>
 
-#if defined(__ANDROID__)
+#if defined(JOY_ANDROID)
 #  include <unistd.h>
 #  include <net/if.h>
 #  include <sys/ioctl.h>
@@ -27,7 +27,7 @@
  *  - Linux / macOS / Unix(glic 系) 的 <execinfo.h> 提供 backtrace / backtrace_symbols_fd；
  *  - Android(bionic) 直到 API 33 才在 <execinfo.h> 公开这两个函数，本项目按 API 21 构建，
  *    因此在 Android 上跳过栈回溯（仍然打印信号信息），否则 C99 下会被判为隐式函数声明。 */
-#if defined(__ANDROID__)
+#if defined(JOY_ANDROID)
 #  ifndef __ANDROID_API__
 #    define JOY_HAVE_BACKTRACE 0
 #  elif __ANDROID_API__ >= 33
@@ -606,11 +606,11 @@ void joy_sys_install_crash_handlers()
 
 /* 枚举网卡在 Android 上需要 API >= 24；更低版本退回到"主机名解析"兜底。
  * （Android NDK 的 getifaddrs 从 API 24 起可用。） */
-#if defined(__ANDROID__)
+#if defined(JOY_ANDROID)
 #  if defined(__ANDROID_API__) && __ANDROID_API__ >= 24
 #    define JOY_HAVE_IFADDRS 1
 #  endif
-#elif defined(__EMSCRIPTEN__)
+#elif defined(JOY_EMSCRIPTEN)
 // 浏览器内没有真实网卡，getifaddrs 既未实现（链接会报 undefined symbol）也没意义，
 // 直接走下面的"本机名解析"兜底即可。
 #elif !defined(JOY_WIN)
@@ -636,13 +636,13 @@ int joy_sys_get_local_ips(char ips[][JOY_MAX_IP], int max_count)
         // 浏览器内没有真实网卡/本地 IP，原始 socket 与 bind 也不可用；
         // Web 联机走 WebSocket/WebRTC 到外部服务器，故此处直接返回 0。
         // （getifaddrs 在 Emscripten 也未实现，会在链接期报错，这里一并规避。）
-#if defined(__EMSCRIPTEN__)
+#if defined(JOY_EMSCRIPTEN)
         return 0;
 #endif
 
         int count = 0;
 
-#if defined(__ANDROID__) && !defined(JOY_HAVE_IFADDRS)
+#if defined(JOY_ANDROID) && !defined(JOY_HAVE_IFADDRS)
         /* Android 在 NDK 平台 < 24 时没有 getifaddrs，且 gethostname 兜底只能拿到
          * 127.0.0.1。这里用 /proc/net/dev 枚举接口 + ioctl(SIOCGIFADDR) 取 IPv4，
          * 无需权限、不限 API 等级，从而能拿到 wlan0 的 192.168.x.x 等局域网地址。 */

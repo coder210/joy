@@ -3,11 +3,14 @@
 
 #if defined(_WIN32) || defined(_WIN64)
 #       define JOY_WIN
+#elif defined(__ANDROID__)
+#       define JOY_ANDROID
+#       define JOY_LINUX   /* Android 属于 Linux 家族，保留既有 JOY_LINUX 分支行为 */
 #elif defined(__linux__)
 #       define JOY_LINUX
 #elif defined(__APPLE__) && defined(__MACH__)
 #       define JOY_MACOS
-#elif defined(__FreeBSD__) && defined(__OpenBSD__)
+#elif defined(__FreeBSD__) || defined(__OpenBSD__)
 #       define JOY_UNIX
 #elif defined(__EMSCRIPTEN__)
 #       define JOY_EMSCRIPTEN

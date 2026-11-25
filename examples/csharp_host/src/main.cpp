@@ -4,7 +4,7 @@
  * C++ 侧只做窗口 / 主循环 / 事件泵 / 渲染帧边界，游戏逻辑全在
  * JoyGame.dll（game/ 玩法 + runtime/ 骨架 + test/ 冒烟脚本）。
  *
- * 每帧：joy_r2d_begin → C# Host.OnFrame(dt) → joy_r2d_end
+ * 每帧：joy_r2d_begin → C# JoyEntry.OnFrame(dt) → joy_r2d_end
  * 输入：SDL 事件写进 cs 模块的输入桥，C# 通过 Joy.Input 轮询。
  *
  * 与 cpp / lua / js 三个示例功能完全相同（见 ../README.md）。
@@ -19,6 +19,7 @@
 #include <SDL3/SDL_loadso.h>
 #include <joy/joy.h>
 #include "joy_csharp.h"
+#include "joy_cs_entry.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -40,7 +41,7 @@ static csx_method_p g_on_shutdown = NULL;
 static int    g_smoke_frames = 0;
 static int    g_frame = 0;
 static Uint64 g_last_tick_ns = 0;
-static const char* g_assembly = "JoyGame.dll";
+static const char* g_assembly = JOY_CS_ASSEMBLY_FILE;
 
 static int find_arg(int argc, char* argv[], const char* name)
 {
@@ -249,19 +250,19 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     JPROBE("H7 after csx_load_assembly");
 
     JPROBE("H8 before find OnInit/OnFrame/OnShutdown (P11-P12 inside)");
-    g_on_init = csx_find_method(g_csx, "JoyGame", "Host", "OnInit", 3);
-    g_on_frame = csx_find_method(g_csx, "JoyGame", "Host", "OnFrame", 1);
-    g_on_shutdown = csx_find_method(g_csx, "JoyGame", "Host", "OnShutdown", 0);
+    g_on_init = csx_find_method(g_csx, JOY_CS_NAMESPACE, JOY_CS_ENTRY_CLASS, JOY_CS_ON_INIT, 3);
+    g_on_frame = csx_find_method(g_csx, JOY_CS_NAMESPACE, JOY_CS_ENTRY_CLASS, JOY_CS_ON_FRAME, 1);
+    g_on_shutdown = csx_find_method(g_csx, JOY_CS_NAMESPACE, JOY_CS_ENTRY_CLASS, JOY_CS_ON_SHUTDOWN, 0);
     if (!g_on_init || !g_on_frame) {
         JPROBE("H8-FAIL OnInit/OnFrame not found");
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "[host] JoyGame.Host.OnInit/OnFrame not found");
+                     "[host] JoyEntry.OnInit/OnFrame not found");
         return SDL_APP_FAILURE;
     }
     JPROBE("H9 after find methods (all OK)");
     SDL_Log("[cs] CoreCLR ready");
 
-    JPROBE("H10 before calling C# Host.OnInit (creates window/renderer)");
+    JPROBE("H10 before calling C# JoyEntry.OnInit (creates window/renderer)");
     {
         int w = APP_W;
         int h = APP_H;
@@ -269,11 +270,11 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         void* args[3] = { &w, &h, &smoke };
         /* Linux/macOS 的 segfault 就发生在这一行附近。这两个标记让日志能区分
          * 「进入 OnInit 之前挂」和「OnInit 内部挂」，不依赖 gdb 是否可用。 */
-        SDL_Log("[host] calling C# Host.OnInit(w=%d,h=%d,smoke=%d)", w, h, smoke);
+        SDL_Log("[host] calling C# JoyEntry.OnInit(w=%d,h=%d,smoke=%d)", w, h, smoke);
         csx_invoke_method(g_csx, g_on_init, args);
-        SDL_Log("[host] C# Host.OnInit returned");
+        SDL_Log("[host] C# JoyEntry.OnInit returned");
     }
-    JPROBE("H11 after C# Host.OnInit returned");
+    JPROBE("H11 after C# JoyEntry.OnInit returned");
 
     g_last_tick_ns = SDL_GetTicksNS();
     return SDL_APP_CONTINUE;
@@ -327,9 +328,9 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 
     {
         void* args[1] = { &dt };
-        if (g_frame < 3) SDL_Log("[host] calling C# Host.OnFrame(%d)", g_frame);
+        if (g_frame < 3) SDL_Log("[host] calling C# JoyEntry.OnFrame(%d)", g_frame);
         csx_invoke_method(g_csx, g_on_frame, args);
-        if (g_frame < 3) SDL_Log("[host] C# Host.OnFrame(%d) returned", g_frame);
+        if (g_frame < 3) SDL_Log("[host] C# JoyEntry.OnFrame(%d) returned", g_frame);
     }
     csx_input_end_frame();
 

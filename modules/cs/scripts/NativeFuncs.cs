@@ -20,7 +20,7 @@ namespace Joy
 
         private static bool s_inited;
 
-        /// <summary>由 GameApplication.Bootstrap (UCO) 转调，传入 C 侧 lookup 函数指针。
+        /// <summary>由 JoyEntry.Bootstrap (UCO) 转调，传入 C 侧 lookup 函数指针。
         /// 本方法不标记 UCO：UCO 方法不能被 C# 直接调用，须由 Bootstrap 转发。</summary>
         public static void Initialize(IntPtr lookupFn)
         {
