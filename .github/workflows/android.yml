@@ -166,6 +166,14 @@ jobs:
           cp -a SDL/android-project/. build-apk/
           cp android/app.build.gradle build-apk/app/build.gradle
 
+          # 覆盖 SDL 模板自带 launcher 图标；Manifest 已指向 @mipmap/ic_launcher，
+          # 且未设置 roundIcon，五个同名资源即可让四个 flavor 全部生效。
+          for density in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
+            test -f "android/icons/mipmap-$density/ic_launcher.png" \
+              || { echo "::error::missing android/icons/mipmap-$density/ic_launcher.png"; exit 1; }
+          done
+          cp -a android/icons/mipmap-* build-apk/app/src/main/res/
+
           # AGP 的传递依赖应优先走 Google Maven。vendored 的 SDL 根 build.gradle
           # 把 mavenCentral() 写在 google() 前面，Gradle 会先打 Maven Central，
           # GitHub Actions 共享出口 IP 很容易被 429 Too Many Requests 限流。
