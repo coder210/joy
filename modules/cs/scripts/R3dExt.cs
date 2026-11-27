@@ -17,6 +17,11 @@ namespace Joy.Api
         private static delegate* unmanaged[Cdecl]<ulong, float, float, float, float*, float*, byte> s_world_to_screen;
         private static delegate* unmanaged[Cdecl]<ulong, int*, int*, void> s_get_window_size;
         private static delegate* unmanaged[Cdecl]<ulong, float*, int, ulong> s_mesh_custom;
+        // lit: 带法线网格（pos+normal+uv）与光照管线绘制
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, float, ulong> s_mesh_lit_cube;
+        private static delegate* unmanaged[Cdecl]<ulong, float, float, int, ulong> s_mesh_lit_plane;
+        private static delegate* unmanaged[Cdecl]<ulong, float, int, int, ulong> s_mesh_lit_sphere;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, float*, byte, byte, byte, byte, void> s_draw_mesh_lit_color;
 
         internal static void Init()
         {
@@ -27,6 +32,10 @@ namespace Joy.Api
             s_world_to_screen = (delegate* unmanaged[Cdecl]<ulong, float, float, float, float*, float*, byte>)NativeFuncs.Lookup("Joy.Api.R3dExt::world_to_screen");
             s_get_window_size = (delegate* unmanaged[Cdecl]<ulong, int*, int*, void>)NativeFuncs.Lookup("Joy.Api.R3dExt::get_window_size");
             s_mesh_custom = (delegate* unmanaged[Cdecl]<ulong, float*, int, ulong>)NativeFuncs.Lookup("Joy.Api.R3dExt::mesh_custom");
+            s_mesh_lit_cube = (delegate* unmanaged[Cdecl]<ulong, float, float, float, ulong>)NativeFuncs.Lookup("Joy.Api.R3dExt::mesh_lit_cube");
+            s_mesh_lit_plane = (delegate* unmanaged[Cdecl]<ulong, float, float, int, ulong>)NativeFuncs.Lookup("Joy.Api.R3dExt::mesh_lit_plane");
+            s_mesh_lit_sphere = (delegate* unmanaged[Cdecl]<ulong, float, int, int, ulong>)NativeFuncs.Lookup("Joy.Api.R3dExt::mesh_lit_sphere");
+            s_draw_mesh_lit_color = (delegate* unmanaged[Cdecl]<ulong, ulong, float*, byte, byte, byte, byte, void>)NativeFuncs.Lookup("Joy.Api.R3dExt::draw_mesh_lit_color");
         }
 
         private static ulong borrow_r3d(IntPtr p) => s_borrow_r3d(p);
@@ -65,6 +74,11 @@ namespace Joy.Api
         private static ulong mesh_custom(ulong r, float[] verts, int vertexCount)
         {
             fixed (float* p = verts) return s_mesh_custom(r, p, vertexCount);
+        }
+
+        private static void draw_mesh_lit_color(ulong r, ulong m, float[] mat, byte cr, byte cg, byte cb, byte ca)
+        {
+            fixed (float* p = mat) s_draw_mesh_lit_color(r, m, p, cr, cg, cb, ca);
         }
 
         /// <summary>宿主创建的 r3d 上下文登记成借用句柄（所有权仍归宿主）。</summary>
@@ -118,6 +132,42 @@ namespace Joy.Api
             return new RenderMesh(h);
         }
 
+        // ---- lit：带法线的网格与光照绘制 ----
+        // 光照管线由 joy_r3d_create 自动创建（需要 shaders/lighting.*.spv），
+        // 默认环境光 + 一盏方向光已在引擎内设好，无需额外配置。
+        // lit mesh 顶点格式 pos+normal+uv（8 float），不能与 solid/wire 绘制混用。
+        public static RenderMesh MeshLitCube(Jr3d r, float w, float h, float d)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            ulong hnd = s_mesh_lit_cube(r.Handle, w, h, d);
+            if (hnd == 0) throw new InvalidOperationException("joy_r3d_mesh_cube_lit failed (shaders/lighting.*.spv missing?)");
+            return new RenderMesh(hnd);
+        }
+
+        public static RenderMesh MeshLitPlane(Jr3d r, float w, float d, int segs)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            ulong hnd = s_mesh_lit_plane(r.Handle, w, d, segs);
+            if (hnd == 0) throw new InvalidOperationException("joy_r3d_mesh_plane_lit failed");
+            return new RenderMesh(hnd);
+        }
+
+        public static RenderMesh MeshLitSphere(Jr3d r, float radius, int slices, int stacks)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            ulong hnd = s_mesh_lit_sphere(r.Handle, radius, slices, stacks);
+            if (hnd == 0) throw new InvalidOperationException("joy_r3d_mesh_sphere_lit failed");
+            return new RenderMesh(hnd);
+        }
+
+        public static void DrawMeshLitColor(Jr3d r, RenderMesh m, float[] mat, byte cr, byte cg, byte cb, byte ca)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (m == null) throw new ArgumentNullException(nameof(m));
+            if (mat == null || mat.Length < 16) throw new ArgumentException("mat needs 16 floats", nameof(mat));
+            draw_mesh_lit_color(r.Handle, m.Handle, mat, cr, cg, cb, ca);
+        }
+
         public static float[] MakeTrs(float sx, float sy, float sz, float tx, float ty, float tz)
         {
             return new float[16] {
@@ -142,8 +192,13 @@ namespace Joy.Api
                 if (w != 0 || h != 0) { detail = "get_window_size(null) wrote " + w + "x" + h; return false; }
                 float[] verts = new float[15] { 0,0,0,0,0, 1,0,0,1,0, 0,1,0,0,1 };
                 if (mesh_custom(0UL, verts, 3) != 0UL) { detail = "mesh_custom(null)!=0"; return false; }
+                // lit 绑定：null r3d 必须安全返回 0 / 不崩
+                if (s_mesh_lit_cube(0UL, 1f, 1f, 1f) != 0UL) { detail = "mesh_lit_cube(null)!=0"; return false; }
+                if (s_mesh_lit_plane(0UL, 1f, 1f, 1) != 0UL) { detail = "mesh_lit_plane(null)!=0"; return false; }
+                if (s_mesh_lit_sphere(0UL, 1f, 8, 6) != 0UL) { detail = "mesh_lit_sphere(null)!=0"; return false; }
+                draw_mesh_lit_color(0UL, 0UL, mat, 255, 0, 0, 255);
                 if (r3d_create(0UL, "shaders") != 0UL) { detail = "r3d_create(badwin)!=0"; return false; }
-                detail = "7 internal calls OK (null-handle safe)";
+                detail = "11 internal calls OK (null-handle safe)";
                 return true;
             } catch (Exception ex) {
                 detail = ex.GetType().Name + ": " + ex.Message;

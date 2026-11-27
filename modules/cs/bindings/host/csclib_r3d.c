@@ -129,6 +129,52 @@ static uint64_t w_mesh_custom(uint64_t r, const float* verts, int vertex_count)
         return joy_obj_register((void*)mesh, "joy_render_mesh_p", r3d_mesh_dtor, "joy_r3d_mesh_custom");
 }
 
+/* Lit meshes: pos+normal+uv (8 floats/vertex), drawn with the lighting pipeline.
+ * Same handle tag "joy_render_mesh_p" as plain meshes; vertex layout differs,
+ * so callers must not mix lit meshes with solid/wire draw calls (and vice versa). */
+static uint64_t w_mesh_lit_cube(uint64_t r, float w, float h, float d)
+{
+        joy_r3d_p rp = deref_r3d(r);
+        if (!rp) return 0;
+        joy_render_mesh_p mesh = joy_r3d_mesh_cube_lit(rp, w, h, d);
+        if (!mesh) return 0;
+        return joy_obj_register((void*)mesh, "joy_render_mesh_p", r3d_mesh_dtor, "joy_r3d_mesh_cube_lit");
+}
+
+static uint64_t w_mesh_lit_plane(uint64_t r, float w, float d, int segs)
+{
+        joy_r3d_p rp = deref_r3d(r);
+        if (!rp) return 0;
+        joy_render_mesh_p mesh = joy_r3d_mesh_plane_lit(rp, w, d, segs);
+        if (!mesh) return 0;
+        return joy_obj_register((void*)mesh, "joy_render_mesh_p", r3d_mesh_dtor, "joy_r3d_mesh_plane_lit");
+}
+
+static uint64_t w_mesh_lit_sphere(uint64_t r, float radius, int slices, int stacks)
+{
+        joy_r3d_p rp = deref_r3d(r);
+        if (!rp) return 0;
+        joy_render_mesh_p mesh = joy_r3d_mesh_sphere_lit(rp, radius, slices, stacks);
+        if (!mesh) return 0;
+        return joy_obj_register((void*)mesh, "joy_render_mesh_p", r3d_mesh_dtor, "joy_r3d_mesh_sphere_lit");
+}
+
+/* Draw a lit mesh with a solid base color. The engine resolves the color to a
+ * 1x1 texture internally; lighting (ambient + directional) is applied by the
+ * fragment shader using the mesh normals. Model matrix uses the same float[16]
+ * field order as the solid/wire basis calls. */
+static void w_draw_mesh_lit_color(uint64_t r, uint64_t m, const float* mat,
+                                  uint8_t cr, uint8_t cg, uint8_t cb, uint8_t ca)
+{
+        joy_r3d_p rp = deref_r3d(r);
+        joy_render_mesh_p mp = deref_mesh(m);
+        if (!rp || !mp || !mat) return;
+        joy_mat44_t model;
+        read_mat44(mat, &model);
+        joy_color_t color = { cr, cg, cb, ca };
+        joy_r3d_draw_mesh_lit_color(rp, mp, &model, color);
+}
+
 void csopen_r3d(void)
 {
         csx_register_internal_call("Joy.Api.R3dExt::r3d_create", (const void*)w_r3d_create);
@@ -138,4 +184,8 @@ void csopen_r3d(void)
         csx_register_internal_call("Joy.Api.R3dExt::world_to_screen", (const void*)w_world_to_screen);
         csx_register_internal_call("Joy.Api.R3dExt::get_window_size", (const void*)w_get_window_size);
         csx_register_internal_call("Joy.Api.R3dExt::mesh_custom", (const void*)w_mesh_custom);
+        csx_register_internal_call("Joy.Api.R3dExt::mesh_lit_cube", (const void*)w_mesh_lit_cube);
+        csx_register_internal_call("Joy.Api.R3dExt::mesh_lit_plane", (const void*)w_mesh_lit_plane);
+        csx_register_internal_call("Joy.Api.R3dExt::mesh_lit_sphere", (const void*)w_mesh_lit_sphere);
+        csx_register_internal_call("Joy.Api.R3dExt::draw_mesh_lit_color", (const void*)w_draw_mesh_lit_color);
 }
