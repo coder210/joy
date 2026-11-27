@@ -10,10 +10,10 @@
 
 | 项 | 数量 |
 |---|---|
-| `joy.h` 中 `JOY_API` 声明 | 1174 |
+| `joy.h` 中 `JOY_API` 声明 | 1175 |
 | `joy.h` 中值类型 `typedef struct` | 47 |
-| IDL 条目 | 1174 |
-| 已开放（`status: on`） | 754 |
+| IDL 条目 | 1175 |
+| 已开放（`status: on`） | 755 |
 | 借用句柄（`borrowed`，不注册析构） | 12（已开放 7） |
 | 待人工确认 `owns` | 15 |
 | 所有权待裁决（类型不匹配 / 缺 `owns`） | 15 |
@@ -22,7 +22,7 @@
 | 级别 | 含义 | 数量 |
 |---|---|---|
 | L0 | 纯标量 + const char*，可直接生成 | 289 |
-| L1 | 不透明指针 → 句柄，需所有权测试 | 558 |
+| L1 | 不透明指针 → 句柄，需所有权测试 | 559 |
 | L2 | 结构体按值 → P2-A 试点按字段展开成标量序列 | 74 |
 | L3 | 复杂签名 → 必须手写 thunk，不自动生成 | 191 |
 | X | 有意排除，不进绑定层 | 62 |
@@ -41,7 +41,7 @@
 | math | 232 | 0 | 0 | 0 | 0 | 232 |
 | net | 0 | 56 | 0 | 8 | 0 | 64 |
 | r2d | 4 | 231 | 34 | 44 | 19 | 332 |
-| r3d | 0 | 117 | 14 | 19 | 0 | 150 |
+| r3d | 0 | 118 | 14 | 19 | 0 | 151 |
 | scene | 1 | 95 | 2 | 36 | 1 | 135 |
 | sys | 19 | 0 | 0 | 4 | 0 | 23 |
 
@@ -61,8 +61,8 @@
 | `joy_r3d_create_texture` | `void*` | src/jr3d.h:73 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h；返回 void* 被 canEmitCs / okHandle 排除，保持 off（B 不覆盖） |
 | `joy_r3d_load_texture_png` | `void*` | src/jr3d.h:76 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
 | `joy_r3d_gen_checkerboard` | `void*` | src/jr3d.h:77 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h；返回 void* 被 canEmitCs / okHandle 排除，保持 off（B 不覆盖） |
-| `joy_r3d_create_line_pipeline` | `void*` | src/jr3d.h:417 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h；返回 void* 被 canEmitCs / okHandle 排除，保持 off（B 不覆盖） |
-| `joy_r3d_create_lighting_pipeline` | `void*` | src/jr3d.h:424 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h；返回 void* 被 canEmitCs / okHandle 排除，保持 off（B 不覆盖） |
+| `joy_r3d_create_line_pipeline` | `void*` | src/jr3d.h:423 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h；返回 void* 被 canEmitCs / okHandle 排除，保持 off（B 不覆盖） |
+| `joy_r3d_create_lighting_pipeline` | `void*` | src/jr3d.h:430 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h；返回 void* 被 canEmitCs / okHandle 排除，保持 off（B 不覆盖） |
 | `joy_r2d_layout_grid_create` | `joy_layout_grid_p` | src/jr2d.h:355 | — |
 | `joy_collision_box2d_create_world` | `joy_box2d_world_p` | src/jcollision.h:167 | — |
 | `joy_core_lib_load` | `joy_lib_p` | src/jcore.h:123 | — |
@@ -157,16 +157,16 @@
 | `joy_r3d_window_to_logical` | 非不透明指针 / 输出参数：float* | src/jr3d.h:147 |
 | `joy_r3d_logical_to_window` | 非不透明指针 / 输出参数：float* | src/jr3d.h:149 |
 | `joy_r3d_button_set_onclick` | 函数指针 / 回调 | src/jr3d.h:180 |
-| `joy_r3d_input_set_onsubmit` | 函数指针 / 回调 | src/jr3d.h:273 |
-| `joy_r3d_checkbox_set_state` | 未知类型需人工标注：joy_r3d_checkbox_state_t | src/jr3d.h:384 |
-| `joy_r3d_draw_mesh_solid_basis` | 结构体指针参数 | src/jr3d.h:409 |
-| `joy_r3d_draw_wire_basis` | 结构体指针参数 | src/jr3d.h:415 |
-| `joy_r3d_set_light_block` | 结构体指针参数 | src/jr3d.h:434 |
-| `joy_r3d_draw_mesh_lit` | 结构体指针参数 | src/jr3d.h:436 |
-| `joy_r3d_draw_mesh_lit_color` | 结构体指针参数 | src/jr3d.h:437 |
-| `joy_r3d_fov_ray_dist` | 非不透明指针 / 输出参数：joy_fov_rect* | src/jr3d.h:450 |
-| `joy_r3d_fov_compute_radii` | 非不透明指针 / 输出参数：joy_fov_rect* | src/jr3d.h:454 |
-| `joy_r3d_fov_draw` | 非不透明指针 / 输出参数：float* | src/jr3d.h:460 |
+| `joy_r3d_input_set_onsubmit` | 函数指针 / 回调 | src/jr3d.h:279 |
+| `joy_r3d_checkbox_set_state` | 未知类型需人工标注：joy_r3d_checkbox_state_t | src/jr3d.h:390 |
+| `joy_r3d_draw_mesh_solid_basis` | 结构体指针参数 | src/jr3d.h:415 |
+| `joy_r3d_draw_wire_basis` | 结构体指针参数 | src/jr3d.h:421 |
+| `joy_r3d_set_light_block` | 结构体指针参数 | src/jr3d.h:440 |
+| `joy_r3d_draw_mesh_lit` | 结构体指针参数 | src/jr3d.h:442 |
+| `joy_r3d_draw_mesh_lit_color` | 结构体指针参数 | src/jr3d.h:443 |
+| `joy_r3d_fov_ray_dist` | 非不透明指针 / 输出参数：joy_fov_rect* | src/jr3d.h:456 |
+| `joy_r3d_fov_compute_radii` | 非不透明指针 / 输出参数：joy_fov_rect* | src/jr3d.h:460 |
+| `joy_r3d_fov_draw` | 非不透明指针 / 输出参数：float* | src/jr3d.h:466 |
 | `joy_r2d_fov_draw_2d` | 非不透明指针 / 输出参数：float* | src/jr2d.h:166 |
 | `joy_collision_2d_get_ray_circle` | 结构体按值返回 | src/jcollision.h:24 |
 | `joy_collision_2d_get_ray_rectangle` | 结构体按值返回 | src/jcollision.h:25 |

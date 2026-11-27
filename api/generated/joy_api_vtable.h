@@ -894,6 +894,7 @@ typedef struct JoyApi {
         int64_t (*JoyMathFpExp)(void* _jv_ctx, int64_t x);
         int64_t (*JoyMathFpLn)(void* _jv_ctx, int64_t x);
         int64_t (*JoyMathFpPow)(void* _jv_ctx, int64_t b, int64_t exp);
+        void (*JoyR3dDrawUiTexture)(void* _jv_ctx, Jr3d r, RenderMesh m, const char* path, float x, float y, float w, float h, float winW, float winH);
 } JoyApi;
 
 /* 宿主侧填表；返回 0 成功。DLL 侧只需校验 abi_version / size。 */

@@ -85,6 +85,29 @@ function canThunk(e, byName) {
   return null;
 }
 
+/* 单句柄 destroy：必须走 joy_obj_release 而不是直接调用底层 *_destroy。
+   句柄由 joy_obj 登记并带 dtor；直接释放内存会留下有效槽位，脚本层对象终结器
+   随后再 Native.Release(handle) 就会对同一指针二次 free（Qt/CRT 报
+   _CrtIsValidHeapPointer）。joy_obj_release 会调 dtor 并清空槽位，天然幂等。 */
+function isHandleDestroy(e) {
+  return e.name.endsWith('_destroy') && !!e.params && e.params.length === 1
+    && !!e.params[0].ctype && isOpaque(e.params[0].ctype);
+}
+
+function emitHandleDestroyThunk(e) {
+  const L = [];
+  L.push('static joy_value_t t_' + e.name + '(joy_value_t* a, int n, joy_status_t* st)');
+  L.push('{');
+  L.push('        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, ' + q(e.name) + ');');
+  L.push('        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, '
+    + q(e.name + '.arg0') + ');');
+  L.push('        joy_obj_release(a[0].as.handle);');
+  L.push('        return joy_v_null();');
+  L.push('}');
+  L.push('');
+  return L.join('\n');
+}
+
 function emitThunk(e, dtorName) {
   const L = [];
   const n = e.params.length;
@@ -332,7 +355,9 @@ function buildThunks(entries) {
 
   for (const e of open) {
     const dtorName = isOpaque(e.ret) ? (e.borrowed ? 'NULL' : 'dtor_' + e.owns) : null;
-    L.push(e.level === 'L2' ? emitL2Thunk(e, layouts) : emitThunk(e, dtorName));
+    if (e.level === 'L2') L.push(emitL2Thunk(e, layouts));
+    else if (isHandleDestroy(e)) L.push(emitHandleDestroyThunk(e));
+    else L.push(emitThunk(e, dtorName));
   }
 
   for (const e of open) {

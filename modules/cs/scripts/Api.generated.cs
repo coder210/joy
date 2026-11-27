@@ -761,6 +761,7 @@ namespace Joy.Api
         private static delegate* unmanaged[Cdecl]<long, long> s_JoyMathFpExp;
         private static delegate* unmanaged[Cdecl]<long, long> s_JoyMathFpLn;
         private static delegate* unmanaged[Cdecl]<long, long, long> s_JoyMathFpPow;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, byte*, float, float, float, float, float, float, void> s_JoyR3dDrawUiTexture;
         private static delegate* unmanaged[Cdecl]<ulong, void> s_Release;
         private static delegate* unmanaged[Cdecl]<uint> s_DebugLiveCount;
         private static delegate* unmanaged[Cdecl]<uint> s_DebugDestroyCount;
@@ -1521,6 +1522,7 @@ namespace Joy.Api
             s_JoyMathFpExp = (delegate* unmanaged[Cdecl]<long, long>)NativeFuncs.Lookup("Joy.Api.Native::JoyMathFpExp");
             s_JoyMathFpLn = (delegate* unmanaged[Cdecl]<long, long>)NativeFuncs.Lookup("Joy.Api.Native::JoyMathFpLn");
             s_JoyMathFpPow = (delegate* unmanaged[Cdecl]<long, long, long>)NativeFuncs.Lookup("Joy.Api.Native::JoyMathFpPow");
+            s_JoyR3dDrawUiTexture = (delegate* unmanaged[Cdecl]<ulong, ulong, byte*, float, float, float, float, float, float, void>)NativeFuncs.Lookup("Joy.Api.Native::JoyR3dDrawUiTexture");
             s_Release = (delegate* unmanaged[Cdecl]<ulong, void>)NativeFuncs.Lookup("Joy.Api.Native::Release");
             s_DebugLiveCount = (delegate* unmanaged[Cdecl]<uint>)NativeFuncs.Lookup("Joy.Api.Native::DebugLiveCount");
             s_DebugDestroyCount = (delegate* unmanaged[Cdecl]<uint>)NativeFuncs.Lookup("Joy.Api.Native::DebugDestroyCount");
@@ -5481,6 +5483,13 @@ namespace Joy.Api
         internal static long JoyMathFpPow(long b, long exp)
         {
             return s_JoyMathFpPow(b, exp);
+        }
+
+        internal static void JoyR3dDrawUiTexture(ulong r, ulong m, string path, float x, float y, float w, float h, float winW, float winH)
+        {
+            byte* __p2 = NativeFuncs.Utf8(path);
+            try { s_JoyR3dDrawUiTexture(r, m, __p2, x, y, w, h, winW, winH); }
+            finally { NativeFuncs.FreeUtf8(__p2); }
         }
 
         internal static void Release(ulong handle)
@@ -9793,6 +9802,12 @@ namespace Joy.Api
         public static long JoyMathFpPow(long b, long exp)
         {
             return Native.JoyMathFpPow(b, exp);
+        }
+        public static void JoyR3dDrawUiTexture(Jr3d r, RenderMesh m, string path, float x, float y, float w, float h, float winW, float winH)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (m == null) throw new ArgumentNullException(nameof(m));
+            Native.JoyR3dDrawUiTexture(r.Handle, m.Handle, path, x, y, w, h, winW, winH);
         }
     }
 }

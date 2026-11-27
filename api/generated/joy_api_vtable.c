@@ -10744,6 +10744,27 @@ static int64_t shim_joy_math_fp_pow(void* _jv_ctx, int64_t b, int64_t exp)
         return (int64_t) _jv_r.as.i64;
 }
 
+static void shim_joy_r3d_draw_ui_texture(void* _jv_ctx, Jr3d r, RenderMesh m, const char* path, float x, float y, float w, float h, float winW, float winH)
+{
+        joy_value_t _jv_args[9];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(r.h);
+        _jv_args[1] = joy_v_handle(m.h);
+        _jv_args[2] = joy_v_str(path);
+        _jv_args[3] = joy_v_f64(x);
+        _jv_args[4] = joy_v_f64(y);
+        _jv_args[5] = joy_v_f64(w);
+        _jv_args[6] = joy_v_f64(h);
+        _jv_args[7] = joy_v_f64(winW);
+        _jv_args[8] = joy_v_f64(winH);
+        _jv_r = joy_api_call("joy_r3d_draw_ui_texture", _jv_args, 9, &_jv_st);
+        (void)_jv_r;
+        (void)_jv_st;
+        return;
+}
+
 int joy_api_vtable_init(JoyApi* api, void* ctx)
 {
         if (!api) return -1;
@@ -11505,6 +11526,7 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->JoyMathFpExp = shim_joy_math_fp_exp;
         api->JoyMathFpLn = shim_joy_math_fp_ln;
         api->JoyMathFpPow = shim_joy_math_fp_pow;
+        api->JoyR3dDrawUiTexture = shim_joy_r3d_draw_ui_texture;
         return 0;
 }
 

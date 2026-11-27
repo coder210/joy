@@ -45,6 +45,10 @@ static joy_render_mesh_p r3d_mesh_alloc(joy_r3d_p r)
 	return m;
 }
 
+/* 管线采样数：仅在 joy_r3d_create 创建本实例管线期间生效，创建完成后恢复 1，
+   避免影响外部直接调用这些导出函数创建的 1x 管线。 */
+static SDL_GPUSampleCount s_r3d_pipeline_samples = SDL_GPU_SAMPLECOUNT_1;
+
 struct joy_r3d {
 	SDL_GPUDevice*     dev;
 	SDL_Window*        win;
@@ -55,6 +59,8 @@ struct joy_r3d {
 	SDL_GPUGraphicsPipeline* solid_pipeline; /* 实体填充: 纯色 + 深度写入, 用于"填充+描边"画风 */
 	SDL_GPUSampler*    sampler;
 	SDL_GPUTexture*    depth;
+	SDL_GPUTexture*    msaa_color;  /* MSAA 颜色目标；resolve 到 swapchain 后呈现 */
+	SDL_GPUSampleCount samples;     /* 本实例实际使用的采样数（不支持 4x 时为 1） */
 	SDL_GPUCommandBuffer* cmd;
 	SDL_GPURenderPass* rp;
 	int                ww, wh;
@@ -77,6 +83,11 @@ struct joy_r3d {
 	/* 颜色纹理缓存 */
 	struct { Uint8 r, g, b, a; SDL_GPUTexture* tex; } color_cache[MAX_COLOR_CACHE];
 	int                color_count;
+
+	/* 2D UI 贴图缓存（摇杆底纹/摇杆头/圆按钮等按路径惰性加载） */
+#define JOY_R3D_UI_TEX_CACHE 24
+	struct { char path[160]; SDL_GPUTexture* tex; } ui_tex_cache[JOY_R3D_UI_TEX_CACHE];
+	int                ui_tex_count;
 
 	/* 光照渲染（可选, 由 joy_r3d_create 探测 lighting.vert/frag.spv 自动启用） */
 	SDL_GPUShader*     lvs;
@@ -200,7 +211,7 @@ void* joy_r3d_create_pipeline(void* device,
 	ci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
 	ci.rasterizer_state.enable_depth_clip = true; /* 关闭 FEATURE_DEPTH_CLAMPING 后 SDL_GPU 要求 enable_depth_clip 必须为 true */
 	ci.multisample_state.enable_mask = false;
-	ci.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
+	ci.multisample_state.sample_count = s_r3d_pipeline_samples;
 	ci.target_info.num_color_targets = 1;
 	ci.target_info.has_depth_stencil_target = true;
 	ci.target_info.depth_stencil_format = (SDL_GPUTextureFormat)depth_format;
@@ -272,7 +283,7 @@ void* joy_r3d_create_line_pipeline(void* device,
 	ci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
 	ci.rasterizer_state.enable_depth_clip = true; /* 关闭 FEATURE_DEPTH_CLAMPING 后 SDL_GPU 要求 enable_depth_clip 必须为 true */
 	ci.multisample_state.enable_mask = false;
-	ci.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
+	ci.multisample_state.sample_count = s_r3d_pipeline_samples;
 	ci.target_info.num_color_targets = 1;
 	ci.target_info.has_depth_stencil_target = true;
 	ci.target_info.depth_stencil_format = (SDL_GPUTextureFormat)depth_format;
@@ -339,7 +350,7 @@ void* joy_r3d_create_solid_pipeline(void* device,
 	ci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
 	ci.rasterizer_state.enable_depth_clip = true; /* 关闭 FEATURE_DEPTH_CLAMPING 后 SDL_GPU 要求 enable_depth_clip 必须为 true */
 	ci.multisample_state.enable_mask = false;
-	ci.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
+	ci.multisample_state.sample_count = s_r3d_pipeline_samples;
 	ci.target_info.num_color_targets = 1;
 	ci.target_info.has_depth_stencil_target = true;
 	ci.target_info.depth_stencil_format = (SDL_GPUTextureFormat)depth_format;
@@ -409,7 +420,7 @@ void* joy_r3d_create_lighting_pipeline(void* device,
 	ci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
 	ci.rasterizer_state.enable_depth_clip = true; /* 关闭 FEATURE_DEPTH_CLAMPING 后 SDL_GPU 要求 enable_depth_clip 必须为 true */
 	ci.multisample_state.enable_mask = false;
-	ci.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
+	ci.multisample_state.sample_count = s_r3d_pipeline_samples;
 	ci.target_info.num_color_targets = 1;
 	ci.target_info.has_depth_stencil_target = true;
 	ci.target_info.depth_stencil_format = (SDL_GPUTextureFormat)depth_format;
@@ -501,6 +512,16 @@ static SDL_GPUTexture* upload_pixels_to_texture(SDL_GPUDevice* device,
 	tex_ci.layer_count_or_depth = 1; tex_ci.num_levels = 1;
 	tex_ci.sample_count = SDL_GPU_SAMPLECOUNT_1; tex_ci.type = SDL_GPU_TEXTURETYPE_2D;
 	tex_ci.usage = usage;
+	/* 采样纹理生成 mipmap：缩小时不再依赖单级纹理的线性过滤，显著减少闪烁/摩尔纹。
+	   SDL_GenerateMipmaps 要求纹理同时具备 SAMPLER + COLOR_TARGET usage。 */
+	bool gen_mips = (usage & SDL_GPU_TEXTUREUSAGE_SAMPLER) && w >= 2 && h >= 2;
+	if (gen_mips) {
+		int max_dim = w > h ? w : h;
+		int levels = 1;
+		while (max_dim > 1) { levels++; max_dim >>= 1; }
+		tex_ci.num_levels = levels;
+		tex_ci.usage |= SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
+	}
 	SDL_GPUTexture* tex = SDL_CreateGPUTexture(device, &tex_ci);
 	if (!tex) { SDL_ReleaseGPUTransferBuffer(device, tb); return NULL; }
 
@@ -514,6 +535,7 @@ static SDL_GPUTexture* upload_pixels_to_texture(SDL_GPUDevice* device,
 	region.texture = tex;
 	SDL_UploadToGPUTexture(copy, &ti, &region, false);
 	SDL_EndGPUCopyPass(copy);
+	if (gen_mips) SDL_GenerateMipmapsForGPUTexture(cmd, tex);
 	SDL_SubmitGPUCommandBuffer(cmd);
 	SDL_ReleaseGPUTransferBuffer(device, tb);
 	return tex;
@@ -537,16 +559,35 @@ void* joy_r3d_create_solid_texture(void* device,
 	return (void*)tex;
 }
 
-void* joy_r3d_create_depth_texture(void* device, int width, int height)
+/* 内部：按指定采样数创建深度纹理。导出接口保持 1x 以兼容外部调用者。 */
+static SDL_GPUTexture* r3d_create_depth_texture_samples(SDL_GPUDevice* dev, int width, int height,
+	SDL_GPUSampleCount samples)
 {
-	SDL_GPUDevice* dev = (SDL_GPUDevice*)device;
 	SDL_GPUTextureCreateInfo tex_ci = { 0 };
 	tex_ci.format = SDL_GPU_TEXTUREFORMAT_D16_UNORM;
 	tex_ci.height = height; tex_ci.width = width;
 	tex_ci.layer_count_or_depth = 1; tex_ci.num_levels = 1;
-	tex_ci.sample_count = SDL_GPU_SAMPLECOUNT_1; tex_ci.type = SDL_GPU_TEXTURETYPE_2D;
+	tex_ci.sample_count = samples; tex_ci.type = SDL_GPU_TEXTURETYPE_2D;
 	tex_ci.usage = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
-	return (void*)SDL_CreateGPUTexture(dev, &tex_ci);
+	return SDL_CreateGPUTexture(dev, &tex_ci);
+}
+
+/* 内部：MSAA 颜色目标，渲染完成后 resolve 到 swapchain。 */
+static SDL_GPUTexture* r3d_create_msaa_color_texture(SDL_GPUDevice* dev, int width, int height,
+	SDL_GPUTextureFormat format, SDL_GPUSampleCount samples)
+{
+	SDL_GPUTextureCreateInfo tex_ci = { 0 };
+	tex_ci.format = format; tex_ci.height = height; tex_ci.width = width;
+	tex_ci.layer_count_or_depth = 1; tex_ci.num_levels = 1;
+	tex_ci.sample_count = samples; tex_ci.type = SDL_GPU_TEXTURETYPE_2D;
+	tex_ci.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
+	return SDL_CreateGPUTexture(dev, &tex_ci);
+}
+
+void* joy_r3d_create_depth_texture(void* device, int width, int height)
+{
+	SDL_GPUDevice* dev = (SDL_GPUDevice*)device;
+	return (void*)r3d_create_depth_texture_samples(dev, width, height, SDL_GPU_SAMPLECOUNT_1);
 }
 
 void* joy_r3d_create_sampler(void* device)
@@ -622,12 +663,13 @@ joy_r3d_p joy_r3d_create(joy_window_p win, const char* shader_dir)
 	   sampleRateShading 等特性，许多移动 GPU 不满足，PrepareDriver 会失败并报
 	   "No supported SDL_GPU backend found!"。按 SDL 官方指引关闭这四项可选特性
 	   （CLIP_DISTANCE / DEPTH_CLAMPING / INDIRECT_DRAW_FIRST_INSTANCE / ANISOTROPY），
-	   即可在更多安卓设备上创建成功。 */
+	   即可在更多安卓设备上创建成功。
+	   DEBUGMODE/VERBOSE 默认关闭：验证层 + 逐调用日志会显著拖慢每帧；需要排查 GPU 问题时再临时开启。 */
 	SDL_PropertiesID dev_props = SDL_CreateProperties();
 	if (dev_props) {
 		SDL_SetBooleanProperty(dev_props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOLEAN, true);
-		SDL_SetBooleanProperty(dev_props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN, true);
-		SDL_SetBooleanProperty(dev_props, SDL_PROP_GPU_DEVICE_CREATE_VERBOSE_BOOLEAN, true);
+		SDL_SetBooleanProperty(dev_props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN, false);
+		SDL_SetBooleanProperty(dev_props, SDL_PROP_GPU_DEVICE_CREATE_VERBOSE_BOOLEAN, false);
 		SDL_SetBooleanProperty(dev_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN, false);
 		SDL_SetBooleanProperty(dev_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN, false);
 		SDL_SetBooleanProperty(dev_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN, false);
@@ -677,6 +719,13 @@ joy_r3d_p joy_r3d_create(joy_window_p win, const char* shader_dir)
 	if (!r->vs || !r->fs) { joy_r3d_destroy(r); return NULL; }
 
 	SDL_GPUTextureFormat fmt = SDL_GetGPUSwapchainTextureFormat(r->dev, r->win);
+	/* MSAA: 优先 4x；颜色/深度格式任一不支持时回退 1x，保证移动 GPU 可运行 */
+	r->samples = SDL_GPU_SAMPLECOUNT_1;
+	if (SDL_GPUTextureSupportsSampleCount(r->dev, fmt, SDL_GPU_SAMPLECOUNT_4) &&
+		SDL_GPUTextureSupportsSampleCount(r->dev, SDL_GPU_TEXTUREFORMAT_D16_UNORM, SDL_GPU_SAMPLECOUNT_4))
+		r->samples = SDL_GPU_SAMPLECOUNT_4;
+	s_r3d_pipeline_samples = r->samples;
+
 	r->pipeline = (SDL_GPUGraphicsPipeline*)joy_r3d_create_pipeline(r->dev,
 		r->vs, r->fs, (int)fmt, (int)SDL_GPU_TEXTUREFORMAT_D16_UNORM);
 	if (!r->pipeline) { joy_r3d_destroy(r); return NULL; }
@@ -694,7 +743,14 @@ joy_r3d_p joy_r3d_create(joy_window_p win, const char* shader_dir)
 
 	SDL_GetWindowSize(r->win, &r->ww, &r->wh);
 	r->last_ww = r->ww; r->last_wh = r->wh;
-	r->depth = (SDL_GPUTexture*)joy_r3d_create_depth_texture(r->dev, r->ww, r->wh);
+	if (r->samples != SDL_GPU_SAMPLECOUNT_1) {
+		r->msaa_color = r3d_create_msaa_color_texture(r->dev, r->ww, r->wh, fmt, r->samples);
+		if (!r->msaa_color) {
+			SDL_LogError(SDL_LOG_CATEGORY_GPU, "joy_r3d_create: 创建 MSAA 颜色目标失败");
+			joy_r3d_destroy(r); return NULL;
+		}
+	}
+	r->depth = r3d_create_depth_texture_samples(r->dev, r->ww, r->wh, r->samples);
 	if (!r->depth) { joy_r3d_destroy(r); return NULL; }
 
 	r->aspect = (float)r->ww / (float)r->wh;
@@ -719,6 +775,8 @@ joy_r3d_p joy_r3d_create(joy_window_p win, const char* shader_dir)
 		}
 		SDL_free(lvert_path); SDL_free(lfrag_path);
 	}
+	/* 管线已创建完毕，恢复导出接口默认的 1x 采样数 */
+	s_r3d_pipeline_samples = SDL_GPU_SAMPLECOUNT_1;
 
 	/* 默认光照: 环境光 + 一个方向光 */
 	memset(&r->light_block, 0, sizeof(r->light_block));
@@ -752,7 +810,12 @@ void joy_r3d_destroy(joy_r3d_p r)
 		if (r->color_cache[i].tex) SDL_ReleaseGPUTexture(r->dev, r->color_cache[i].tex);
 	r->color_count = 0;
 
-	if (r->depth)    SDL_ReleaseGPUTexture(r->dev, r->depth);
+	for (int i = 0; i < r->ui_tex_count; i++)
+		if (r->ui_tex_cache[i].tex) SDL_ReleaseGPUTexture(r->dev, r->ui_tex_cache[i].tex);
+	r->ui_tex_count = 0;
+	if (r->depth)      SDL_ReleaseGPUTexture(r->dev, r->depth);
+	if (r->msaa_color) SDL_ReleaseGPUTexture(r->dev, r->msaa_color);
+	s_r3d_pipeline_samples = SDL_GPU_SAMPLECOUNT_1; /* 兼容创建失败等提前销毁路径 */
 	if (r->dev && r->fov_gradient_tex) SDL_ReleaseGPUTexture(r->dev, r->fov_gradient_tex);
 	if (r->sampler)  SDL_ReleaseGPUSampler(r->dev, r->sampler);
 	if (r->pipeline) SDL_ReleaseGPUGraphicsPipeline(r->dev, r->pipeline);
@@ -821,7 +884,13 @@ bool joy_r3d_begin(joy_r3d_p r)
 		r->ww = (int)sw; r->wh = (int)sh;
 		r->aspect = (float)r->ww / (float)r->wh;
 		if (r->depth) SDL_ReleaseGPUTexture(r->dev, r->depth);
-		r->depth = (SDL_GPUTexture*)joy_r3d_create_depth_texture(r->dev, r->ww, r->wh);
+		r->depth = r3d_create_depth_texture_samples(r->dev, r->ww, r->wh, r->samples);
+		if (r->samples != SDL_GPU_SAMPLECOUNT_1) {
+			if (r->msaa_color) SDL_ReleaseGPUTexture(r->dev, r->msaa_color);
+			SDL_GPUTextureFormat fmt = SDL_GetGPUSwapchainTextureFormat(r->dev, r->win);
+			r->msaa_color = r3d_create_msaa_color_texture(r->dev, r->ww, r->wh, fmt, r->samples);
+			if (!r->msaa_color) SDL_LogError(SDL_LOG_CATEGORY_GPU, "joy_r3d_begin: 重建 MSAA 颜色目标失败");
+		}
 	}
 
 	/* 2D UI 逻辑分辨率: 根据呈现模式计算等比缩放系数 + letterbox 居中偏移(使用最终 swapchain 尺寸) */
@@ -850,8 +919,20 @@ bool joy_r3d_begin(joy_r3d_p r)
 	color.clear_color.r = r->clear_r / 255.0f; color.clear_color.g = r->clear_g / 255.0f;
 	color.clear_color.b = r->clear_b / 255.0f; color.clear_color.a = 1;
 	color.load_op = SDL_GPU_LOADOP_CLEAR; color.mip_level = 0;
-	color.store_op = SDL_GPU_STOREOP_STORE; color.texture = swapchain;
-	color.cycle = true; color.layer_or_depth_plane = 0;
+	color.layer_or_depth_plane = 0;
+	if (r->samples != SDL_GPU_SAMPLECOUNT_1 && r->msaa_color) {
+		/* MSAA: 画到多重采样颜色目标，结束时 resolve 到 swapchain 呈现 */
+		color.texture = r->msaa_color;
+		color.store_op = SDL_GPU_STOREOP_RESOLVE;
+		color.resolve_texture = swapchain;
+		color.cycle = false;
+		color.cycle_resolve_texture = true;
+	} else {
+		/* 1x 回退：保持原有直接画 swapchain 的行为 */
+		color.texture = swapchain;
+		color.store_op = SDL_GPU_STOREOP_STORE;
+		color.cycle = true;
+	}
 
 	SDL_GPUDepthStencilTargetInfo depth = { 0 };
 	depth.clear_depth = 1; depth.cycle = false;
@@ -1826,6 +1907,35 @@ void joy_r3d_draw_tex_2d(joy_r3d_p r, joy_render_mesh_p m,
 	}
 
 	draw_mesh_internal_proj(r, m, &model, &proj, (SDL_GPUTexture*)tex);
+}
+
+/* 2D UI 贴图快捷绘制：按路径惰性加载并缓存纹理，避免把 GPU 纹理句柄暴露给脚本层。
+   路径相对资源根（exe 目录），例如 "sprites/ui/joystick_circle_pad_d.png"。
+   缺资源时 joy_r3d_load_texture_png 会回退成纯色块，不会中断渲染。 */
+void joy_r3d_draw_ui_texture(joy_r3d_p r, joy_render_mesh_p m, const char* path,
+	float x, float y, float w, float h, float winW, float winH)
+{
+	if (!r || !m || !path || !path[0]) return;
+
+	SDL_GPUTexture* tex = NULL;
+	for (int i = 0; i < r->ui_tex_count; i++) {
+		if (SDL_strcmp(r->ui_tex_cache[i].path, path) == 0) {
+			tex = r->ui_tex_cache[i].tex;
+			break;
+		}
+	}
+	if (!tex) {
+		int iw = 0, ih = 0;
+		tex = (SDL_GPUTexture*)joy_r3d_load_texture_png(r, path, &iw, &ih);
+		if (!tex) return;
+		if (r->ui_tex_count < JOY_R3D_UI_TEX_CACHE) {
+			SDL_strlcpy(r->ui_tex_cache[r->ui_tex_count].path, path,
+				sizeof(r->ui_tex_cache[0].path));
+			r->ui_tex_cache[r->ui_tex_count].tex = tex;
+			r->ui_tex_count++;
+		}
+	}
+	joy_r3d_draw_tex_2d(r, m, x, y, w, h, tex, winW, winH);
 }
 
 joy_r3d_button_p joy_r3d_button_create(float x, float y, float w, float h, const char* text)

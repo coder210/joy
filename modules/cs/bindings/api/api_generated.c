@@ -11528,6 +11528,27 @@ static int64_t icall_JoyMathFpPow(int64_t p0, int64_t p1)
         return (int64_t)r.as.i64;
 }
 
+static void icall_JoyR3dDrawUiTexture(uint64_t p0, uint64_t p1, const char* p2, float p3, float p4, float p5, float p6, float p7, float p8)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[9];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_handle((uint64_t)p1);
+        args[2] = joy_v_str((const char*)p2);
+        args[3] = joy_v_f64((double)p3);
+        args[4] = joy_v_f64((double)p4);
+        args[5] = joy_v_f64((double)p5);
+        args[6] = joy_v_f64((double)p6);
+        args[7] = joy_v_f64((double)p7);
+        args[8] = joy_v_f64((double)p8);
+        (void)joy_api_call("joy_r3d_draw_ui_texture", args, 9, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_draw_ui_texture", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
 /* 句柄对象被 GC 时由 C# finalizer 调这里；计数仅供自检。 */
 static void icall_release(uint64_t h) { joy_obj_release((uint64_t)h); }
 static uint32_t icall_live_count(void) { return joy_obj_live_count(); }
@@ -12289,6 +12310,7 @@ void csopen_api(void)
         csx_register_internal_call("Joy.Api.Native::JoyMathFpExp", (const void*)icall_JoyMathFpExp);
         csx_register_internal_call("Joy.Api.Native::JoyMathFpLn", (const void*)icall_JoyMathFpLn);
         csx_register_internal_call("Joy.Api.Native::JoyMathFpPow", (const void*)icall_JoyMathFpPow);
+        csx_register_internal_call("Joy.Api.Native::JoyR3dDrawUiTexture", (const void*)icall_JoyR3dDrawUiTexture);
         csx_register_internal_call("Joy.Api.Native::Release", (const void*)icall_release);
         csx_register_internal_call("Joy.Api.Native::DebugLiveCount", (const void*)icall_live_count);
         csx_register_internal_call("Joy.Api.Native::DebugDestroyCount", (const void*)icall_destroy_count);

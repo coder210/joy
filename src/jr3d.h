@@ -201,6 +201,12 @@ extern "C" {
                                      float x, float y, float w, float h,
                                      void* tex, float winW, float winH);
 
+        /* 2D UI 贴图快捷绘制：按资源根相对路径惰性加载/缓存纹理并画 quad。
+           供脚本层绘制摇杆底纹/摇杆头/圆按钮，避免暴露 GPU 纹理句柄。 */
+        JOY_API void joy_r3d_draw_ui_texture(joy_r3d_p r, joy_render_mesh_p m,
+                                     const char* path, float x, float y,
+                                     float w, float h, float winW, float winH);
+
         /* ---------- 2D UI: label (仿 jr2d, 纯文字 2D HUD, 固定屏幕位置) ---------- */
         typedef struct joy_r3d_label joy_r3d_label_t, * joy_r3d_label_p;
         struct joy_r3d_label {

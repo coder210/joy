@@ -32,12 +32,9 @@ static joy_value_t t_joy_core_lcg_random_create(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_core_lcg_random_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_lcg_num_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_lcg_random_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_lcg_random_destroy.arg0");
-        p0 = (joy_lcg_num_p)joy_obj_deref(a[0].as.handle, "joy_lcg_num_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_core_lcg_random_destroy.arg0");
-        joy_core_lcg_random_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -170,12 +167,9 @@ static joy_value_t t_joy_core_kr_hash(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_core_timer_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_timer_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_timer_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_timer_destroy.arg0");
-        p0 = (joy_timer_p)joy_obj_deref(a[0].as.handle, "joy_timer_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_core_timer_destroy.arg0");
-        joy_core_timer_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -387,12 +381,9 @@ static joy_value_t t_joy_core_env_set(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_core_env_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_env_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_env_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_env_destroy.arg0");
-        p0 = (joy_env_p)joy_obj_deref(a[0].as.handle, "joy_env_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_core_env_destroy.arg0");
-        joy_core_env_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -765,12 +756,9 @@ static joy_value_t t_joy_sys_install_crash_handlers(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_net_iocp_server_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_iocp_server_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_iocp_server_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_iocp_server_destroy.arg0");
-        p0 = (joy_iocp_server_p)joy_obj_deref(a[0].as.handle, "joy_iocp_server_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_net_iocp_server_destroy.arg0");
-        joy_net_iocp_server_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -808,12 +796,9 @@ static joy_value_t t_joy_r2d_font_create(joy_value_t* a, int n, joy_status_t* st
 
 static joy_value_t t_joy_r2d_font_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_font_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_font_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_font_destroy.arg0");
-        p0 = (joy_font_p)joy_obj_deref(a[0].as.handle, "joy_font_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r2d_font_destroy.arg0");
-        joy_r2d_font_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -871,12 +856,9 @@ static joy_value_t t_joy_r2d_create(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_r2d_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_r2d_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_destroy.arg0");
-        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r2d_destroy.arg0");
-        joy_r2d_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -1216,12 +1198,9 @@ static joy_value_t t_joy_r2d_image_create(joy_value_t* a, int n, joy_status_t* s
 
 static joy_value_t t_joy_r2d_image_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_image_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_image_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_image_destroy.arg0");
-        p0 = (joy_image_p)joy_obj_deref(a[0].as.handle, "joy_image_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r2d_image_destroy.arg0");
-        joy_r2d_image_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -1299,12 +1278,9 @@ static joy_value_t t_joy_r2d_text_updatex(joy_value_t* a, int n, joy_status_t* s
 
 static joy_value_t t_joy_r2d_text_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_text_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_text_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_text_destroy.arg0");
-        p0 = (joy_text_p)joy_obj_deref(a[0].as.handle, "joy_text_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r2d_text_destroy.arg0");
-        joy_r2d_text_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -1570,12 +1546,9 @@ static joy_value_t t_joy_r2d_text_cache_sweep(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_r2d_animation_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_animation_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_animation_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_animation_destroy.arg0");
-        p0 = (joy_animation_p)joy_obj_deref(a[0].as.handle, "joy_animation_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r2d_animation_destroy.arg0");
-        joy_r2d_animation_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -1692,12 +1665,9 @@ static joy_value_t t_joy_r2d_animation_update(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_r3d_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_r3d_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_destroy.arg0");
-        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r3d_destroy.arg0");
-        joy_r3d_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -2400,12 +2370,9 @@ static joy_value_t t_joy_r3d_button_release(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_r3d_button_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_r3d_button_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_button_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_destroy.arg0");
-        p0 = (joy_r3d_button_p)joy_obj_deref(a[0].as.handle, "joy_r3d_button_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r3d_button_destroy.arg0");
-        joy_r3d_button_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -2534,12 +2501,9 @@ static joy_value_t t_joy_r3d_label_draw(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_r3d_label_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_r3d_label_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_label_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_label_destroy.arg0");
-        p0 = (joy_r3d_label_p)joy_obj_deref(a[0].as.handle, "joy_r3d_label_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r3d_label_destroy.arg0");
-        joy_r3d_label_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -2782,23 +2746,17 @@ static joy_value_t t_joy_r3d_input_draw(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_r3d_input_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_r3d_input_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_destroy.arg0");
-        p0 = (joy_r3d_input_p)joy_obj_deref(a[0].as.handle, "joy_r3d_input_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r3d_input_destroy.arg0");
-        joy_r3d_input_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
 static joy_value_t t_joy_r3d_combobox_input_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_r3d_combobox_input_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_combobox_input_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_destroy.arg0");
-        p0 = (joy_r3d_combobox_input_p)joy_obj_deref(a[0].as.handle, "joy_r3d_combobox_input_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r3d_combobox_input_destroy.arg0");
-        joy_r3d_combobox_input_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -2911,12 +2869,9 @@ static joy_value_t t_joy_r3d_combobox_input_draw_dropdown(joy_value_t* a, int n,
 
 static joy_value_t t_joy_r3d_slider_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_r3d_slider_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_slider_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_destroy.arg0");
-        p0 = (joy_r3d_slider_p)joy_obj_deref(a[0].as.handle, "joy_r3d_slider_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r3d_slider_destroy.arg0");
-        joy_r3d_slider_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -3066,12 +3021,9 @@ static joy_value_t t_joy_r3d_slider_set_hovered(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_r3d_checkbox_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_r3d_checkbox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_checkbox_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_destroy.arg0");
-        p0 = (joy_r3d_checkbox_p)joy_obj_deref(a[0].as.handle, "joy_r3d_checkbox_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r3d_checkbox_destroy.arg0");
-        joy_r3d_checkbox_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -3405,12 +3357,9 @@ static joy_value_t t_joy_r3d_mesh_ramp_lit(joy_value_t* a, int n, joy_status_t* 
 
 static joy_value_t t_joy_scene_animator_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_animator_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animator_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_destroy.arg0");
-        p0 = (joy_animator_p)joy_obj_deref(a[0].as.handle, "joy_animator_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_animator_destroy.arg0");
-        joy_scene_animator_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -3819,12 +3768,9 @@ static joy_value_t t_joy_scene_animator_set_flip_h(joy_value_t* a, int n, joy_st
 
 static joy_value_t t_joy_r2d_label_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_label_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_label_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_label_destroy.arg0");
-        p0 = (joy_label_p)joy_obj_deref(a[0].as.handle, "joy_label_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r2d_label_destroy.arg0");
-        joy_r2d_label_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -3841,12 +3787,9 @@ static joy_value_t t_joy_r2d_label_draw(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_r2d_button_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_button_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_button_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_button_destroy.arg0");
-        p0 = (joy_button_p)joy_obj_deref(a[0].as.handle, "joy_button_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r2d_button_destroy.arg0");
-        joy_r2d_button_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -4110,12 +4053,9 @@ static joy_value_t t_joy_r2d_button_draw(joy_value_t* a, int n, joy_status_t* st
 
 static joy_value_t t_joy_r2d_scrollview_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_scrollview_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_scrollview_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_scrollview_destroy.arg0");
-        p0 = (joy_scrollview_p)joy_obj_deref(a[0].as.handle, "joy_scrollview_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r2d_scrollview_destroy.arg0");
-        joy_r2d_scrollview_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -4279,12 +4219,9 @@ static joy_value_t t_joy_r2d_scrollview_end(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_r2d_combobox_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_combobox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_combobox_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_combobox_destroy.arg0");
-        p0 = (joy_combobox_p)joy_obj_deref(a[0].as.handle, "joy_combobox_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r2d_combobox_destroy.arg0");
-        joy_r2d_combobox_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -4419,12 +4356,9 @@ static joy_value_t t_joy_r2d_combobox_draw(joy_value_t* a, int n, joy_status_t* 
 
 static joy_value_t t_joy_r2d_combobox_input_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_combobox_input_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_combobox_input_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_combobox_input_destroy.arg0");
-        p0 = (joy_combobox_input_p)joy_obj_deref(a[0].as.handle, "joy_combobox_input_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r2d_combobox_input_destroy.arg0");
-        joy_r2d_combobox_input_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -4604,12 +4538,9 @@ static joy_value_t t_joy_r2d_datagrid_setcell(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_r2d_datagrid_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_datagrid_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_datagrid_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_datagrid_destroy.arg0");
-        p0 = (joy_datagrid_p)joy_obj_deref(a[0].as.handle, "joy_datagrid_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r2d_datagrid_destroy.arg0");
-        joy_r2d_datagrid_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -4676,12 +4607,9 @@ static joy_value_t t_joy_r2d_datagrid_set_selected_row(joy_value_t* a, int n, jo
 
 static joy_value_t t_joy_r2d_radio_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_radio_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_radio_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_radio_destroy.arg0");
-        p0 = (joy_radio_p)joy_obj_deref(a[0].as.handle, "joy_radio_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r2d_radio_destroy.arg0");
-        joy_r2d_radio_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -4719,12 +4647,9 @@ static joy_value_t t_joy_r2d_radio_set_hovered(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_r2d_checkbox_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_checkbox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_checkbox_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_checkbox_destroy.arg0");
-        p0 = (joy_checkbox_p)joy_obj_deref(a[0].as.handle, "joy_checkbox_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r2d_checkbox_destroy.arg0");
-        joy_r2d_checkbox_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -4863,12 +4788,9 @@ static joy_value_t t_joy_r2d_checkbox_set_hovered(joy_value_t* a, int n, joy_sta
 
 static joy_value_t t_joy_r2d_joystick_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_joystick_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_joystick_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_joystick_destroy.arg0");
-        p0 = (joy_joystick_p)joy_obj_deref(a[0].as.handle, "joy_joystick_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r2d_joystick_destroy.arg0");
-        joy_r2d_joystick_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -5030,12 +4952,9 @@ static joy_value_t t_joy_r2d_joystick_get_magnitude(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_r2d_inputbox_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_inputbox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_inputbox_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_inputbox_destroy.arg0");
-        p0 = (joy_inputbox_p)joy_obj_deref(a[0].as.handle, "joy_inputbox_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r2d_inputbox_destroy.arg0");
-        joy_r2d_inputbox_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -5318,12 +5237,9 @@ static joy_value_t t_joy_r2d_inputbox_is_focused(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_r2d_slider_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_slider_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_slider_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_slider_destroy.arg0");
-        p0 = (joy_slider_p)joy_obj_deref(a[0].as.handle, "joy_slider_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r2d_slider_destroy.arg0");
-        joy_r2d_slider_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -5487,12 +5403,9 @@ static joy_value_t t_joy_r2d_slider_set_hovered(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_r2d_popup_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_popup_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_popup_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_popup_destroy.arg0");
-        p0 = (joy_popup_p)joy_obj_deref(a[0].as.handle, "joy_popup_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r2d_popup_destroy.arg0");
-        joy_r2d_popup_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -5667,12 +5580,9 @@ static joy_value_t t_joy_r2d_popup_is_inside(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_r2d_tooltip_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_tooltip_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_tooltip_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_tooltip_destroy.arg0");
-        p0 = (joy_tooltip_p)joy_obj_deref(a[0].as.handle, "joy_tooltip_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r2d_tooltip_destroy.arg0");
-        joy_r2d_tooltip_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -5741,12 +5651,9 @@ static joy_value_t t_joy_r2d_tooltip_draw(joy_value_t* a, int n, joy_status_t* s
 
 static joy_value_t t_joy_r2d_ctx_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_ui_ctx_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_ctx_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_ctx_destroy.arg0");
-        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r2d_ctx_destroy.arg0");
-        joy_r2d_ctx_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -6306,12 +6213,9 @@ static joy_value_t t_joy_r2d_button(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_scene_tilemap_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_tilemap_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_tilemap_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_destroy.arg0");
-        p0 = (joy_tilemap_p)joy_obj_deref(a[0].as.handle, "joy_tilemap_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_tilemap_destroy.arg0");
-        joy_scene_tilemap_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -6529,25 +6433,18 @@ static joy_value_t t_joy_scene_tilemap_render_layer(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_scene_tilemap_render_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_tilemap_render_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_tilemap_render_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_render_destroy.arg0");
-        p0 = (joy_tilemap_render_p)joy_obj_deref(a[0].as.handle, "joy_tilemap_render_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_tilemap_render_destroy.arg0");
-        joy_scene_tilemap_render_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
 static joy_value_t t_joy_net_kcpserver_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_kcpserver_p p0;
-        int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_kcpserver_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_kcpserver_destroy.arg0");
-        p0 = (joy_kcpserver_p)joy_obj_deref(a[0].as.handle, "joy_kcpserver_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_net_kcpserver_destroy.arg0");
-        _r = joy_net_kcpserver_destroy(p0);
-        return joy_v_i32((int)_r);
+        joy_obj_release(a[0].as.handle);
+        return joy_v_null();
 }
 
 static joy_value_t t_joy_net_kcpserver_send(joy_value_t* a, int n, joy_status_t* st)
@@ -6642,12 +6539,9 @@ static joy_value_t t_joy_net_kcpserver_poll_message(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_net_kcpclient_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_kcpclient_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_kcpclient_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_kcpclient_destroy.arg0");
-        p0 = (joy_kcpclient_p)joy_obj_deref(a[0].as.handle, "joy_kcpclient_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_net_kcpclient_destroy.arg0");
-        joy_net_kcpclient_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -6698,14 +6592,10 @@ static joy_value_t t_joy_net_kcpclient_poll_message(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_net_tcpserver_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_tcpserver_p p0;
-        int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_tcpserver_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_tcpserver_destroy.arg0");
-        p0 = (joy_tcpserver_p)joy_obj_deref(a[0].as.handle, "joy_tcpserver_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_net_tcpserver_destroy.arg0");
-        _r = joy_net_tcpserver_destroy(p0);
-        return joy_v_i32((int)_r);
+        joy_obj_release(a[0].as.handle);
+        return joy_v_null();
 }
 
 static joy_value_t t_joy_net_tcpserver_send(joy_value_t* a, int n, joy_status_t* st)
@@ -6800,12 +6690,9 @@ static joy_value_t t_joy_net_tcpserver_poll_message(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_net_tcpclient_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_tcpclient_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_tcpclient_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_tcpclient_destroy.arg0");
-        p0 = (joy_tcpclient_p)joy_obj_deref(a[0].as.handle, "joy_tcpclient_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_net_tcpclient_destroy.arg0");
-        joy_net_tcpclient_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -6856,14 +6743,10 @@ static joy_value_t t_joy_net_tcpclient_poll_message(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_net_wsnetserver_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_wsnetserver_p p0;
-        int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_wsnetserver_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_wsnetserver_destroy.arg0");
-        p0 = (joy_wsnetserver_p)joy_obj_deref(a[0].as.handle, "joy_wsnetserver_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_net_wsnetserver_destroy.arg0");
-        _r = joy_net_wsnetserver_destroy(p0);
-        return joy_v_i32((int)_r);
+        joy_obj_release(a[0].as.handle);
+        return joy_v_null();
 }
 
 static joy_value_t t_joy_net_wsnetserver_send(joy_value_t* a, int n, joy_status_t* st)
@@ -6958,12 +6841,9 @@ static joy_value_t t_joy_net_wsnetserver_poll_message(joy_value_t* a, int n, joy
 
 static joy_value_t t_joy_net_wsnetclient_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_wsnetclient_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_wsnetclient_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_wsnetclient_destroy.arg0");
-        p0 = (joy_wsnetclient_p)joy_obj_deref(a[0].as.handle, "joy_wsnetclient_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_net_wsnetclient_destroy.arg0");
-        joy_net_wsnetclient_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -7014,12 +6894,9 @@ static joy_value_t t_joy_net_wsnetclient_poll_message(joy_value_t* a, int n, joy
 
 static joy_value_t t_joy_net_netclient_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_netclient_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_netclient_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_netclient_destroy.arg0");
-        p0 = (joy_netclient_p)joy_obj_deref(a[0].as.handle, "joy_netclient_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_net_netclient_destroy.arg0");
-        joy_net_netclient_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -7070,12 +6947,9 @@ static joy_value_t t_joy_net_netclient_poll_message(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_net_netserver_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_netserver_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_netserver_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_netserver_destroy.arg0");
-        p0 = (joy_netserver_p)joy_obj_deref(a[0].as.handle, "joy_netserver_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_net_netserver_destroy.arg0");
-        joy_net_netserver_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -7182,12 +7056,9 @@ static joy_value_t t_joy_net_netmessage_free_data(joy_value_t* a, int n, joy_sta
 
 static joy_value_t t_joy_scene_node_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_scene_node_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_node_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_destroy.arg0");
-        p0 = (joy_scene_node_p)joy_obj_deref(a[0].as.handle, "joy_scene_node_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_node_destroy.arg0");
-        joy_scene_node_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -7418,12 +7289,9 @@ static joy_value_t t_joy_scene_node_update(joy_value_t* a, int n, joy_status_t* 
 
 static joy_value_t t_joy_scene_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_scene_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_destroy.arg0");
-        p0 = (joy_scene_p)joy_obj_deref(a[0].as.handle, "joy_scene_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_destroy.arg0");
-        joy_scene_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -7535,12 +7403,9 @@ static joy_value_t t_joy_scene_get_popup_node(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_scene_manager_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_scene_manager_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_manager_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_manager_destroy.arg0");
-        p0 = (joy_scene_manager_p)joy_obj_deref(a[0].as.handle, "joy_scene_manager_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_manager_destroy.arg0");
-        joy_scene_manager_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -7629,12 +7494,9 @@ static joy_value_t t_joy_scene_manager_get_count(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_r2d_particle_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_particle_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_particle_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_particle_destroy.arg0");
-        p0 = (joy_particle_p)joy_obj_deref(a[0].as.handle, "joy_particle_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r2d_particle_destroy.arg0");
-        joy_r2d_particle_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -7732,12 +7594,9 @@ static joy_value_t t_joy_r2d_particle_is_active(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_r3d_light_sys_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_light_sys_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_light_sys_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_sys_destroy.arg0");
-        p0 = (joy_light_sys_p)joy_obj_deref(a[0].as.handle, "joy_light_sys_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_r3d_light_sys_destroy.arg0");
-        joy_r3d_light_sys_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -7855,12 +7714,9 @@ static joy_value_t t_joy_r3d_light_render(joy_value_t* a, int n, joy_status_t* s
 
 static joy_value_t t_joy_scene_ecs_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_ecs_world_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_ecs_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_ecs_destroy.arg0");
-        p0 = (joy_ecs_world_p)joy_obj_deref(a[0].as.handle, "joy_ecs_world_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_ecs_destroy.arg0");
-        joy_scene_ecs_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -7996,12 +7852,9 @@ static joy_value_t t_joy_audio_shot_set_gain(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_audio_shot_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_audio_shot_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_audio_shot_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_audio_shot_destroy.arg0");
-        p0 = (joy_audio_shot_p)joy_obj_deref(a[0].as.handle, "joy_audio_shot_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_audio_shot_destroy.arg0");
-        joy_audio_shot_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -8032,12 +7885,9 @@ static joy_value_t t_joy_audio_bgm_set_gain(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_audio_bgm_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joy_audio_bgm_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_audio_bgm_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_audio_bgm_destroy.arg0");
-        p0 = (joy_audio_bgm_p)joy_obj_deref(a[0].as.handle, "joy_audio_bgm_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_audio_bgm_destroy.arg0");
-        joy_audio_bgm_destroy(p0);
+        joy_obj_release(a[0].as.handle);
         return joy_v_null();
 }
 
@@ -12458,6 +12308,42 @@ static joy_value_t t_joy_math_fp_pow(joy_value_t* a, int n, joy_status_t* st)
         return joy_v_i64((int64_t)_r);
 }
 
+static joy_value_t t_joy_r3d_draw_ui_texture(joy_value_t* a, int n, joy_status_t* st)
+{
+        joy_r3d_p p0;
+        joy_render_mesh_p p1;
+        const char* p2;
+        float p3;
+        float p4;
+        float p5;
+        float p6;
+        float p7;
+        float p8;
+        if (n != 9) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_draw_ui_texture");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_ui_texture.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_ui_texture.arg1");
+        if (a[2].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_ui_texture.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_ui_texture.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_ui_texture.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_ui_texture.arg5");
+        if (a[6].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_ui_texture.arg6");
+        if (a[7].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_ui_texture.arg7");
+        if (a[8].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_ui_texture.arg8");
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_draw_ui_texture.arg0");
+        p1 = (joy_render_mesh_p)joy_obj_deref(a[1].as.handle, "joy_render_mesh_p", st);
+        if (!p1) return joy_v_err(st, *st, "joy_r3d_draw_ui_texture.arg1");
+        p2 = (const char*)a[2].as.str;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        p5 = (float)a[5].as.f64;
+        p6 = (float)a[6].as.f64;
+        p7 = (float)a[7].as.f64;
+        p8 = (float)a[8].as.f64;
+        joy_r3d_draw_ui_texture(p0, p1, p2, p3, p4, p5, p6, p7, p8);
+        return joy_v_null();
+}
+
 static const joy_value_kind k_joy_core_lcg_random_create[] = { JOY_V_U64 };
 static const joy_value_kind k_joy_core_lcg_random_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_core_lcg_random_next[] = { JOY_V_HANDLE };
@@ -13181,6 +13067,7 @@ static const joy_value_kind k_joy_math_fp_atan2[] = { JOY_V_I64, JOY_V_I64 };
 static const joy_value_kind k_joy_math_fp_exp[] = { JOY_V_I64 };
 static const joy_value_kind k_joy_math_fp_ln[] = { JOY_V_I64 };
 static const joy_value_kind k_joy_math_fp_pow[] = { JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_joy_r3d_draw_ui_texture[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_STR, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
 
 static const joy_thunk_entry s_thunks[] = {
         { "core", "joy_core_lcg_random_create", "LcgRandomCreate", t_joy_core_lcg_random_create, 1, k_joy_core_lcg_random_create, JOY_V_HANDLE },
@@ -13937,6 +13824,7 @@ static const joy_thunk_entry s_thunks[] = {
         { "math", "joy_math_fp_exp", "JoyMathFpExp", t_joy_math_fp_exp, 1, k_joy_math_fp_exp, JOY_V_I64 },
         { "math", "joy_math_fp_ln", "JoyMathFpLn", t_joy_math_fp_ln, 1, k_joy_math_fp_ln, JOY_V_I64 },
         { "math", "joy_math_fp_pow", "JoyMathFpPow", t_joy_math_fp_pow, 2, k_joy_math_fp_pow, JOY_V_I64 },
+        { "r3d", "joy_r3d_draw_ui_texture", "JoyR3dDrawUiTexture", t_joy_r3d_draw_ui_texture, 9, k_joy_r3d_draw_ui_texture, JOY_V_NULL },
 };
 
 const joy_thunk_entry* joy_thunks_table(int* count)
@@ -16219,6 +16107,9 @@ const char* joy_api_selftest(void)
         st = JOY_OK;
         joy_api_call("joy_math_fp_pow", NULL, 3, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_math_fp_pow";
+        st = JOY_OK;
+        joy_api_call("joy_r3d_draw_ui_texture", NULL, 10, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_draw_ui_texture";
 
         /* L2 试点：用展开后的参数个数调用，args 全为 NULL 值，
          * thunk 在类型校验处返回，不会执行任何 joy 业务函数。 */
