@@ -100,6 +100,39 @@ static void w_draw_mesh_tex(uint64_t r_h, uint64_t m_h,
         joy_r3d_draw_mesh_tex(r, m, pos, scale, (void*)tex);
 }
 
+/* Lit textured draw: same lighting pipeline as DrawMeshLitColor, but with a
+ * caller-provided texture. mat is float[16] in joy_mat44_t field order (same
+ * as the basis calls). C# validates lengths; here just build the struct. */
+static void read_mat44(const float* p, joy_mat44_t* out)
+{
+        out->m0 = p[0];  out->m4 = p[1];  out->m8  = p[2];  out->m12 = p[3];
+        out->m1 = p[4];  out->m5 = p[5];  out->m9  = p[6];  out->m13 = p[7];
+        out->m2 = p[8];  out->m6 = p[9];  out->m10 = p[10]; out->m14 = p[11];
+        out->m3 = p[12]; out->m7 = p[13]; out->m11 = p[14]; out->m15 = p[15];
+}
+
+static void w_draw_mesh_lit_tex(uint64_t r_h, uint64_t m_h, const float* mat, intptr_t tex)
+{
+        joy_r3d_p r = deref_r3d(r_h);
+        joy_render_mesh_p m = deref_mesh(m_h);
+        if (!r || !m || !mat) return;
+        joy_mat44_t model;
+        read_mat44(mat, &model);
+        joy_r3d_draw_mesh_lit(r, m, &model, (void*)tex);
+}
+
+/* Light block override: C# passes a float[72] (288 bytes) laid out exactly as
+ * joy_r3d_light_block_t (4 lights x 64B + ambient[4] + viewPos[4]).
+ * viewPos is overwritten by the camera each frame, so its values are ignored. */
+static void w_set_light_block(uint64_t r_h, const float* p)
+{
+        joy_r3d_p r = deref_r3d(r_h);
+        if (!r || !p) return;
+        joy_r3d_light_block_t block;
+        memcpy(&block, p, sizeof(block));
+        joy_r3d_set_light_block(r, &block);
+}
+
 /* ---- UI create ---- */
 static uint64_t w_button_create(float x, float y, float w, float h, const char* text)
 {
@@ -192,6 +225,8 @@ void csopen_r3d_plus(void)
         csx_register_internal_call("Joy.Api.R3dExtPlus::logical_to_window", (const void*)w_logical_to_window);
         csx_register_internal_call("Joy.Api.R3dExtPlus::draw_mesh", (const void*)w_draw_mesh);
         csx_register_internal_call("Joy.Api.R3dExtPlus::draw_mesh_tex", (const void*)w_draw_mesh_tex);
+        csx_register_internal_call("Joy.Api.R3dExtPlus::draw_mesh_lit_tex", (const void*)w_draw_mesh_lit_tex);
+        csx_register_internal_call("Joy.Api.R3dExtPlus::set_light_block", (const void*)w_set_light_block);
         csx_register_internal_call("Joy.Api.R3dExtPlus::button_create", (const void*)w_button_create);
         csx_register_internal_call("Joy.Api.R3dExtPlus::label_create", (const void*)w_label_create);
         csx_register_internal_call("Joy.Api.R3dExtPlus::input_create", (const void*)w_input_create);

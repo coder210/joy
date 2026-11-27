@@ -18,6 +18,8 @@ namespace Joy.Api
         private static delegate* unmanaged[Cdecl]<ulong, float, float, float*, float*, void> s_logical_to_window;
         private static delegate* unmanaged[Cdecl]<ulong, ulong, float, float, float, float, float, float, byte, byte, byte, byte, void> s_draw_mesh;
         private static delegate* unmanaged[Cdecl]<ulong, ulong, float, float, float, float, float, float, IntPtr, void> s_draw_mesh_tex;
+        private static delegate* unmanaged[Cdecl]<ulong, ulong, float*, IntPtr, void> s_draw_mesh_lit_tex;
+        private static delegate* unmanaged[Cdecl]<ulong, float*, void> s_set_light_block;
         private static delegate* unmanaged[Cdecl]<float, float, float, float, byte*, ulong> s_button_create;
         private static delegate* unmanaged[Cdecl]<float, float, float, byte, byte, byte, byte*, ulong> s_label_create;
         private static delegate* unmanaged[Cdecl]<float, float, float, float, float, byte, byte, byte, byte*, ulong> s_input_create;
@@ -41,6 +43,8 @@ namespace Joy.Api
             s_logical_to_window = (delegate* unmanaged[Cdecl]<ulong, float, float, float*, float*, void>)NativeFuncs.Lookup("Joy.Api.R3dExtPlus::logical_to_window");
             s_draw_mesh = (delegate* unmanaged[Cdecl]<ulong, ulong, float, float, float, float, float, float, byte, byte, byte, byte, void>)NativeFuncs.Lookup("Joy.Api.R3dExtPlus::draw_mesh");
             s_draw_mesh_tex = (delegate* unmanaged[Cdecl]<ulong, ulong, float, float, float, float, float, float, IntPtr, void>)NativeFuncs.Lookup("Joy.Api.R3dExtPlus::draw_mesh_tex");
+            s_draw_mesh_lit_tex = (delegate* unmanaged[Cdecl]<ulong, ulong, float*, IntPtr, void>)NativeFuncs.Lookup("Joy.Api.R3dExtPlus::draw_mesh_lit_tex");
+            s_set_light_block = (delegate* unmanaged[Cdecl]<ulong, float*, void>)NativeFuncs.Lookup("Joy.Api.R3dExtPlus::set_light_block");
             s_button_create = (delegate* unmanaged[Cdecl]<float, float, float, float, byte*, ulong>)NativeFuncs.Lookup("Joy.Api.R3dExtPlus::button_create");
             s_label_create = (delegate* unmanaged[Cdecl]<float, float, float, byte, byte, byte, byte*, ulong>)NativeFuncs.Lookup("Joy.Api.R3dExtPlus::label_create");
             s_input_create = (delegate* unmanaged[Cdecl]<float, float, float, float, float, byte, byte, byte, byte*, ulong>)NativeFuncs.Lookup("Joy.Api.R3dExtPlus::input_create");
@@ -166,6 +170,27 @@ namespace Joy.Api
             if (m == null) throw new ArgumentNullException(nameof(m));
             draw_mesh_tex(r.Handle, m.Handle, px, py, pz, sx, sy, sz, tex);
         }
+
+        // ---- lit 纹理绘制 + 光照覆盖 ----
+        // lit mesh（pos+normal+uv）才能用；mat 为 float[16]，布局与 R3dExt.MakeTrs 一致。
+        public static void DrawMeshLitTex(Jr3d r, RenderMesh m, float[] mat, IntPtr tex)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (m == null) throw new ArgumentNullException(nameof(m));
+            if (mat == null || mat.Length < 16) throw new ArgumentException("mat needs 16 floats", nameof(mat));
+            fixed (float* p = mat) s_draw_mesh_lit_tex(r.Handle, m.Handle, p, tex);
+        }
+
+        // 光照块：float[72] = 4 盏灯各 16 float (64B) + ambient[4] + viewPos[4]。
+        // 每盏灯 16 float 布局: [0]=enabled, [1]=type, [4..6]=position,
+        // [8..10]=target, [12..15]=color(rgba)。viewPos 由相机每帧覆盖，传入值无效。
+        public static void SetLightBlock(Jr3d r, float[] block)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (block == null || block.Length < 72) throw new ArgumentException("block needs 72 floats", nameof(block));
+            fixed (float* p = block) s_set_light_block(r.Handle, p);
+        }
+
         public static Jr3dButton ButtonCreate(float x, float y, float w, float h, string text)
         {
             ulong hnd = button_create(x, y, w, h, text ?? "");
@@ -239,6 +264,11 @@ namespace Joy.Api
                 if (fx != 0f || fy != 0f) { detail = "logical_to_window"; return false; }
                 draw_mesh(0UL, 0UL, 0f, 0f, 0f, 1f, 1f, 1f, 255, 255, 255, 255);
                 draw_mesh_tex(0UL, 0UL, 0f, 0f, 0f, 1f, 1f, 1f, IntPtr.Zero);
+                // lit 绑定：null r3d/mesh 必须安全返回，不崩
+                float[] idmat = new float[16];
+                fixed (float* pm = idmat) s_draw_mesh_lit_tex(0UL, 0UL, pm, IntPtr.Zero);
+                float[] light = new float[72];
+                fixed (float* pl = light) s_set_light_block(0UL, pl);
                 var created = new object[] {
                     ButtonCreate(0f, 0f, 1f, 1f, ""), LabelCreate(0f, 0f, 10f, 255, 255, 255, ""),
                     InputCreate(0f, 0f, 1f, 1f, 10f, 255, 255, 255, ""), ComboboxInputCreate(0f, 0f, 1f, 1f, 10f, 255, 255, 255, ""),
@@ -250,7 +280,7 @@ namespace Joy.Api
                 slider_set_colors(0UL, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0);
                 checkbox_set_state(0UL, 0);
                 if (checkbox_get_state(0UL) != 0) { detail = "checkbox_get_state"; return false; }
-                detail = "18 internal calls OK (null-handle safe)";
+                detail = "20 internal calls OK (null-handle safe)";
                 return true;
             } catch (Exception ex) {
                 detail = ex.GetType().Name + ": " + ex.Message;
