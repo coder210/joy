@@ -52,15 +52,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # Maven Central 对 GitHub Actions 共享出口 IP 限流（HTTP 429），AGP 的
-      # 第三方传递依赖（protobuf/gson/guava/grpc...）只在 Maven Central，
-      # Google Maven 没有，所以换仓库顺序无效。用官方 action 缓存 Gradle
-      # 依赖：第一次成功后，后续 run 全部从缓存读，不再请求 Maven Central。
-      - name: Setup Gradle (dependency cache)
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-
       # 镜像自带 $ANDROID_HOME 与 cmdline-tools，直接装固定 NDK；
       # 装完校验 toolchain 文件，避免后面 configure 报一个离题的 CMake 错。
       - name: Install fixed NDK (preinstalled SDK)
@@ -183,25 +174,6 @@ jobs:
           done
           cp -a android/icons/mipmap-* build-apk/app/src/main/res/
 
-          # Maven Central 对 GitHub Actions 共享出口 IP 限流（429）。AGP 的
-          # 第三方传递依赖（protobuf/gson/guava/grpc...）只在 Maven Central，
-          # 换 google() 顺序无效。这里把 mavenCentral() 换成阿里云 public 镜像
-          # （Maven Central 的完整镜像），google() 保留给 AGP 自身依赖。
-          # 只改拷贝出来的副本，不动 SDL 上游文件。
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('build-apk/build.gradle')
-          s = p.read_text(encoding='utf-8')
-          old = '        mavenCentral()\n        google()\n'
-          new = ("        maven { url 'https://maven.aliyun.com/repository/public' }\n"
-                 "        google()\n")
-          n = s.count(old)
-          if n != 2:
-              raise SystemExit(f'::error::expected 2 repository blocks (buildscript+allprojects), found {n}')
-          p.write_text(s.replace(old, new), encoding='utf-8')
-          print('Gradle repositories: aliyun mirror + google()')
-          PY
-
           sdl3="$(find build-android -name 'libSDL3.so' -type f -print -quit)"
           mono="build-android/lib/$ANDROID_ABI/libmonosgen-2.0.so"
           cpp_game="build-android/lib/$ANDROID_ABI/libJoyGameCpp.so"
@@ -291,21 +263,7 @@ jobs:
 
           cd build-apk
           chmod +x gradlew
-          # 镜像偶发抖动时重试：Gradle 会把已下载依赖留在 ~/.gradle 缓存，
-          # 重试只补下失败的几个，不是从头来。退避逐次加长（429 通常 1-2 分钟恢复）。
-          # 只有真的拿到 APK 才算成功，重试失败仍由后面的文件校验拦住。
-          rc=1
-          for attempt in 1 2 3 4; do
-            echo "--- gradlew assembleDebug (attempt $attempt) ---"
-            ./gradlew assembleDebug --no-daemon 2>&1 | tee "../gradle-apk.log"
-            rc=${PIPESTATUS[0]}
-            [ "$rc" -eq 0 ] && break
-            if [ "$attempt" -lt 4 ]; then
-              delay=$((attempt * 40))
-              echo "::warning::gradlew failed ($rc), retrying in ${delay}s"
-              sleep "$delay"
-            fi
-          done
+          ./gradlew assembleDebug --no-daemon 2>&1 | tee ../gradle-apk.log
           cd ..
 
           for backend in cpp lua js csharp; do
